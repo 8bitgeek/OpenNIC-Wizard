@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012 Mike Sharkey <mike@pikeaero.com>
+ * Copyright (c) 2012 Mike Sharkey <michael_sharkey@firstclass.com>
  *
  * "THE BEER-WARE LICENSE" (Revision 42):
  * Mike Sharkey wrote this file. As long as you retain this notice you
@@ -13,27 +13,25 @@
 #include <QList>
 #include <QString>
 #include <QStringList>
-#include <QMultiHash>
+#include <QMultiMap>
 #include <QTimerEvent>
 
 #include "opennictest.h"
 
-#define DEFAULT_THREAD_COUNT	1
+#define OPENNIC_T1_BOOTSTRAP		"bootstrap.t1"
+#define	OPENNIC_DOMAINS_BOOTSTRAP	"bootstrap.domains"
 
 class OpenNICResolver : public QObject
 {
 	Q_OBJECT
 	public:
-		explicit OpenNICResolver(QObject *parent = 0, int threadCount = DEFAULT_THREAD_COUNT);
+		explicit OpenNICResolver(QObject *parent=0);
 		virtual ~OpenNICResolver();
 
 		QStringList					defaultT1List();
 		QString						addResolver(QString dns,int index);
-		QStringList					getResolverList();
+		QStringList					getResolvers();
 		QString						getSettingsText();
-
-		void						setThreads(int count);
-		int							threads() {return mThreads.count;}
 
 	protected slots:
 		void						insertResult(OpenNICTest::query* result);
@@ -42,14 +40,15 @@ class OpenNICResolver : public QObject
 		virtual void				timerEvent(QTimerEvent *e);
 
 	private:
-		void						closeThreads();
+		QStringList					getDomains();
+		int							randInt(int low, int high);
 		void						evaluateResolvers();
 		QStringList					getBootstrapResolverList();
 		void						initializeResolvers();
-		QMultiHash<quint64,QString>	mResolvers;					/* latency (msecs) mapped to ip address */
+		QMultiMap<quint64,QString>	mResolvers;					/* latency (msecs) mapped to ip address */
 		int							mMinuteTimer;				/* one minute resolution */
-		QList<OpenNICTest*>			mThreads;					/* list of tester threads */
-
+		QStringList					mDomains;					/* domains to test with */
+		OpenNICTest					mTest;						/* resolver tester */
 };
 
 #endif // OPENNICRESOLVER_H

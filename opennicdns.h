@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012 Mike Sharkey <mike@pikeaero.com>
+ * Copyright (c) 2012 Mike Sharkey <michael_sharkey@firstclass.com>
  *
  * "THE BEER-WARE LICENSE" (Revision 42):
  * Mike Sharkey wrote this file. As long as you retain this notice you
@@ -119,11 +119,9 @@ class OpenNICDns : public QObject
 		void						processDatagram(QByteArray datagram);
 		int							mSecondTimer;		/* A one second timer */
 		quint16						m_tid;				/* Latest tid used		*/
-		QMutex						m_tid_mutex;		/* tid protection */
 		QHostAddress				mResolverAddress;	/* The resolver address */
 		QUdpSocket*					mClientSocket;		/* UDP socket used for queries	*/
 		QList<query*>				mQueries;			/* In-flight queries */
-		QMutex						mQueriesMutex;		/* queries list protection */
 };
 
 #endif // OPENNICDNS_H

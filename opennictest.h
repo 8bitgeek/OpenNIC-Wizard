@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012 Mike Sharkey <mike@pikeaero.com>
+ * Copyright (c) 2012 Mike Sharkey <michael_sharkey@firstclass.com>
  *
  * "THE BEER-WARE LICENSE" (Revision 42):
  * Mike Sharkey wrote this file. As long as you retain this notice you
@@ -19,7 +19,7 @@
 
 #define PURGE_TIMEOUT	120		/* purge timeout in seconds */
 
-class OpenNICTest : public QThread
+class OpenNICTest : public QObject
 {
 	Q_OBJECT
 	public:
@@ -34,10 +34,10 @@ class OpenNICTest : public QThread
 			int				error;		/* Error Code */
 		} query;
 
-		explicit OpenNICTest(OpenNICDns *parent);
+		explicit OpenNICTest(QObject *parent=0);
 		virtual ~OpenNICTest();
 
-		void				run();
+		OpenNICDns*			dns() {return mDns;}
 
 	public slots:
 
@@ -54,7 +54,6 @@ class OpenNICTest : public QThread
 	protected:
 
 		virtual void		timerEvent(QTimerEvent* e);
-		OpenNICDns*			dns() {return (OpenNICDns*)parent();}
 
 	private:
 		void				dispose(query* q);
@@ -63,7 +62,7 @@ class OpenNICTest : public QThread
 		void				purge();
 		int					mSecondTimer;
 		QList<query*>		mQueries;
-		QMutex				mQueriesMutex;
+		OpenNICDns*			mDns;
 };
 
 #endif // OPENNICTESTER_H

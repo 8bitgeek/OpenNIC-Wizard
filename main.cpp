@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012 Mike Sharkey <mike@pikeaero.com>
+ * Copyright (c) 2012 Mike Sharkey <michael_sharkey@firstclass.com>
  *
  * "THE BEER-WARE LICENSE" (Revision 42):
  * Mike Sharkey wrote this file. As long as you retain this notice you
@@ -11,9 +11,12 @@
 
 #include <QSystemTrayIcon>
 #include <QMessageBox>
+#include <QDateTime>
+
 int main(int argc, char *argv[])
 {
 	int rc=0;
+	qsrand(QDateTime::currentDateTime().toTime_t()); /* seed random numbers */
 	Q_INIT_RESOURCE(opennic);
 	QApplication a(argc, argv);
 	if ( !QSystemTrayIcon::isSystemTrayAvailable() )

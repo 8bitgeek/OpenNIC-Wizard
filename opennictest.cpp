@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012 Mike Sharkey <mike@pikeaero.com>
+ * Copyright (c) 2012 Mike Sharkey <michael_sharkey@firstclass.com>
  *
  * "THE BEER-WARE LICENSE" (Revision 42):
  * Mike Sharkey wrote this file. As long as you retain this notice you
@@ -8,22 +8,26 @@
  */
 #include "opennictest.h"
 
-#define inherited QThread
+#define inherited QObject
 
-OpenNICTest::OpenNICTest(OpenNICDns *parent)
+OpenNICTest::OpenNICTest(QObject *parent)
 : inherited(parent)
 {
-	QObject::connect(dns(),SIGNAL(reply(dns_cb_data&)),this,SLOT(reply(OpenNICDns::dns_cb_data&)));
+	mDns = new OpenNICDns(this);
+	QObject::connect(mDns,SIGNAL(reply(dns_cb_data&)),this,SLOT(reply(OpenNICDns::dns_cb_data&)));
 	mSecondTimer = startTimer(1000*10);
 }
 
 OpenNICTest::~OpenNICTest()
 {
-}
-
-void OpenNICTest::run()
-{
-	exec();
+	delete mDns;
+	mDns = NULL;
+	killTimer(mSecondTimer);
+	for(int n=0; n < mQueries.count(); n++)
+	{
+		delete mQueries.at(n);
+	}
+	mQueries.clear();
 }
 
 /**
@@ -31,13 +35,11 @@ void OpenNICTest::run()
   */
 void OpenNICTest::dispose(query* q)
 {
-	mQueriesMutex.lock();
 	int n = mQueries.indexOf(q);
 	if ( n >= 0 )
 	{
 		delete mQueries.takeAt(0);
 	}
-	mQueriesMutex.unlock();
 }
 
 /**
@@ -45,9 +47,7 @@ void OpenNICTest::dispose(query* q)
   */
 void OpenNICTest::append(query* q)
 {
-	mQueriesMutex.lock();
 	mQueries.append(q);
-	mQueriesMutex.unlock();
 }
 
 /**
@@ -55,14 +55,11 @@ void OpenNICTest::append(query* q)
   */
 OpenNICTest::query* OpenNICTest::find(void* context)
 {
-	mQueriesMutex.lock();
 	int n = mQueries.indexOf((query*)context);
 	if ( n >= 0 )
 	{
-		mQueriesMutex.unlock();
 		return mQueries.at(n);
 	}
-	mQueriesMutex.unlock();
 	return NULL;
 }
 
@@ -72,7 +69,6 @@ OpenNICTest::query* OpenNICTest::find(void* context)
 void OpenNICTest::purge()
 {
 	QDateTime now = QDateTime::currentDateTime();
-	mQueriesMutex.lock();
 	for(int n=0; n < mQueries.count(); n++ )
 	{
 		query* q = mQueries.at(n);
@@ -81,7 +77,6 @@ void OpenNICTest::purge()
 			delete mQueries.takeAt(n--);
 		}
 	}
-	mQueriesMutex.unlock();
 }
 
 /**

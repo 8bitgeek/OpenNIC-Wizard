@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012 Mike Sharkey <mike@pikeaero.com>
+ * Copyright (c) 2012 Mike Sharkey <michael_sharkey@firstclass.com>
  *
  * "THE BEER-WARE LICENSE" (Revision 42):
  * Mike Sharkey wrote this file. As long as you retain this notice you
@@ -103,7 +103,6 @@ void OpenNICDns::readPendingDatagrams()
 void OpenNICDns::purgeExpiredQueries()
 {
 	QDateTime now = QDateTime::currentDateTime();
-	mQueriesMutex.lock();
 	for(int n=0; n < mQueries.count(); n++ )
 	{
 		query* q = mQueries.at(n);
@@ -121,9 +120,7 @@ void OpenNICDns::purgeExpiredQueries()
   */
 void OpenNICDns::appendActiveQuery(query* q)
 {
-	mQueriesMutex.lock();
 	mQueries.append(q);
-	mQueriesMutex.unlock();
 }
 
 /**
@@ -131,13 +128,11 @@ void OpenNICDns::appendActiveQuery(query* q)
   */
 void OpenNICDns::disposeQuery(query *q)
 {
-	mQueriesMutex.lock();
 	int n = mQueries.indexOf(q);
 	if ( n >= 0 )
 	{
 		delete mQueries.takeAt(n);
 	}
-	mQueriesMutex.unlock();
 }
 
 /**
@@ -145,7 +140,6 @@ void OpenNICDns::disposeQuery(query *q)
   */
 void OpenNICDns::cancel(void* context)
 {
-	mQueriesMutex.lock();
 	for(int n=0; n < mQueries.count(); n++)
 	{
 		query* q = mQueries.at(n);
@@ -154,7 +148,6 @@ void OpenNICDns::cancel(void* context)
 			delete mQueries.takeAt(n--);
 		}
 	}
-	mQueriesMutex.unlock();
 }
 
 /**
@@ -163,17 +156,14 @@ void OpenNICDns::cancel(void* context)
   */
 OpenNICDns::query* OpenNICDns::findActiveQuery(quint16 tid)
 {
-	mQueriesMutex.lock();
 	for(int n=0; n < mQueries.count(); n++)
 	{
 		query* q = mQueries.at(n);
 		if (tid == q->tid)
 		{
-			mQueriesMutex.unlock();
 			return q;
 		}
 	}
-	mQueriesMutex.unlock();
 	return NULL;
 }
 
@@ -354,9 +344,7 @@ void OpenNICDns::lookup(QString name, dns_query_type qtype, void* context, quint
 		/* Init query structure */
 		q->context	= context;
 		q->qtype	= (quint16)qtype;
-		m_tid_mutex.lock();
 		q->tid		= ++m_tid;
-		m_tid_mutex.unlock();
 		q->expire	= now.addSecs(DNS_QUERY_TIMEOUT);
 		q->name		= name.toLower();
 

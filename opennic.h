@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012 Mike Sharkey <mike@pikeaero.com>
+ * Copyright (c) 2012 Mike Sharkey <michael_sharkey@firstclass.com>
  *
  * "THE BEER-WARE LICENSE" (Revision 42):
  * Mike Sharkey wrote this file. As long as you retain this notice you
@@ -21,7 +21,7 @@
 
 #include "opennicresolver.h"
 
-#define	VERSION_STRING	"0.0.1"
+#define	VERSION_STRING	"0.0.2"
 
 namespace Ui
 {
