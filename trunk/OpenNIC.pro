@@ -18,8 +18,7 @@ SOURCES += main.cpp\
 HEADERS  += opennic.h \
 		opennicresolver.h \
 		opennictest.h \
-		opennicdns.h \
-		llist.h
+		opennicdns.h
 
 FORMS    += opennic.ui \
 		settings.ui
@@ -28,4 +27,5 @@ RESOURCES += \
 		opennic.qrc
 
 win32:LIBS += C:\QtSDK\mingw\lib\libwsock32.a
+
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012 Mike Sharkey <mike@pikeaero.com>
+ * Copyright (c) 2012 Mike Sharkey <michael_sharkey@firstclass.com>
  *
  * "THE BEER-WARE LICENSE" (Revision 42):
  * Mike Sharkey wrote this file. As long as you retain this notice you
@@ -18,44 +18,18 @@
 #include <QByteArray>
 #include <QSettings>
 #include <QSpinBox>
+#include <QFile>
 
-OpenNICResolver::OpenNICResolver(QObject *parent, threads)
+OpenNICResolver::OpenNICResolver(QObject *parent)
 : QObject(parent)
 {
-	setThreads(threads);
+	QObject::connect(&mTest,SIGNAL(queryResult(query*)),this,SLOT(insertResult(OpenNICTest::query*)));
 	mMinuteTimer = startTimer(1000*60);
 }
 
 OpenNICResolver::~OpenNICResolver()
 {
-	closeThreads();
-}
-
-/**
-  * @brief End threads and cleanup.
-  */
-void closeThreads()
-{
-	int count = mThreads.count();
-	for(int n=0; n < count; n++)
-	{
-		OpenNICTest* thread = mThreads.take(0);
-		thread->quit();
-		delete thread;
-	}
-	mTherads.clear();
-
-}
-
-/**
-  * @brief start threads.
-  */
-void OpenNICResolver::setThreads(int count)
-{
-	if ( threads() != count )
-	{
-		closeThreads();
-	}
+	killTimer(mMinuteTimer);
 }
 
 /**
@@ -65,9 +39,9 @@ void OpenNICResolver::insertResult(OpenNICTest::query *result)
 {
 	if ( result != NULL )
 	{
-		QString ip = result->addr;
+		QString ip = result->addr.toString();
 		quint64 latency = result->latency;
-		QMutableHashIterator<quint64,QString>i(mResolvers);
+		QMutableMapIterator<quint64,QString>i(mResolvers);
 		while (i.hasNext())
 		{
 			i.next();
@@ -75,46 +49,113 @@ void OpenNICResolver::insertResult(OpenNICTest::query *result)
 			{
 				i.remove();
 				mResolvers.insert(latency,ip);
+				break;
 			}
-			ips.append(i.value());
 		}
 	}
 }
 
 /**
-  * @brief Evaluate Candidates
-  * @param The number of resolvers to evaluate at a time.
+  * @brief Evaluate the peformance of resolvers.
   */
-void OpenNICResolver::evaluateResolvers(int count)
+void OpenNICResolver::evaluateResolvers()
 {
-
+	QStringList domains = getDomains();
+	if ( !domains.empty() )
+	{
+		QMutableMapIterator<quint64,QString>i(mResolvers);
+		while (i.hasNext())
+		{
+			QHostAddress addr;
+			QString domain = domains.at(randInt(0,domains.count()-1));
+			i.next();
+			addr.setAddress(i.value());
+			mTest.resolve(addr,domain);
+		}
+	}
 }
 
-
 /**
-  * @brief Get a default T1 list.
+  * @brief Get a default T1 list from the bootstrap file.
+  * @return A string list of IP numbers representing potential T1s.
   */
 QStringList OpenNICResolver::defaultT1List()
 {
-	QStringList t1defaults;
-	t1defaults << "72.232.162.195";
-	t1defaults << "216.87.84.210";
-	t1defaults << "199.30.58.57";
-	t1defaults << "128.177.28.254";
-	t1defaults << "207.192.71.13";
-	t1defaults << "66.244.95.11";
-	t1defaults << "178.63.116.152";
-	t1defaults << "202.83.95.229";
-	return t1defaults;
+	QStringList rc;
+	QFile file(OPENNIC_T1_BOOTSTRAP);
+	if ( file.open(QIODevice::ReadOnly) )
+	{
+		while (!file.atEnd()) {
+			QByteArray line = file.readLine();
+			QString ip(line);
+			if ( !ip.trimmed().isEmpty() )
+			{
+				rc << ip.trimmed();
+			}
+		}
+		file.close();
+	}
+	if ( !rc.count() )
+	{
+		/** a last ditch effort... */
+		rc << "72.232.162.195";
+		rc << "216.87.84.210";
+		rc << "199.30.58.57";
+		rc << "128.177.28.254";
+		rc << "207.192.71.13";
+		rc << "66.244.95.11";
+		rc << "178.63.116.152";
+		rc << "202.83.95.229";
+	}
+	return rc;
+}
+
+/**
+  * @brief Get a default domains list from the bootstrap file.
+  * @return A string list of domains to test.
+  */
+QStringList OpenNICResolver::getDomains()
+{
+	if ( mDomains.empty() )
+	{
+		QStringList rc;
+		QFile file(OPENNIC_DOMAINS_BOOTSTRAP);
+		if ( file.open(QIODevice::ReadOnly) )
+		{
+			while (!file.atEnd()) {
+				QByteArray line = file.readLine();
+				QString ip(line);
+				if ( !ip.trimmed().isEmpty() )
+				{
+					rc << ip.trimmed();
+				}
+			}
+			file.close();
+		}
+		if ( !rc.count() )
+		{
+			/** a last ditch effort... */
+			rc << "dns.opennic.glue";
+			rc << "register.bbs";
+			rc << "for.free";
+			rc << "grep.geek";
+			rc << "register.ing";
+			rc << "google.com";
+			rc << "yahoo.com";
+			rc << "wikipedia.com";
+		}
+		return rc;
+	}
+	return mDomains;
 }
 
 /**
   * @brief Fetch the list of DNS resolvers and return them as strings.
   */
-QStringList OpenNICResolver::getResolverList()
+QStringList OpenNICResolver::getResolvers()
 {
 	QStringList ips;
-	/* If there are current no resolvers in the hash table, then try to populate it... */
+	/* If there are current no resolvers in the map table, then try to populate it... */
 	if ( mResolvers.isEmpty() )
 	{
 		initializeResolvers();		/* fetch the intial list of T2s */
@@ -126,8 +167,7 @@ QStringList OpenNICResolver::getResolverList()
 	else
 	{
 		/** sort the latenct times in ascending order */
-		qSort(mResolvers.begin(),mResolvers.end());
-		QMutableHashIterator<quint64,QString>i(mResolvers);
+		QMutableMapIterator<quint64,QString>i(mResolvers);
 		while (i.hasNext())
 		{
 			i.next();
@@ -222,16 +262,24 @@ QStringList OpenNICResolver::getBootstrapResolverList()
 }
 
 /**
-  * @brief Fetch the raw list of resolvers and insert into the hash table.
+  * @brief Fetch the raw list of resolvers and insert into the map table.
   */
 void OpenNICResolver::initializeResolvers()
 {
 	QStringList ips = getBootstrapResolverList();
-	for(quint64 n=0; n < ips.count(); n++)
+	for(int n=0; n < ips.count(); n++)
 	{
 		QString ip = ips.at(n);
-		mResolvers.insert(n,ip);	/* simulate latency for the initial bootstrap */
+		mResolvers.insert((quint64)n,ip);	/* simulate latency for the initial bootstrap */
 	}
+}
+
+/**
+  * @brief Generate a randome number.between low and high
+  */
+int OpenNICResolver::randInt(int low, int high)
+{
+	return qrand()%((high+1)-low)+low;
 }
 
 /**
@@ -241,7 +289,7 @@ void OpenNICResolver::timerEvent(QTimerEvent* e)
 {
 	if ( e->timerId() == mMinuteTimer )
 	{
-		evaluateCandidates();
+		evaluateResolvers();
 	}
 }
 

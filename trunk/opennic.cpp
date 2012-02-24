@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012 Mike Sharkey <mike@pikeaero.com>
+ * Copyright (c) 2012 Mike Sharkey <michael_sharkey@firstclass.com>
  *
  * "THE BEER-WARE LICENSE" (Revision 42):
  * Mike Sharkey wrote this file. As long as you retain this notice you
@@ -181,7 +181,7 @@ QString OpenNIC::updateDNS()
 {
 	QEventLoop loop;
 	QString rc;
-	QStringList ips = resolver().getResolverList();
+	QStringList ips = resolver().getResolvers();
 	int resolverCount = uiSettings->resolverCount->value() < ips.count() ? uiSettings->resolverCount->value() : ips.count();
 	uiSettings->cache->clear();
 	for(int n=0; n < resolverCount; n++)
@@ -198,7 +198,7 @@ QString OpenNIC::updateDNS()
 void OpenNIC::about()
 {
 	QMessageBox::about(this,tr( "About OpenNIC" ), QString("OpenNIC Version ")+QString(VERSION_STRING)+
-						"Copyright (c) 2012 Mike Sharkey <mike@pikeaero.com>\n"
+						"Copyright (c) 2012 Mike Sharkey <michael_sharkey@firstclass.com>\n"
 						"\n"
 						"\"THE BEER-WARE LICENSE\" (Revision 42):\n"
 						"Mike Sharkey wrote this file. As long as you retain this notice you\n"
