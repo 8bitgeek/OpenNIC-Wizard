@@ -19,9 +19,7 @@
 #include <QSystemTrayIcon>
 #include <QAction>
 
-#include "opennicresolver.h"
-
-#define	VERSION_STRING	"0.0.7"
+#define	VERSION_STRING	"0.1.0"
 
 namespace Ui
 {

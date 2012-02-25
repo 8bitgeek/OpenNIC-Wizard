@@ -6,72 +6,56 @@
  * can do whatever you want with this stuff. If we meet some day, and you think
  * this stuff is worth it, you can buy me a beer in return.
  */
-#ifndef OPENNIC_H
-#define OPENNIC_H
+#ifndef OPENNICSERVER_H
+#define OPENNICSERVER_H
 
-#include <QMainWindow>
 #include <QString>
-#include <QTextBrowser>
 #include <QStringList>
 #include <QTimerEvent>
-#include <QCloseEvent>
-#include <QDialog>
-#include <QSystemTrayIcon>
 #include <QAction>
 
 #include "opennicresolver.h"
 
 #define	VERSION_STRING	"0.0.7"
 
-namespace Ui
-{
-	class OpenNICSettings;
-}
-
-class OpenNIC : public QDialog
+class OpenNICServer : public QObject
 {
 	Q_OBJECT
 
 	public:
-		explicit OpenNIC(QWidget *parent = 0);
-		virtual ~OpenNIC();
+		explicit OpenNICServer(QObject *parent = 0);
+		virtual ~OpenNICServer();
+
+		QString					copyright();
+		QString					license();
 
 	signals:
 		void					quit();
 
 	protected:
-		void					updateResolverPool();
 		OpenNICResolver&		resolver() {return mResolver;}
-		QString					initializeDNS();
-		QString					updateDNS();
+		int						initializeDNS();
+		int						updateDNS();
 		QStringList				textToStringList(QString text);
 		QString					stringListToText(QStringList list);
-		void					createTrayIcon();
-		void					createActions();
 		virtual void			timerEvent(QTimerEvent* e);
-		virtual void			closeEvent(QCloseEvent* e);
 
 	protected slots:
 		void					readSettings();
 		void					writeSettings();
-		void					settings();
-		void					about();
-
-	private slots:
-		void					iconActivated(QSystemTrayIcon::ActivationReason reason);
-		void					showBalloonMessage(QString title, QString body);
 
 	private:
-		QAction*				mActionSettings;
-		QAction*				mActionAbout;
-		QAction*				mActionQuit;
-		QSystemTrayIcon*		mTrayIcon;
-		QMenu*					mTrayIconMenu;
-		Ui::OpenNICSettings*	uiSettings;
 		int						mStartTimer;
 		int						mRefreshTimer;
-		int						mUpdateResolverPoolTimer;
 		OpenNICResolver			mResolver;
+		/** settings **/
+		QString					mLogFile;					/** the log file */
+		QStringList				mBootstrapT1List;			/** list of bootstrap T1's */
+		int						mBootstrapCacheSize;		/** number of T1s to select for boostrap */
+		bool					mBootstrapRandomSelect;		/** select bootstrap resolvers randomly */
+		QStringList				mResolverCache;				/** most recently selected resolver cache */
+		int						mResolverCacheSize;			/** the number of resolvers to keep in the cache (and apply to the O/S) */
+		int						mResolverRefreshRate;		/** the resolver refresh rate (apply cache to O/S) */
 };
 
-#endif // OPENNIC_H
+#endif // OPENNICSERVER_H

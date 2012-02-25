@@ -4,9 +4,9 @@
 #
 #-------------------------------------------------
 
-QT       += core gui network
+QT  += core network
 
-TARGET = OpenNIC
+TARGET = OpenNICServer
 TEMPLATE = app
 CONFIG += warn_on \
 	thread \
@@ -15,21 +15,20 @@ CONFIG += warn_on \
 	debug
 
 SOURCES += main.cpp\
-		opennic.cpp \
+		opennicserver.cpp \
 		opennicresolver.cpp \
 		opennictest.cpp \
-		opennicdns.cpp
+		opennicdns.cpp \
+		openniclog.cpp
 
-HEADERS  += opennic.h \
+HEADERS  += opennicserver.h \
 		opennicresolver.h \
 		opennictest.h \
-		opennicdns.h
-
-FORMS    += opennic.ui \
-		settings.ui
+		opennicdns.h \
+		openniclog.h
 
 RESOURCES += \
-		opennic.qrc
+		opennicserver.qrc
 
 win32:LIBS += C:/QtSDK/mingw/lib/libwsock32.a
 
