@@ -59,7 +59,7 @@ void OpenNICResolver::insertResult(OpenNICTest::query *result)
 				}
 				else
 				{
-					emit resolverResult(ip,latency,result->errors);
+					emit resolverResult(ip,latency,result->error);
 				}
 			}
 		}
