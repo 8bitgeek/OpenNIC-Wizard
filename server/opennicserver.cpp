@@ -112,14 +112,38 @@ QMap<QString,QVariant> OpenNICServer::mapServerStatus()
 }
 
 /**
+  * @brief Map a client request key/value packet to server variables.
+  */
+void OpenNICServer::mapClientRequest(QMap<QString,QVariant>& map)
+{
+	QMapIterator<QString, QVariant>i(map);
+	while (i.hasNext())
+	{
+		i.next();
+		QString key = i.key();
+		QVariant value = i.value();
+		if ( key == "tcp_listen_port" )					mTcpListenPort			=	value.toInt();
+		else if ( key == "log_file" )					mLogFile				=	value.toString();
+		else if ( key == "resolver_cache" )				mResolverCache			=	value.toStringList();
+		else if ( key == "resolver_refresh_rate" )		mResolverRefreshRate	=	value.toInt();
+		else if ( key == "resolver_cache_size" )		mResolverCacheSize		=	value.toInt();
+		else if ( key == "bootstrap_t1_list" )			mBootstrapT1List		=	value.toStringList();
+		else if ( key == "bootstrap_cache_size" )		mBootstrapCacheSize		=	value.toInt();
+		else if ( key == "bootstrap_random_select" )	mBootstrapRandomSelect	=	value.toBool();
+		else OpenNICLog::log(OpenNICLog::Debug,"unknown key '"+key+"'");
+	}
+}
+
+/**
   * @brief Process a client request.
   */
 void OpenNICServer::process(QTcpSocket *client)
 {
 	QMap<QString,QVariant> clientPacket;
-	QMap<QString,QVariant> serverPacket = mapServerStatus();
+	QMap<QString,QVariant> serverPacket;
 	QDataStream stream(client);
 	stream >> clientPacket;
+	serverPacket = mapServerStatus();
 	stream << serverPacket;
 }
 
@@ -135,7 +159,6 @@ void OpenNICServer::newConnection()
 		process(client);
 		client->close();
 		delete client;
-		client=NULL;
 	}
 }
 
