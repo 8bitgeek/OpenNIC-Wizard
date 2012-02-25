@@ -37,6 +37,7 @@ class OpenNICServer : public QObject
 
 	protected:
 		QMap<QString,QVariant>	mapServerStatus();
+		void					mapClientRequest(QMap<QString,QVariant>& map);
 		void					process(QTcpSocket* client);
 		OpenNICResolver&		resolver() {return mResolver;}
 		int						initializeServer();
