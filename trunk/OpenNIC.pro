@@ -26,6 +26,6 @@ FORMS    += opennic.ui \
 RESOURCES += \
 		opennic.qrc
 
-win32:LIBS += C:\QtSDK\mingw\lib\libwsock32.a
+win32:LIBS += C:/QtSDK/mingw/lib/libwsock32.a
 
 

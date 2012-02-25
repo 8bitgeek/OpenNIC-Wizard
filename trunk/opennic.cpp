@@ -192,8 +192,9 @@ QString OpenNIC::initializeDNS()
 	QString rc;
 	QStringList ips = textToStringList(uiSettings->t1List->toPlainText());
 	int resolverCount = uiSettings->t1Count->value() < ips.count() ? uiSettings->t1Count->value() : ips.count();
-	QProgressDialog progress("Initializing...", "Cancel", 0, resolverCount, this);
+	QProgressDialog progress(tr("Preparing Task Tray Applet..."), tr("Cancel"), 0, resolverCount, this);
 	progress.show();
+	loop.processEvents();
 	for(int n=0; n < resolverCount; n++)
 	{
 		loop.processEvents();
@@ -231,10 +232,10 @@ QString OpenNIC::updateDNS()
 void OpenNIC::about()
 {
 	QMessageBox::about(this,tr( "About OpenNIC" ), QString("OpenNIC Version ")+QString(VERSION_STRING)+
-						"Copyright (c) 2012 Mike Sharkey <michael_sharkey@firstclass.com>\n"
+						" Copyright (c) 2012 Mike Sharkey <michael_sharkey@firstclass.com>\n"
 						"\n"
 						"\"THE BEER-WARE LICENSE\" (Revision 42):\n"
-						"Mike Sharkey wrote this file. As long as you retain this notice you\n"
+						"Mike Sharkey wrote this thing. As long as you retain this notice you\n"
 						"can do whatever you want with this stuff. If we meet some day, and you think\n"
 						"this stuff is worth it, you can buy me a beer in return.\n"
 					   );
