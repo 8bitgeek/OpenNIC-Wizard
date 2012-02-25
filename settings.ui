@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>OpenNIC Settings</string>
+   <string>OpenNIC Wizard</string>
   </property>
   <property name="windowIcon">
    <iconset resource="opennic.qrc">
