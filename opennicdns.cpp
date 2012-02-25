@@ -287,7 +287,10 @@ void OpenNICDns::processDatagram(QByteArray datagram)
 				if (dlen >= 4)
 				{
 					QString sAddr;
-					sAddr.sprintf("%u.%u.%u.%u",addr.at(0),addr.at(1),addr.at(2),addr.at(3));
+					sAddr = QString::number((quint8)addr[0])+"."+
+							QString::number((quint8)addr[1])+"."+
+							QString::number((quint8)addr[2])+"."+
+							QString::number((quint8)addr[3]);
 					q->addr.setAddress(sAddr);
 					doReply(q, DNS_OK);
 				}
@@ -393,7 +396,7 @@ void OpenNICDns::lookup(QString name, dns_query_type qtype, void* context, quint
 		*p++ = 0;
 		*p++ = 1;						/* Class: inet, 0x0001 */
 
-		if ( p < pkt + sizeof(pkt) )
+		if ( !(p < pkt + sizeof(pkt)) )
 		{
 			cbd.error = DNS_ERROR;
 			emit reply(cbd);

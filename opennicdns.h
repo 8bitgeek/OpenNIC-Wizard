@@ -23,7 +23,6 @@
 #define	DNS_QUERY_TIMEOUT	30		/* Query timeout, seconds	*/
 #define	DNS_MAX				1025	/* Maximum host name		*/
 #define	DNS_PACKET_LEN		2048	/* Buffer size for DNS packet	*/
-#define	MAX_CACHE_ENTRIES	10000	/* Dont cache more than that	*/
 #define DEFAULT_DNS_PORT	53		/* The default DNS UDP oprt */
 
 class dns_cb_data;

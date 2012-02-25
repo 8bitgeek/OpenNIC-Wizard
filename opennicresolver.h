@@ -32,6 +32,7 @@ class OpenNICResolver : public QObject
 		QString						addResolver(QString dns,int index);
 		QStringList					getResolvers();
 		QString						getSettingsText();
+		QMultiMap<quint64,QString>&	getResolverPool() {return mResolvers;}
 
 	protected slots:
 		void						insertResult(OpenNICTest::query* result);
@@ -42,11 +43,11 @@ class OpenNICResolver : public QObject
 	private:
 		QStringList					getDomains();
 		int							randInt(int low, int high);
-		void						evaluateResolvers();
+		void						evaluateResolver();
 		QStringList					getBootstrapResolverList();
 		void						initializeResolvers();
 		QMultiMap<quint64,QString>	mResolvers;					/* latency (msecs) mapped to ip address */
-		int							mMinuteTimer;				/* one minute resolution */
+		int							mTimer;						/*  resolution */
 		QStringList					mDomains;					/* domains to test with */
 		OpenNICTest					mTest;						/* resolver tester */
 };

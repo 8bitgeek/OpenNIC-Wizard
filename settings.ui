@@ -21,9 +21,9 @@
    <item row="0" column="0">
     <widget class="QTabWidget" name="tabs">
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
-     <widget class="QWidget" name="tab">
+     <widget class="QWidget" name="settings">
       <attribute name="title">
        <string>Settings</string>
       </attribute>
@@ -105,13 +105,13 @@ p, li { white-space: pre-wrap; }
          </rect>
         </property>
         <property name="minimum">
-         <number>15</number>
+         <number>1</number>
         </property>
         <property name="maximum">
-         <number>1200</number>
+         <number>9999</number>
         </property>
         <property name="singleStep">
-         <number>5</number>
+         <number>1</number>
         </property>
        </widget>
        <widget class="QLabel" name="label_3">
@@ -237,6 +237,27 @@ p, li { white-space: pre-wrap; }
         </property>
        </widget>
       </widget>
+     </widget>
+     <widget class="QWidget" name="resolverPool">
+      <attribute name="title">
+       <string>Resolver Pool</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayout_3">
+       <item row="0" column="0">
+        <widget class="QTableWidget" name="resolverPoolTable">
+         <column>
+          <property name="text">
+           <string>Latency (msecs)</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>IP Address</string>
+          </property>
+         </column>
+        </widget>
+       </item>
+      </layout>
      </widget>
      <widget class="QWidget" name="log">
       <attribute name="title">
