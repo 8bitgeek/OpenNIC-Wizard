@@ -15,15 +15,9 @@ CONFIG += warn_on \
 	debug
 
 SOURCES += main.cpp\
-		opennic.cpp \
-		opennicresolver.cpp \
-		opennictest.cpp \
-		opennicdns.cpp
+		opennic.cpp
 
-HEADERS  += opennic.h \
-		opennicresolver.h \
-		opennictest.h \
-		opennicdns.h
+HEADERS  += opennic.h
 
 FORMS    += opennic.ui \
 		settings.ui

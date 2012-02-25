@@ -6,32 +6,22 @@
  * can do whatever you want with this stuff. If we meet some day, and you think
  * this stuff is worth it, you can buy me a beer in return.
  */
-#include <QtGui/QApplication>
-#include "opennic.h"
 
-#include <QSystemTrayIcon>
-#include <QMessageBox>
+#include <QCoreApplication>
 #include <QDateTime>
+#include "opennicserver.h"
+#include "openniclog.h"
 
 int main(int argc, char *argv[])
 {
 	int rc=0;
 	qsrand(QDateTime::currentDateTime().toTime_t()); /* seed random numbers */
-	Q_INIT_RESOURCE(opennic);
-	QApplication a(argc, argv);
-	a.setQuitOnLastWindowClosed(false);
-	if ( !QSystemTrayIcon::isSystemTrayAvailable() )
-	{
-		QMessageBox::critical(0, QObject::tr("OpenNic"), QObject::tr("No System Tray Detected."));
-		rc = 1;
-	}
-	else
-	{
-		OpenNIC on;
-		QObject::connect(&on,SIGNAL(quit()),&a,SLOT(quit()));
-		rc = a.exec();
-	}
-	Q_CLEANUP_RESOURCE(opennic);
+	Q_INIT_RESOURCE(opennicserver);
+	QCoreApplication a(argc, argv);
+	OpenNICServer server;
+	OpenNICLog::log(OpenNICLog::Information,server.copyright());
+	QObject::connect(&server,SIGNAL(quit()),&a,SLOT(quit()));
+	rc = a.exec();
 	return rc;
 }
 
