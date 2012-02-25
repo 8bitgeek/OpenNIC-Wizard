@@ -21,7 +21,7 @@
 
 #include "opennicresolver.h"
 
-#define	VERSION_STRING	"0.0.4"
+#define	VERSION_STRING	"0.0.7"
 
 namespace Ui
 {
