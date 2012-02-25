@@ -42,8 +42,10 @@ OpenNIC::OpenNIC(QWidget *parent)
 	createTrayIcon();
 	mStartTimer = startTimer(1000);
 	mUpdateResolverPoolTimer = startTimer(1000*5);
-	hide();
 	QObject::connect(this,SIGNAL(accepted()),this,SLOT(writeSettings()));
+#if 0 /* DEBUG */
+	show();
+#endif
 }
 
 OpenNIC::~OpenNIC()
@@ -89,6 +91,7 @@ void OpenNIC::createTrayIcon()
 	setWindowIcon( QIcon( ":/images/opennic.png" ) );
 	setWindowTitle( "OpenNIC Setup" );
 	QObject::connect(mTrayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), this, SLOT(iconActivated(QSystemTrayIcon::ActivationReason)));
+	mTrayIcon->show();
 }
 
 void OpenNIC::createActions()

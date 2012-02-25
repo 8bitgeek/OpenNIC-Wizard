@@ -28,7 +28,6 @@ int main(int argc, char *argv[])
 	else
 	{
 		OpenNIC on;
-		on.hide();
 		QObject::connect(&on,SIGNAL(quit()),&a,SLOT(quit()));
 		rc = a.exec();
 	}
