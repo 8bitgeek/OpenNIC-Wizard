@@ -24,7 +24,7 @@ OpenNICResolver::OpenNICResolver(QObject *parent)
 : QObject(parent)
 {
 	QObject::connect(&mTest,SIGNAL(queryResult(OpenNICTest::query*)),this,SLOT(insertResult(OpenNICTest::query*)));
-	mTimer = startTimer(1000*5);
+	mTimer = startTimer(1000*1);
 }
 
 OpenNICResolver::~OpenNICResolver()

@@ -148,6 +148,10 @@ void OpenNIC::writeSettings()
 	settings.setValue("t1list",		textToStringList(uiSettings->t1List->toPlainText()));
 	settings.setValue("t1count",	uiSettings->t1Count->value());
 	settings.setValue("t1random",	uiSettings->t1Random->isChecked());
+
+	killTimer(mRefreshTimer);
+	mRefreshTimer = startTimer((uiSettings->refreshRate->value()*60)*1000);
+
 }
 
 void OpenNIC::settings()
