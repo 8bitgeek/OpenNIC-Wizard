@@ -26,6 +26,7 @@
 #define	MAX_CACHE_ENTRIES	10000	/* Dont cache more than that	*/
 #define DEFAULT_DNS_PORT	53		/* The default DNS UDP oprt */
 
+class dns_cb_data;
 class OpenNICDns : public QObject
 {
 	Q_OBJECT
@@ -76,15 +77,6 @@ class OpenNICDns : public QObject
 			DNS_ERROR					/* No memory or other error */
 		} dns_error;
 
-		typedef struct {
-			void*					context;	/* Application context */
-			dns_error				error;
-			dns_query_type			query_type;
-			QString					name;		/* Requested host name	*/
-			QHostAddress			addr;		/* Resolved address	*/
-			QString					mxName;		/* MX record host name. */
-		} dns_cb_data;
-
 		OpenNICDns(QObject *parent = 0);
 		virtual ~OpenNICDns();
 		void						setResolver(QHostAddress& resolverAddress);
@@ -123,5 +115,23 @@ class OpenNICDns : public QObject
 		QUdpSocket*					mClientSocket;		/* UDP socket used for queries	*/
 		QList<query*>				mQueries;			/* In-flight queries */
 };
+
+
+class dns_cb_data {
+public:
+	dns_cb_data()
+		: context(NULL)
+		, error(OpenNICDns::DNS_OK)
+		, query_type(OpenNICDns::DNS_A_RECORD)
+		{}
+	~dns_cb_data() {}
+	void*								context;	/* Application context */
+	OpenNICDns::dns_error				error;		/* Result code */
+	OpenNICDns::dns_query_type			query_type;	/* Query type */
+	QString								name;		/* Requested host name	*/
+	QHostAddress						addr;		/* Resolved address	*/
+	QString								mxName;		/* MX record host name. */
+};
+
 
 #endif // OPENNICDNS_H

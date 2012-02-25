@@ -49,7 +49,7 @@ class OpenNICTest : public QObject
 
 	protected slots:
 
-		void				reply(OpenNICDns::dns_cb_data& rdata);
+		void				reply(dns_cb_data& rdata);
 
 	protected:
 

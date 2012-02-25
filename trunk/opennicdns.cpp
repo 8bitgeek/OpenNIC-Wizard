@@ -332,7 +332,11 @@ void OpenNICDns::lookup(QString name, dns_query_type qtype, void* context, quint
 	query* q;
 	dns_cb_data cbd;
 
-	if ( isOpen() && (q = new query) == NULL )
+	if ( !isOpen() )
+	{
+		open();
+	}
+	if ( isOpen() && (q = new query) != NULL )
 	{
 		QDateTime now = QDateTime::currentDateTime();
 
@@ -359,23 +363,25 @@ void OpenNICDns::lookup(QString name, dns_query_type qtype, void* context, quint
 
 		/* Encode DNS name */
 
-		char* sname = name.toAscii().data();
-		name_len = name.length();
+		char sname[2048];
+		strcpy(sname,name.toAscii().data());
+		char* pname = &sname[0];
+		name_len = strlen(pname);
 		p = (char *) &pkt_hdr->data;	/* For encoding host name into packet */
 
 		do {
-			if ((s = strchr(sname, '.')) == NULL)
-				s = sname + name_len;
+			if ((s = strchr(pname, '.')) == NULL)
+				s = pname + name_len;
 
-			n = s - sname;			/* Chunk length */
+			n = s - pname;			/* Chunk length */
 			*p++ = n;			/* Copy length */
 			for (i = 0; i < n; i++)		/* Copy chunk */
-				*p++ = sname[i];
+				*p++ = pname[i];
 
 			if (*s == '.')
 				n++;
 
-			sname += n;
+			pname += n;
 			name_len -= n;
 
 		} while (*s != '\0');
@@ -389,7 +395,6 @@ void OpenNICDns::lookup(QString name, dns_query_type qtype, void* context, quint
 
 		if ( p < pkt + sizeof(pkt) )
 		{
-			memset(&cbd, 0, sizeof(cbd));
 			cbd.error = DNS_ERROR;
 			emit reply(cbd);
 			return;
@@ -399,7 +404,6 @@ void OpenNICDns::lookup(QString name, dns_query_type qtype, void* context, quint
 		QByteArray datagram(pkt,n);
 		if ( mClientSocket->writeDatagram(datagram,resolverAddress(),port) < 0 )
 		{
-			memset(&cbd, 0, sizeof(cbd));
 			cbd.error = DNS_ERROR;
 			emit reply(cbd);
 			disposeQuery(q);
@@ -408,7 +412,6 @@ void OpenNICDns::lookup(QString name, dns_query_type qtype, void* context, quint
 	}
 	else
 	{
-		memset(&cbd, 0, sizeof(cbd));
 		cbd.error = DNS_ERROR;
 		emit reply(cbd);
 		return;
