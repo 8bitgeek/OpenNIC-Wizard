@@ -14,7 +14,7 @@ OpenNICTest::OpenNICTest(QObject *parent)
 : inherited(parent)
 {
 	mDns = new OpenNICDns(this);
-	QObject::connect(mDns,SIGNAL(reply(dns_cb_data&)),this,SLOT(reply(OpenNICDns::dns_cb_data&)));
+	QObject::connect(mDns,SIGNAL(reply(dns_cb_data&)),this,SLOT(reply(dns_cb_data&)));
 	mSecondTimer = startTimer(1000*10);
 }
 
@@ -94,7 +94,7 @@ void OpenNICTest::resolve(QHostAddress addr,QString name,quint16 port)
 	dns()->lookup(addr,name,OpenNICDns::DNS_A_RECORD,q,port);
 }
 
-void OpenNICTest::reply(OpenNICDns::dns_cb_data &rdata)
+void OpenNICTest::reply(dns_cb_data& rdata)
 {
 	query* q = find(rdata.context);
 	if ( q != NULL )

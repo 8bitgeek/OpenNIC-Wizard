@@ -43,6 +43,7 @@ Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescrip
 Source: "C:\Documents and Settings\Mike\My Documents\OpenNIC-build-desktop-Qt_4_7_4_for_Desktop_-_MinGW_4_4__Qt_SDK__Debug\debug\OpenNIC.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\QtSDK\Desktop\Qt\4.7.4\mingw\lib\QtCored4.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\QtSDK\Desktop\Qt\4.7.4\mingw\lib\QtGuid4.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\QtSDK\Desktop\Qt\4.7.4\mingw\lib\QtNetworkd4.dll"; DestDir: "{app}"; Flags: ignoreversion
 
 Source: "C:\Documents and Settings\Mike\My Documents\OpenNIC\dig\install\bindevt.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\Documents and Settings\Mike\My Documents\OpenNIC\dig\install\dig.exe"; DestDir: "{app}"; Flags: ignoreversion
