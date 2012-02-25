@@ -33,7 +33,9 @@ OpenNICResolver::~OpenNICResolver()
 }
 
 /**
-  * @brief Test results come in here.
+  * @brief Get here on a test result reply.
+  * @brief If the reply contains a latency value, insert it into the resolver list.
+  * @param result The result of the DNS query including a latency in msecs.
   */
 void OpenNICResolver::insertResult(OpenNICTest::query *result)
 {
@@ -47,11 +49,17 @@ void OpenNICResolver::insertResult(OpenNICTest::query *result)
 			i.next();
 			if ( i.value() == ip )
 			{
+				/** only insert if it's not an error */
 				if ( latency > 0 && result->error == 0 )
 				{
 					i.remove();
 					mResolvers.insert(latency,ip);
+					emit resolverResult(ip,latency,0);
 					break;
+				}
+				else
+				{
+					emit resolverResult(ip,latency,result->errors);
 				}
 			}
 		}

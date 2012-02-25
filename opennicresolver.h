@@ -34,6 +34,9 @@ class OpenNICResolver : public QObject
 		QString						getSettingsText();
 		QMultiMap<quint64,QString>&	getResolverPool() {return mResolvers;}
 
+	signals:
+		void						resolverResult(QString ip, qunit64 latency, int error);
+
 	protected slots:
 		void						insertResult(OpenNICTest::query* result);
 
