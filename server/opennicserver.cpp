@@ -17,13 +17,17 @@
 #include <QByteArray>
 #include <QSettings>
 #include <QMultiMap>
+#include <QMap>
+#include <QHostAddress>
+#include <QTcpSocket>
 
 #if defined Q_OS_UNIX
 #define DEFAULT_LOG_FILE						"/dev/tty"
 #else
 #define DEFAULT_LOG_FILE						"opennic.log"
 #endif
-#define DEFAULT_RESOLVER_REFRESH_RATE			15 /* minutes */
+#define DEFAULT_TCP_LISTEN_PORT					19803
+#define DEFAULT_RESOLVER_REFRESH_RATE			15		/* minutes */
 #define DEFAULT_RESOLVER_CACHE_SIZE				3
 #define DEFAULT_BOOTSTRAP_CACHE_SIZE			3
 #define DEFAULT_BOOTSTRAP_RANDOM_SELECT			true
@@ -59,9 +63,8 @@ QString OpenNICServer::stringListToText(QStringList list)
   */
 void OpenNICServer::readSettings()
 {
-	QStringList t1list;
-
 	QSettings settings("OpenNIC", "OpenNICService");
+	mTcpListenPort			= settings.value("tcp_listen_port",			DEFAULT_TCP_LISTEN_PORT).toInt();
 	mLogFile				= settings.value("log_file",				DEFAULT_LOG_FILE).toString();
 	mResolverCache			= settings.value("resolver_cache").toStringList();
 	mResolverRefreshRate	= settings.value("resolver_refresh_rate",	DEFAULT_RESOLVER_REFRESH_RATE).toInt();
@@ -77,6 +80,7 @@ void OpenNICServer::readSettings()
 void OpenNICServer::writeSettings()
 {
 	QSettings settings("OpenNIC", "OpenNICService");
+	settings.setValue("tcp_listen_port",			mTcpListenPort);
 	settings.setValue("log_file",					mLogFile);
 	settings.setValue("resolver_cache",				mResolverCache);
 	settings.setValue("resolver_refresh_rate",		mResolverRefreshRate);
@@ -87,11 +91,77 @@ void OpenNICServer::writeSettings()
 
 	killTimer(mRefreshTimer);
 	mRefreshTimer = startTimer((mResolverRefreshRate*60)*1000);
+}
+
+/**
+  * @brief Map server status
+  * @return a map of key/value pairs
+  */
+QMap<QString,QVariant> OpenNICServer::mapServerStatus()
+{
+	QMap<QString,QVariant> map;
+	map.insert("tcp_listen_port",			mTcpListenPort);
+	map.insert("resolver_pool",				mResolver.getResolverPoolStringList()); /* <ipaddr>;<latency> */
+	map.insert("resolver_cache",			mResolverCache);
+	map.insert("resolver_refresh_rate",		mResolverRefreshRate);
+	map.insert("resolver_cache_size",		mResolverCacheSize);
+	map.insert("bootstrap_t1_list",			mBootstrapT1List);
+	map.insert("bootstrap_cache_size",		mBootstrapCacheSize);
+	map.insert("bootstrap_random_select",	mBootstrapRandomSelect);
+	return map;
+}
+
+/**
+  * @brief Process a client request.
+  */
+void OpenNICServer::process(QTcpSocket *client)
+{
+	QMap<QString,QVariant> clientPacket;
+	QMap<QString,QVariant> serverPacket = mapServerStatus();
+	QDataStream stream(client);
+	stream >> clientPacket;
+	stream << serverPacket;
+}
+
+/**
+  * @brief Get here when a task tray applet has connected.
+  */
+void OpenNICServer::newConnection()
+{
+	QTcpSocket* client;
+	while ( (client = mServer.nextPendingConnection()) != NULL )
+	{
+		OpenNICLog::log(OpenNICLog::Information,"connect from "+client->peerName());
+		process(client);
+		client->close();
+		delete client;
+		client=NULL;
+	}
+}
+
+/**
+  * @brief Set up the local server for the task tray app to attach to.
+  * @return the number of resolvers
+  */
+int OpenNICServer::initializeServer()
+{
+	QHostAddress localhost(QHostAddress::LocalHost);
+	mServer.setMaxPendingConnections(10);
+	if ( mServer.listen(localhost,mTcpListenPort) )
+	{
+		QObject::connect(&mServer,SIGNAL(newConnection()),this,SLOT(newConnection()));
+		OpenNICLog::log(OpenNICLog::Information,"listening on port "+QString::number(mTcpListenPort));
+	}
+	else
+	{
+		OpenNICLog::log(OpenNICLog::Information,mServer.errorString().trimmed());
+	}
 
 }
 
 /**
   * @brief Perform the update function. Fetch DNS candidates, test for which to apply, and apply them.
+  * @return the number of resolvers
   */
 int OpenNICServer::initializeDNS()
 {
@@ -107,6 +177,7 @@ int OpenNICServer::initializeDNS()
 
 /**
   * @brief Perform the update function. Fetch DNS candidates, test for which to apply, and apply them.
+  * @return the number of resolvers
   */
 int OpenNICServer::updateDNS()
 {
@@ -150,6 +221,7 @@ void OpenNICServer::timerEvent(QTimerEvent* e)
 		readSettings();
 		if ( initializeDNS() )
 		{
+			initializeServer();
 			OpenNICLog::log(OpenNICLog::Information,resolver().getSettingsText().trimmed());
 		}
 		killTimer(mStartTimer);									/* don't need start timer any more */

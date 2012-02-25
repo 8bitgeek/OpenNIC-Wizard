@@ -33,6 +33,22 @@ OpenNICResolver::~OpenNICResolver()
 }
 
 /**
+  * @brief Return the resolver pool as a formatted string list <ip addr>;<latency>
+  */
+QStringList OpenNICResolver::getResolverPoolStringList()
+{
+	QStringList rc;
+	QMutableMapIterator<quint64,QString>i(mResolvers);
+	while (i.hasNext())
+	{
+		i.next();
+		QString item = i.value()+";"+QString::number(i.key());
+		rc.append(item);
+	}
+	return rc;
+}
+
+/**
   * @brief Get here on a test result reply.
   * @brief If the reply contains a latency value, insert it into the resolver list.
   * @param result The result of the DNS query including a latency in msecs.

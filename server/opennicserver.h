@@ -13,7 +13,10 @@
 #include <QStringList>
 #include <QTimerEvent>
 #include <QAction>
-
+#include <QTcpServer>
+#include <QTcpSocket>
+#include <QMap>
+#include <QVariant>
 #include "opennicresolver.h"
 
 #define	VERSION_STRING	"0.0.7"
@@ -33,7 +36,10 @@ class OpenNICServer : public QObject
 		void					quit();
 
 	protected:
+		QMap<QString,QVariant>	mapServerStatus();
+		void					process(QTcpSocket* client);
 		OpenNICResolver&		resolver() {return mResolver;}
+		int						initializeServer();
 		int						initializeDNS();
 		int						updateDNS();
 		QStringList				textToStringList(QString text);
@@ -41,6 +47,7 @@ class OpenNICServer : public QObject
 		virtual void			timerEvent(QTimerEvent* e);
 
 	protected slots:
+		void					newConnection();
 		void					readSettings();
 		void					writeSettings();
 
@@ -48,7 +55,10 @@ class OpenNICServer : public QObject
 		int						mStartTimer;
 		int						mRefreshTimer;
 		OpenNICResolver			mResolver;
+		/** TCP service */
+		QTcpServer				mServer;					/** the localhost TCP server */
 		/** settings **/
+		int						mTcpListenPort;				/** the TCP listen port */
 		QString					mLogFile;					/** the log file */
 		QStringList				mBootstrapT1List;			/** list of bootstrap T1's */
 		int						mBootstrapCacheSize;		/** number of T1s to select for boostrap */
