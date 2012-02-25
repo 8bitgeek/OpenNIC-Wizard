@@ -23,13 +23,13 @@
 OpenNICResolver::OpenNICResolver(QObject *parent)
 : QObject(parent)
 {
-	QObject::connect(&mTest,SIGNAL(queryResult(query*)),this,SLOT(insertResult(OpenNICTest::query*)));
-	mMinuteTimer = startTimer(1000*60);
+	QObject::connect(&mTest,SIGNAL(queryResult(OpenNICTest::query*)),this,SLOT(insertResult(OpenNICTest::query*)));
+	mTimer = startTimer(1000*5);
 }
 
 OpenNICResolver::~OpenNICResolver()
 {
-	killTimer(mMinuteTimer);
+	killTimer(mTimer);
 }
 
 /**
@@ -47,30 +47,38 @@ void OpenNICResolver::insertResult(OpenNICTest::query *result)
 			i.next();
 			if ( i.value() == ip )
 			{
-				i.remove();
-				mResolvers.insert(latency,ip);
-				break;
+				if ( latency > 0 && result->error == 0 )
+				{
+					i.remove();
+					mResolvers.insert(latency,ip);
+					break;
+				}
 			}
 		}
 	}
 }
 
 /**
-  * @brief Evaluate the peformance of resolvers.
+  * @brief Evaluate the peformance of resolver.
   */
-void OpenNICResolver::evaluateResolvers()
+void OpenNICResolver::evaluateResolver()
 {
 	QStringList domains = getDomains();
-	if ( !domains.empty() )
+	if ( !domains.empty() && !mResolvers.empty() )
 	{
+		QString domain = domains.at(randInt(0,domains.count()-1));
+		int resolverIdx = randInt(0,mResolvers.count()-1);
 		QMutableMapIterator<quint64,QString>i(mResolvers);
 		while (i.hasNext())
 		{
-			QHostAddress addr;
-			QString domain = domains.at(randInt(0,domains.count()-1));
 			i.next();
-			addr.setAddress(i.value());
-			mTest.resolve(addr,domain);
+			if ( --resolverIdx < 0 )
+			{
+				QString ip = i.value();
+				QHostAddress addr(ip);
+				mTest.resolve(addr,domain);
+				break;
+			}
 		}
 	}
 }
@@ -270,7 +278,7 @@ void OpenNICResolver::initializeResolvers()
 	for(int n=0; n < ips.count(); n++)
 	{
 		QString ip = ips.at(n);
-		mResolvers.insert((quint64)n,ip);	/* simulate latency for the initial bootstrap */
+		mResolvers.insert((quint64)10000+n,ip);	/* simulate latency for the initial bootstrap */
 	}
 }
 
@@ -287,9 +295,9 @@ int OpenNICResolver::randInt(int low, int high)
   */
 void OpenNICResolver::timerEvent(QTimerEvent* e)
 {
-	if ( e->timerId() == mMinuteTimer )
+	if ( e->timerId() == mTimer )
 	{
-		evaluateResolvers();
+		evaluateResolver();
 	}
 }
 

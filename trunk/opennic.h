@@ -21,7 +21,7 @@
 
 #include "opennicresolver.h"
 
-#define	VERSION_STRING	"0.0.2"
+#define	VERSION_STRING	"0.0.3"
 
 namespace Ui
 {
@@ -40,19 +40,20 @@ class OpenNIC : public QDialog
 		void					quit();
 
 	protected:
+		void					updateResolverPool();
 		OpenNICResolver&		resolver() {return mResolver;}
 		QString					initializeDNS();
 		QString					updateDNS();
 		QStringList				textToStringList(QString text);
 		QString					stringListToText(QStringList list);
-		void					readSettings();
-		void					writeSettings();
 		void					createTrayIcon();
 		void					createActions();
 		virtual void			timerEvent(QTimerEvent* e);
 		virtual void			closeEvent(QCloseEvent* e);
 
 	protected slots:
+		void					readSettings();
+		void					writeSettings();
 		void					settings();
 		void					about();
 
@@ -69,6 +70,7 @@ class OpenNIC : public QDialog
 		Ui::OpenNICSettings*	uiSettings;
 		int						mStartTimer;
 		int						mRefreshTimer;
+		int						mUpdateResolverPoolTimer;
 		OpenNICResolver			mResolver;
 };
 

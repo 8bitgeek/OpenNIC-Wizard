@@ -22,21 +22,28 @@
 #include <QSpinBox>
 #include <QProgressDialog>
 #include <QCursor>
+#include <QTableWidget>
+#include <QTableWidgetItem>
+#include <QMultiMap>
 
 #define DEFAULT_REFRESH			15
 #define DEFAULT_RESOLVERS		3
 #define DEFAULT_T1_RESOLVERS	3
 #define DEFAULT_T1_RANDOM		true
 
+#define inherited QDialog
+
 OpenNIC::OpenNIC(QWidget *parent)
-: QDialog(parent)
+: inherited(parent)
 , uiSettings(new Ui::OpenNICSettings)
 {
 	uiSettings->setupUi(this);
 	createActions();
 	createTrayIcon();
 	mStartTimer = startTimer(1000);
+	mUpdateResolverPoolTimer = startTimer(1000*5);
 	hide();
+	QObject::connect(this,SIGNAL(accepted()),this,SLOT(writeSettings()));
 }
 
 OpenNIC::~OpenNIC()
@@ -82,8 +89,6 @@ void OpenNIC::createTrayIcon()
 	setWindowIcon( QIcon( ":/images/opennic.png" ) );
 	setWindowTitle( "OpenNIC Setup" );
 	QObject::connect(mTrayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), this, SLOT(iconActivated(QSystemTrayIcon::ActivationReason)));
-	mTrayIcon->show();
-	show();
 }
 
 void OpenNIC::createActions()
@@ -151,6 +156,30 @@ void OpenNIC::settings()
 }
 
 /**
+  * @brief Updates the resolver pool display.
+  */
+void OpenNIC::updateResolverPool()
+{
+	int row=0;
+	QTableWidget* table = uiSettings->resolverPoolTable;
+	QMultiMap<quint64,QString> resolverPool = resolver().getResolverPool();
+	table->setRowCount(resolverPool.count());
+	QMutableMapIterator<quint64,QString>i(resolverPool);
+	while (i.hasNext())
+	{
+		i.next();
+		QString resolver = i.value();
+		QString latency(QString::number(i.key()));
+
+		table->setItem(row,0,new QTableWidgetItem(latency));
+		table->setItem(row,1,new QTableWidgetItem(resolver));
+		++row;
+	}
+	table->resizeColumnsToContents();
+	table->resizeRowsToContents();
+}
+
+/**
   * @brief Perform the update function. Fetch DNS candidates, test for which to apply, and apply them.
   */
 QString OpenNIC::initializeDNS()
@@ -187,10 +216,10 @@ QString OpenNIC::updateDNS()
 	for(int n=0; n < resolverCount; n++)
 	{
 		QString ip = ips[n].trimmed();
-		uiSettings->cache->appendPlainText(ip+"\n");
+		uiSettings->cache->appendPlainText(ip);
 		loop.processEvents();
 		rc += tr("Using: ") + ip;
-		rc += resolver().addResolver(ip,n+1) + "\n";
+		rc += resolver().addResolver(ip,n+1);
 	}
 	return rc;
 }
@@ -232,6 +261,15 @@ void OpenNIC::timerEvent(QTimerEvent* e)
 		/* in case we got here on the short timer, extend it to the settings value... */
 		killTimer(mRefreshTimer);
 		mRefreshTimer = startTimer((uiSettings->refreshRate->value()*60)*1000);
+		mTrayIcon->show();
+	}
+	else if ( e->timerId() == mUpdateResolverPoolTimer )
+	{
+		updateResolverPool();
+	}
+	else
+	{
+		inherited::timerEvent(e);
 	}
 }
 

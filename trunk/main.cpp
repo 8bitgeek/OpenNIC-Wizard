@@ -19,6 +19,7 @@ int main(int argc, char *argv[])
 	qsrand(QDateTime::currentDateTime().toTime_t()); /* seed random numbers */
 	Q_INIT_RESOURCE(opennic);
 	QApplication a(argc, argv);
+	a.setQuitOnLastWindowClosed(false);
 	if ( !QSystemTrayIcon::isSystemTrayAvailable() )
 	{
 		QMessageBox::critical(0, QObject::tr("OpenNic"), QObject::tr("No System Tray Detected."));
@@ -27,6 +28,7 @@ int main(int argc, char *argv[])
 	else
 	{
 		OpenNIC on;
+		on.hide();
 		QObject::connect(&on,SIGNAL(quit()),&a,SLOT(quit()));
 		rc = a.exec();
 	}

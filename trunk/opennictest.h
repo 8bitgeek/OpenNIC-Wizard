@@ -45,7 +45,7 @@ class OpenNICTest : public QObject
 
 	signals:
 
-		void				queryResult(query* result);
+		void				queryResult(OpenNICTest::query* result);
 
 	protected slots:
 
