@@ -47,7 +47,7 @@ class OpenNICServer : public QObject
 		OpenNICResolver&		resolver() {return mResolver;}
 		int						initializeServer();
 		int						initializeDNS();
-		int						updateDNS();
+		int						updateDNS(int resolver_count);
 		QStringList				textToStringList(QString text);
 		QString					stringListToText(QStringList list);
 		virtual void			timerEvent(QTimerEvent* e);
