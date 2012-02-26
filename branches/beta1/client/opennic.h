@@ -18,6 +18,9 @@
 #include <QDialog>
 #include <QSystemTrayIcon>
 #include <QAction>
+#include <QMap>
+#include <QVariant>
+#include <QTcpSocket>
 
 #define	VERSION_STRING	"0.1.0"
 
@@ -38,6 +41,8 @@ class OpenNIC : public QDialog
 		void					quit();
 
 	protected:
+		void					mapServerReply(QMap<QString,QVariant>& map);
+		QMap<QString,QVariant>	mapClientStatus();
 		void					createTrayIcon();
 		void					createActions();
 		virtual void			timerEvent(QTimerEvent* e);
@@ -50,6 +55,12 @@ class OpenNIC : public QDialog
 		void					about();
 
 	private slots:
+		void					tcpConnected();
+		void					tcpDisconnected();
+		void					tcpError(QAbstractSocket::SocketError socketError);
+		void					tcpHostFound();
+		void					tcpStateChanged(QAbstractSocket::SocketState socketState);
+
 		void					updateResolverPool(QStringList resolverPool);
 		void					updateService();
 		void					iconActivated(QSystemTrayIcon::ActivationReason reason);
@@ -63,6 +74,7 @@ class OpenNIC : public QDialog
 		QMenu*					mTrayIconMenu;
 		Ui::OpenNICSettings*	uiSettings;
 		int						mRefreshTimer;
+		QTcpSocket				mTcpSocket;
 		/** server settings **/
 		int						mTcpListenPort;				/** the TCP listen port */
 		QString					mLogFile;					/** the log file */

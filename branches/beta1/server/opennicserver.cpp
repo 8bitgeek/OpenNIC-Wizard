@@ -151,8 +151,10 @@ void OpenNICServer::process(QTcpSocket *client)
 	}
 	if ( !clientPacket.empty() )
 	{
+		mapClientRequest(clientPacket);
 		serverPacket = mapServerStatus();
 		stream << serverPacket;
+		writeSettings();					/* write changes from client */
 	}
 	OpenNICLog::log(OpenNICLog::Debug,"done");
 }
@@ -189,7 +191,7 @@ int OpenNICServer::initializeServer()
 	{
 		OpenNICLog::log(OpenNICLog::Information,mServer.errorString().trimmed());
 	}
-
+	return 0;
 }
 
 /**
@@ -272,7 +274,6 @@ void OpenNICServer::timerEvent(QTimerEvent* e)
 		/* in case we got here on the short timer, extend it to the settings value... */
 		killTimer(mRefreshTimer);
 		mRefreshTimer = startTimer((mResolverRefreshRate*60)*1000);
-		writeSettings();
 	}
 	else
 	{
