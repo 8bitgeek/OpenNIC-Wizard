@@ -25,11 +25,17 @@
 #include <QTableWidget>
 #include <QTableWidgetItem>
 #include <QMultiMap>
+#include <QMap>
+#include <QVariant>
+#include <QHostAddress>
+#include <QDataStream>
+#include <QDateTime>
 
-#define DEFAULT_REFRESH			15
-#define DEFAULT_RESOLVERS		3
-#define DEFAULT_T1_RESOLVERS	3
-#define DEFAULT_T1_RANDOM		true
+#define DEFAULT_REFRESH						15
+#define DEFAULT_RESOLVERS					3
+#define DEFAULT_T1_RESOLVERS				3
+#define DEFAULT_T1_RANDOM					true
+#define DEFAULT_SERVER_TIMEOUT_MSEC			128
 
 #define inherited QDialog
 
@@ -90,6 +96,11 @@ void OpenNIC::createTrayIcon()
 	setWindowIcon( QIcon( ":/images/opennic.png" ) );
 	setWindowTitle( "OpenNIC Setup" );
 	QObject::connect(mTrayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), this, SLOT(iconActivated(QSystemTrayIcon::ActivationReason)));
+	QObject::connect(&mTcpSocket,SIGNAL(connected()),this,SLOT(tcpConnected()));
+	QObject::connect(&mTcpSocket,SIGNAL(disconnected()),this,SLOT(tcpDisconnected()));
+	QObject::connect(&mTcpSocket,SIGNAL(error(QAbstractSocket::SocketError)),this,SLOT(tcpError(QAbstractSocket::SocketError)));
+	QObject::connect(&mTcpSocket,SIGNAL(stateChanged(QAbstractSocket::SocketState)),this,SLOT(tcpStateChanged(QAbstractSocket::SocketState)));
+	QObject::connect(&mTcpSocket,SIGNAL(hostFound()),this,SLOT(tcpHostFound()));
 	mTrayIcon->show();
 }
 
@@ -147,12 +158,89 @@ void OpenNIC::updateResolverPool(QStringList resolverPool)
 	table->resizeRowsToContents();
 }
 
+void OpenNIC::mapServerReply(QMap<QString,QVariant>& map)
+{
+	QMapIterator<QString, QVariant>i(map);
+	while (i.hasNext())
+	{
+		i.next();
+		QString key = i.key();
+		QVariant value = i.value();
+		if ( key == "tcp_listen_port" )					mTcpListenPort			=	value.toInt();
+		else if ( key == "log_file" )					mLogFile				=	value.toString();
+		else if ( key == "resolver_cache" )				mResolverCache			=	value.toStringList();
+		else if ( key == "resolver_refresh_rate" )		mResolverRefreshRate	=	value.toInt();
+		else if ( key == "resolver_cache_size" )		mResolverCacheSize		=	value.toInt();
+		else if ( key == "bootstrap_t1_list" )			mBootstrapT1List		=	value.toStringList();
+		else if ( key == "bootstrap_cache_size" )		mBootstrapCacheSize		=	value.toInt();
+		else if ( key == "bootstrap_random_select" )	mBootstrapRandomSelect	=	value.toBool();
+	}
+}
+
+/**
+  * @brief Map client status
+  * @return a map of key/value pairs
+  */
+QMap<QString,QVariant> OpenNIC::mapClientStatus()
+{
+	QMap<QString,QVariant> map;
+	map.insert("resolver_refresh_rate",		mResolverRefreshRate);
+	map.insert("resolver_cache_size",		mResolverCacheSize);
+	map.insert("bootstrap_cache_size",		mBootstrapCacheSize);
+	map.insert("bootstrap_random_select",	mBootstrapRandomSelect);
+	return map;
+}
+
 /**
   * @brief Contact the service and perform a bi-directional update.
   */
 void OpenNIC::updateService()
 {
+	QHostAddress localhost(QHostAddress::LocalHost);
+	mTcpSocket.connectToHost(localhost,19803,QIODevice::ReadWrite);
+}
 
+void OpenNIC::tcpConnected()
+{
+	QDateTime now;
+	QDataStream stream(&mTcpSocket);
+	QMap<QString,QVariant> clientPacket;
+	QMap<QString,QVariant> serverPacket;
+	if ( !mInitialized )
+	{
+		clientPacket.insert("initialize","initialize"); /* something to get a replty */
+	}
+	else
+	{
+		clientPacket = mapClientStatus();
+	}
+	stream << clientPacket;
+	now = QDateTime::currentDateTime();
+	while ( serverPacket.isEmpty() && QDateTime::currentDateTime() <= now.addMSecs(DEFAULT_SERVER_TIMEOUT_MSEC) )
+	{
+		stream >> serverPacket;
+	}
+	if (!serverPacket.isEmpty() )
+	{
+		mapServerReply(serverPacket);
+	}
+
+}
+
+void OpenNIC::tcpDisconnected()
+{
+}
+
+void OpenNIC::tcpError(QAbstractSocket::SocketError socketError)
+{
+}
+
+void OpenNIC::tcpHostFound()
+{
+}
+
+void OpenNIC::tcpStateChanged(QAbstractSocket::SocketState socketState)
+{
 }
 
 
