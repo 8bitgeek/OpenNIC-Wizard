@@ -38,12 +38,6 @@ class OpenNIC : public QDialog
 		void					quit();
 
 	protected:
-		void					updateResolverPool();
-		OpenNICResolver&		resolver() {return mResolver;}
-		QString					initializeDNS();
-		QString					updateDNS();
-		QStringList				textToStringList(QString text);
-		QString					stringListToText(QStringList list);
 		void					createTrayIcon();
 		void					createActions();
 		virtual void			timerEvent(QTimerEvent* e);
@@ -56,6 +50,8 @@ class OpenNIC : public QDialog
 		void					about();
 
 	private slots:
+		void					updateResolverPool(QStringList resolverPool);
+		void					updateService();
 		void					iconActivated(QSystemTrayIcon::ActivationReason reason);
 		void					showBalloonMessage(QString title, QString body);
 
@@ -66,10 +62,17 @@ class OpenNIC : public QDialog
 		QSystemTrayIcon*		mTrayIcon;
 		QMenu*					mTrayIconMenu;
 		Ui::OpenNICSettings*	uiSettings;
-		int						mStartTimer;
 		int						mRefreshTimer;
-		int						mUpdateResolverPoolTimer;
-		OpenNICResolver			mResolver;
+		/** server settings **/
+		int						mTcpListenPort;				/** the TCP listen port */
+		QString					mLogFile;					/** the log file */
+		bool					mInitialized;				/** server variables are initialized? */
+		QStringList				mBootstrapT1List;			/** list of bootstrap T1's */
+		int						mBootstrapCacheSize;		/** number of T1s to select for boostrap */
+		bool					mBootstrapRandomSelect;		/** select bootstrap resolvers randomly */
+		QStringList				mResolverCache;				/** most recently selected resolver cache */
+		int						mResolverCacheSize;			/** the number of resolvers to keep in the cache (and apply to the O/S) */
+		int						mResolverRefreshRate;		/** the resolver refresh rate (apply cache to O/S) */
 };
 
 #endif // OPENNIC_H

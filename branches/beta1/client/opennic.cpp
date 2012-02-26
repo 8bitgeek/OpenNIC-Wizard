@@ -36,14 +36,13 @@
 OpenNIC::OpenNIC(QWidget *parent)
 : inherited(parent)
 , uiSettings(new Ui::OpenNICSettings)
+, mInitialized(false)
 {
 	uiSettings->setupUi(this);
 	createActions();
 	createTrayIcon();
-	mStartTimer = startTimer(1000);
-	mUpdateResolverPoolTimer = startTimer(1000*5);
 	QObject::connect(this,SIGNAL(accepted()),this,SLOT(writeSettings()));
-#if 0 /* DEBUG */
+#if 1 /* DEBUG */
 	show();
 #endif
 }
@@ -107,35 +106,12 @@ void OpenNIC::createActions()
 
 }
 
-QStringList OpenNIC::textToStringList(QString text)
-{
-	QStringList rc;
-	rc = text.split('\n');
-	return rc;
-}
-
-QString OpenNIC::stringListToText(QStringList list)
-{
-	QString rc;
-	rc = list.join("\n");
-	return rc;
-}
-
 /**
   * @brief Fetch the settings.
   */
 void OpenNIC::readSettings()
 {
-	QStringList t1list;
-
-	QSettings settings("OpenNIC", "OpenNIC Setup");
-	uiSettings->cache->setPlainText(stringListToText(settings.value("cache").toStringList()));
-	uiSettings->refreshRate->setValue(settings.value("refresh",DEFAULT_REFRESH).toInt());
-	uiSettings->resolverCount->setValue(settings.value("resolvers",DEFAULT_RESOLVERS).toInt());
-
-	uiSettings->t1List->setPlainText(stringListToText(settings.value("t1list",resolver().defaultT1List()).toStringList()));
-	uiSettings->t1Count->setValue(settings.value("t1count",DEFAULT_T1_RESOLVERS).toInt());
-	uiSettings->t1Random->setChecked(settings.value("t1random",DEFAULT_T1_RANDOM).toBool());
+	QSettings settings("OpenNIC", "OpenNICClient");
 }
 
 /**
@@ -143,18 +119,7 @@ void OpenNIC::readSettings()
   */
 void OpenNIC::writeSettings()
 {
-	QSettings settings("OpenNIC", "OpenNIC Setup");
-	settings.setValue("cache",		textToStringList(uiSettings->cache->toPlainText()));
-	settings.setValue("refresh",	uiSettings->refreshRate->value());
-	settings.setValue("resolvers",	uiSettings->resolverCount->value());
-
-	settings.setValue("t1list",		textToStringList(uiSettings->t1List->toPlainText()));
-	settings.setValue("t1count",	uiSettings->t1Count->value());
-	settings.setValue("t1random",	uiSettings->t1Random->isChecked());
-
-	killTimer(mRefreshTimer);
-	mRefreshTimer = startTimer((uiSettings->refreshRate->value()*60)*1000);
-
+	QSettings settings("OpenNIC", "OpenNICClient");
 }
 
 void OpenNIC::settings()
@@ -165,72 +130,31 @@ void OpenNIC::settings()
 /**
   * @brief Updates the resolver pool display.
   */
-void OpenNIC::updateResolverPool()
+void OpenNIC::updateResolverPool(QStringList resolverPool)
 {
-	int row=0;
 	QTableWidget* table = uiSettings->resolverPoolTable;
-	QMultiMap<quint64,QString> resolverPool = resolver().getResolverPool();
 	table->setRowCount(resolverPool.count());
-	QMutableMapIterator<quint64,QString>i(resolverPool);
-	while (i.hasNext())
+	for(int row=0; row < resolverPool.count(); row++ )
 	{
-		i.next();
-		QString resolver = i.value();
-		QString latency(QString::number(i.key()));
-
+		QStringList resolverData = resolverPool.at(row).split(";");
+		QString resolver = resolverData.at(0);
+		QString latency = resolverData.at(1);
 		table->setItem(row,0,new QTableWidgetItem(latency));
 		table->setItem(row,1,new QTableWidgetItem(resolver));
-		++row;
+
 	}
 	table->resizeColumnsToContents();
 	table->resizeRowsToContents();
 }
 
 /**
-  * @brief Perform the update function. Fetch DNS candidates, test for which to apply, and apply them.
+  * @brief Contact the service and perform a bi-directional update.
   */
-QString OpenNIC::initializeDNS()
+void OpenNIC::updateService()
 {
-	QEventLoop loop;
-	QString rc;
-	QStringList ips = textToStringList(uiSettings->t1List->toPlainText());
-	int resolverCount = uiSettings->t1Count->value() < ips.count() ? uiSettings->t1Count->value() : ips.count();
-	QProgressDialog progress(tr("Preparing Task Tray Applet..."), tr("Cancel"), 0, resolverCount, this);
-	progress.show();
-	loop.processEvents();
-	for(int n=0; n < resolverCount; n++)
-	{
-		loop.processEvents();
-		rc += tr("Using: ") + ips[n];
-		rc += resolver().addResolver(ips[n],n+1) + "\n";
-		progress.setValue(n);
-		if (progress.wasCanceled())
-			break;
-	}
-	progress.setValue(resolverCount);
-	return rc;
+
 }
 
-/**
-  * @brief Perform the update function. Fetch DNS candidates, test for which to apply, and apply them.
-  */
-QString OpenNIC::updateDNS()
-{
-	QEventLoop loop;
-	QString rc;
-	QStringList ips = resolver().getResolvers();
-	int resolverCount = uiSettings->resolverCount->value() < ips.count() ? uiSettings->resolverCount->value() : ips.count();
-	uiSettings->cache->clear();
-	for(int n=0; n < resolverCount; n++)
-	{
-		QString ip = ips[n].trimmed();
-		uiSettings->cache->appendPlainText(ip);
-		loop.processEvents();
-		rc += tr("Using: ") + ip;
-		rc += resolver().addResolver(ip,n+1);
-	}
-	return rc;
-}
 
 void OpenNIC::about()
 {
@@ -249,31 +173,10 @@ void OpenNIC::about()
   */
 void OpenNIC::timerEvent(QTimerEvent* e)
 {
-	if ( e->timerId() == mStartTimer)
+	if ( e->timerId() == mRefreshTimer )
 	{
-		/* get here just once just after startup */
-		readSettings();
-		uiSettings->logText->append(initializeDNS());
-		uiSettings->logText->append(resolver().getSettingsText().trimmed());
-		killTimer(mStartTimer);									/* don't need start timer any more */
-		mStartTimer=-1;
-		mRefreshTimer = startTimer(1000);						/* run the update function soon */
-	}
-	else if ( e->timerId() == mRefreshTimer )
-	{
-		/* get here regularly... */
-		readSettings();
-		uiSettings->logText->clear();
-		uiSettings->logText->append(updateDNS());
-		uiSettings->logText->append(resolver().getSettingsText().trimmed());
-		/* in case we got here on the short timer, extend it to the settings value... */
-		killTimer(mRefreshTimer);
-		mRefreshTimer = startTimer((uiSettings->refreshRate->value()*60)*1000);
+		updateService();
 		mTrayIcon->show();
-	}
-	else if ( e->timerId() == mUpdateResolverPoolTimer )
-	{
-		updateResolverPool();
 	}
 	else
 	{
