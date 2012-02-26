@@ -31,6 +31,7 @@
 #define DEFAULT_RESOLVER_CACHE_SIZE				3
 #define DEFAULT_BOOTSTRAP_CACHE_SIZE			3
 #define DEFAULT_BOOTSTRAP_RANDOM_SELECT			true
+#define DEFAULT_CLIENT_TIMEOUT_MSEC				128		/* msecs */
 
 #define inherited QObject
 
@@ -139,12 +140,21 @@ void OpenNICServer::mapClientRequest(QMap<QString,QVariant>& map)
   */
 void OpenNICServer::process(QTcpSocket *client)
 {
+	OpenNICLog::log(OpenNICLog::Debug,"process");
 	QMap<QString,QVariant> clientPacket;
 	QMap<QString,QVariant> serverPacket;
 	QDataStream stream(client);
-	stream >> clientPacket;
-	serverPacket = mapServerStatus();
-	stream << serverPacket;
+	QDateTime now = QDateTime::currentDateTime();
+	while ( clientPacket.isEmpty() && QDateTime::currentDateTime() <= now.addMSecs(DEFAULT_CLIENT_TIMEOUT_MSEC) )
+	{
+		stream >> clientPacket;
+	}
+	if ( !clientPacket.empty() )
+	{
+		serverPacket = mapServerStatus();
+		stream << serverPacket;
+	}
+	OpenNICLog::log(OpenNICLog::Debug,"done");
 }
 
 /**
@@ -155,7 +165,7 @@ void OpenNICServer::newConnection()
 	QTcpSocket* client;
 	while ( (client = mServer.nextPendingConnection()) != NULL )
 	{
-		OpenNICLog::log(OpenNICLog::Information,"connect from "+client->peerName());
+		OpenNICLog::log(OpenNICLog::Debug,"connect");
 		process(client);
 		client->close();
 		delete client;
