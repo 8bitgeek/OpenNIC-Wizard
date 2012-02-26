@@ -38,6 +38,7 @@ OpenNICServer::OpenNICServer(QObject *parent)
 : inherited(parent)
 , mEnabled(true)
 {
+	initializeServer();
 	mStartTimer = startTimer(1000);
 }
 
@@ -183,16 +184,19 @@ void OpenNICServer::newConnection()
   */
 int OpenNICServer::initializeServer()
 {
-	QHostAddress localhost(QHostAddress::LocalHost);
-	mServer.setMaxPendingConnections(10);
-	if ( mServer.listen(localhost,mTcpListenPort) )
+	if (!mServer.isListening() )
 	{
-		QObject::connect(&mServer,SIGNAL(newConnection()),this,SLOT(newConnection()));
-		OpenNICLog::log(OpenNICLog::Information,"listening on port "+QString::number(mTcpListenPort));
-	}
-	else
-	{
-		OpenNICLog::log(OpenNICLog::Information,mServer.errorString().trimmed());
+		QHostAddress localhost(QHostAddress::LocalHost);
+		mServer.setMaxPendingConnections(10);
+		if ( mServer.listen(localhost,mTcpListenPort) )
+		{
+			QObject::connect(&mServer,SIGNAL(newConnection()),this,SLOT(newConnection()));
+			OpenNICLog::log(OpenNICLog::Information,"listening on port "+QString::number(mTcpListenPort));
+		}
+		else
+		{
+			OpenNICLog::log(OpenNICLog::Information,mServer.errorString().trimmed());
+		}
 	}
 	return 0;
 }

@@ -285,9 +285,12 @@ QStringList OpenNICResolver::getBootstrapResolverList()
 	for(int n=0; n < outputList.count(); n++)
 	{
 		QString ip = outputList.at(n).trimmed();
-		if (ip.at(0) >= '0' && ip.at(0) <= '9')
+		if ( ip.length() )
 		{
-			ips.append(ip);
+			if (ip.at(0) >= '0' && ip.at(0) <= '9')
+			{
+				ips.append(ip);
+			}
 		}
 	}
 	return ips;
