@@ -80,7 +80,7 @@ Source: {#MyOpenNICSource}\COPYING; DestDir: "{app}"; Flags: ignoreversion
 Source: {#MyOpenNICSource}\README; DestDir: "{app}"; Flags: ignoreversion
 Source: {#MyOpenNICSource}\server\bootstrap.t1; DestDir: {app}; Flags: ignoreversion; 
 Source: {#MyOpenNICSource}\server\bootstrap.domains; DestDir: {app}; Flags: ignoreversion; 
-Source: {#MyOpenNICSource}\client\OpenNIC.exe.manifest; DestDir: {app}; Flags: ignoreversion; 
+; Source: {#MyOpenNICSource}\client\OpenNIC.exe.manifest; DestDir: {app}; Flags: ignoreversion; 
 Source: {#MyOpenNICSource}\server\OpenNICServer.exe.manifest; DestDir: {app}; Flags: ignoreversion; 
 
 Source: {#MyMingwBin}\mingwm10.dll; DestDir: "{app}"; Flags: ignoreversion
