@@ -96,17 +96,12 @@ Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#MyAppName}"; Fil
 Name: "{commonstartup}\OpenNIC Wizard"; Filename: "{app}\{#MyAppExeName}"
 
 [Run]
-Filename: "{app}\{#MyAppServiceName}"; Parameters: "--install --start"; WorkingDir: "{app}"; Flags: nowait postinstall runascurrentuser skipifsilent; Description: "{cm:LaunchProgram,{#StringChange(MyAppServiceName, "&", "&&")}}"
+Filename: "{app}\{#MyAppServiceName}"; Parameters: "-install"; WorkingDir: "{app}"; Flags: nowait postinstall runascurrentuser skipifsilent; Description: "{cm:LaunchProgram,{#StringChange(MyAppServiceName, "&", "&&")}}"
 Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"; Flags: nowait postinstall runasoriginaluser skipifsilent; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, "&", "&&")}}"
 
-; Service Create command.
-; sc create OpenNIC binPath= "C:\Program Files\OpenNIC\OpenNICServer.exe" displayname= "OpenNIC DNS" depend= Tcpip start= auto
-; sc start OpenNIC
-
 [UninstallRun]
-Filename: "{app}\{#MyAppServiceName}"; Parameters: "--uninstall";
-; sc stop OpenNIC
-; sc delete OpenNIC
+Filename: "{app}\{#MyAppServiceName}"; Parameters: "-terminate";
+Filename: "{app}\{#MyAppServiceName}"; Parameters: "-uninstall";
 
 [Code]
 function InitializeSetup(): Boolean;

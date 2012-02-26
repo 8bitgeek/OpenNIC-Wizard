@@ -19,7 +19,8 @@
 #include <QVariant>
 #include "opennicresolver.h"
 
-#define	VERSION_STRING	"0.1.0"
+#define	VERSION_STRING				"0.1.0"
+#define DEFAULT_TCP_LISTEN_PORT		19803
 
 class OpenNICServer : public QObject
 {
@@ -31,6 +32,11 @@ class OpenNICServer : public QObject
 
 		QString					copyright();
 		QString					license();
+
+		void					pause()			{mEnabled = false;}
+		void					resume()		{mEnabled = true;}
+		bool					isListening()	{return mServer.isListening();}
+		quint16					serverPort()	{return mServer.serverPort();}
 
 	signals:
 		void					quit();
@@ -53,6 +59,7 @@ class OpenNICServer : public QObject
 		void					writeSettings();
 
 	private:
+		bool					mEnabled;					/** service status */
 		int						mStartTimer;
 		int						mRefreshTimer;
 		OpenNICResolver			mResolver;

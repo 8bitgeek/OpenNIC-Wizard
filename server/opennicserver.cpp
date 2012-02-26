@@ -26,7 +26,6 @@
 #else
 #define DEFAULT_LOG_FILE						"opennic.log"
 #endif
-#define DEFAULT_TCP_LISTEN_PORT					19803
 #define DEFAULT_RESOLVER_REFRESH_RATE			15		/* minutes */
 #define DEFAULT_RESOLVER_CACHE_SIZE				3
 #define DEFAULT_BOOTSTRAP_CACHE_SIZE			3
@@ -37,6 +36,7 @@
 
 OpenNICServer::OpenNICServer(QObject *parent)
 : inherited(parent)
+, mEnabled(true)
 {
 	mStartTimer = startTimer(1000);
 }
@@ -167,8 +167,11 @@ void OpenNICServer::newConnection()
 	QTcpSocket* client;
 	while ( (client = mServer.nextPendingConnection()) != NULL )
 	{
-		OpenNICLog::log(OpenNICLog::Debug,"connect");
-		process(client);
+		if ( mEnabled )
+		{
+			OpenNICLog::log(OpenNICLog::Debug,"connect");
+			process(client);
+		}
 		client->close();
 		delete client;
 	}
