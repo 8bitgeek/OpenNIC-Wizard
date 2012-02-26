@@ -30,7 +30,8 @@
 #define DEFAULT_RESOLVER_CACHE_SIZE				3
 #define DEFAULT_BOOTSTRAP_CACHE_SIZE			3
 #define DEFAULT_BOOTSTRAP_RANDOM_SELECT			true
-#define DEFAULT_CLIENT_TIMEOUT_MSEC				128		/* msecs */
+#define DEFAULT_CLIENT_TIMEOUT_MSEC				1000		/* msecs */
+#define DEFAULT_TCP_LISTEN_PORT				    19803
 
 #define inherited QObject
 
@@ -38,6 +39,7 @@ OpenNICServer::OpenNICServer(QObject *parent)
 : inherited(parent)
 , mEnabled(true)
 {
+	readSettings();
 	initializeServer();
 	mStartTimer = startTimer(1000);
 }
@@ -141,20 +143,27 @@ void OpenNICServer::mapClientRequest(QMap<QString,QVariant>& map)
   */
 void OpenNICServer::process(QTcpSocket *client)
 {
+	QEventLoop loop;
 	OpenNICLog::log(OpenNICLog::Debug,"process");
 	QMap<QString,QVariant> clientPacket;
 	QMap<QString,QVariant> serverPacket;
 	QDataStream stream(client);
 	QDateTime now = QDateTime::currentDateTime();
-	while ( clientPacket.isEmpty() && QDateTime::currentDateTime() <= now.addMSecs(DEFAULT_CLIENT_TIMEOUT_MSEC) )
+	while ( !client->bytesAvailable() &&  QDateTime::currentDateTime() <= now.addMSecs(DEFAULT_CLIENT_TIMEOUT_MSEC) ) { loop.processEvents(); }
+	client->flush();
+	if ( client->bytesAvailable() )
 	{
+		OpenNICLog::log(OpenNICLog::Debug,"bytes recved "+QString::number(client->bytesAvailable()));
+		client->flush();
 		stream >> clientPacket;
 	}
 	if ( !clientPacket.empty() )
 	{
+		OpenNICLog::log(OpenNICLog::Debug,"got client data");
 		mapClientRequest(clientPacket);
 		serverPacket = mapServerStatus();
 		stream << serverPacket;
+		client->flush();
 		writeSettings();					/* write changes from client */
 	}
 	OpenNICLog::log(OpenNICLog::Debug,"done");

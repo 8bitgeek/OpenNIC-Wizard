@@ -35,7 +35,7 @@
 #define DEFAULT_RESOLVERS					3
 #define DEFAULT_T1_RESOLVERS				3
 #define DEFAULT_T1_RANDOM					true
-#define DEFAULT_SERVER_TIMEOUT_MSEC			128
+#define DEFAULT_SERVER_TIMEOUT_MSEC			1000
 
 #define inherited QDialog
 
@@ -175,6 +175,7 @@ void OpenNIC::mapServerReply(QMap<QString,QVariant>& map)
 		else if ( key == "bootstrap_t1_list" )			mBootstrapT1List		=	value.toStringList();
 		else if ( key == "bootstrap_cache_size" )		mBootstrapCacheSize		=	value.toInt();
 		else if ( key == "bootstrap_random_select" )	mBootstrapRandomSelect	=	value.toBool();
+		else if ( key == "resolver_pool" )				updateResolverPool(value.toStringList());
 	}
 }
 
@@ -203,6 +204,7 @@ void OpenNIC::updateService()
 
 void OpenNIC::tcpConnected()
 {
+	QEventLoop loop;
 	QDateTime now;
 	QDataStream stream(&mTcpSocket);
 	QMap<QString,QVariant> clientPacket;
@@ -216,9 +218,12 @@ void OpenNIC::tcpConnected()
 		clientPacket = mapClientStatus();
 	}
 	stream << clientPacket;
+	mTcpSocket.flush();
 	now = QDateTime::currentDateTime();
-	while ( serverPacket.isEmpty() && QDateTime::currentDateTime() <= now.addMSecs(DEFAULT_SERVER_TIMEOUT_MSEC) )
+	while ( !mTcpSocket.bytesAvailable() && QDateTime::currentDateTime() <= now.addMSecs(DEFAULT_SERVER_TIMEOUT_MSEC) ) {loop.processEvents();}
+	if ( mTcpSocket.bytesAvailable() )
 	{
+		mTcpSocket.flush();
 		stream >> serverPacket;
 	}
 	if (!serverPacket.isEmpty() )
