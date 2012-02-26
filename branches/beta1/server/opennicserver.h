@@ -20,7 +20,6 @@
 #include "opennicresolver.h"
 
 #define	VERSION_STRING				"0.1.0"
-#define DEFAULT_TCP_LISTEN_PORT		19803
 
 class OpenNICServer : public QObject
 {
