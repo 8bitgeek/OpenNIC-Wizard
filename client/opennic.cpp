@@ -51,6 +51,7 @@ OpenNIC::OpenNIC(QWidget *parent)
 #if 1 /* DEBUG */
 	show();
 #endif
+	mRefreshTimer = startTimer(1000*5);
 }
 
 OpenNIC::~OpenNIC()
@@ -223,8 +224,8 @@ void OpenNIC::tcpConnected()
 	if (!serverPacket.isEmpty() )
 	{
 		mapServerReply(serverPacket);
+		mInitialized=true;
 	}
-
 }
 
 void OpenNIC::tcpDisconnected()
