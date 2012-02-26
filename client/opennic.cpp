@@ -35,7 +35,7 @@
 #define DEFAULT_RESOLVERS					3
 #define DEFAULT_T1_RESOLVERS				3
 #define DEFAULT_T1_RANDOM					true
-#define DEFAULT_SERVER_TIMEOUT_MSEC			1000
+#define DEFAULT_SERVER_TIMEOUT_MSEC			3000
 
 #define inherited QDialog
 
@@ -48,7 +48,7 @@ OpenNIC::OpenNIC(QWidget *parent)
 	createActions();
 	createTrayIcon();
 	QObject::connect(this,SIGNAL(accepted()),this,SLOT(writeSettings()));
-#if 1 /* DEBUG */
+#if 0 /* DEBUG */
 	show();
 #endif
 	mRefreshTimer = startTimer(1000*5);

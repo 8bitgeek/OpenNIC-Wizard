@@ -30,7 +30,7 @@
 #define DEFAULT_RESOLVER_CACHE_SIZE				3
 #define DEFAULT_BOOTSTRAP_CACHE_SIZE			3
 #define DEFAULT_BOOTSTRAP_RANDOM_SELECT			true
-#define DEFAULT_CLIENT_TIMEOUT_MSEC				1000		/* msecs */
+#define DEFAULT_CLIENT_TIMEOUT_MSEC				3000		/* msecs */
 #define DEFAULT_TCP_LISTEN_PORT				    19803
 
 #define inherited QObject
@@ -130,8 +130,20 @@ void OpenNICServer::mapClientRequest(QMap<QString,QVariant>& map)
 		if ( key == "tcp_listen_port" )					mTcpListenPort			=	value.toInt();
 		else if ( key == "log_file" )					mLogFile				=	value.toString();
 		else if ( key == "resolver_cache" )				mResolverCache			=	value.toStringList();
-		else if ( key == "resolver_refresh_rate" )		mResolverRefreshRate	=	value.toInt();
-		else if ( key == "resolver_cache_size" )		mResolverCacheSize		=	value.toInt();
+		else if ( key == "resolver_refresh_rate" )
+		{
+			if ( value.toInt() != mResolverRefreshRate )
+			{
+				killTimer(mRefreshTimer);
+				mRefreshTimer = startTimer((value.toInt()*60)*1000);
+			}
+			mResolverRefreshRate	=	value.toInt();
+		}
+		else if ( key == "resolver_cache_size" )
+		{
+			if ( value.toInt() != mResolverCacheSize ) updateDNS(value.toInt());
+			mResolverCacheSize = value.toInt();
+		}
 		else if ( key == "bootstrap_t1_list" )			mBootstrapT1List		=	value.toStringList();
 		else if ( key == "bootstrap_cache_size" )		mBootstrapCacheSize		=	value.toInt();
 		else if ( key == "bootstrap_random_select" )	mBootstrapRandomSelect	=	value.toBool();
@@ -183,8 +195,7 @@ void OpenNICServer::newConnection()
 			OpenNICLog::log(OpenNICLog::Debug,"connect");
 			process(client);
 		}
-		client->close();
-		delete client;
+		client->deleteLater();
 	}
 }
 
@@ -198,7 +209,7 @@ int OpenNICServer::initializeServer()
 	{
 		QHostAddress localhost(QHostAddress::LocalHost);
 		mServer.setMaxPendingConnections(10);
-		if ( mServer.listen(localhost,mTcpListenPort) )
+		if ( mServer.listen(localhost,/* mTcpListenPort */ DEFAULT_TCP_LISTEN_PORT) )
 		{
 			QObject::connect(&mServer,SIGNAL(newConnection()),this,SLOT(newConnection()));
 			OpenNICLog::log(OpenNICLog::Information,"listening on port "+QString::number(mTcpListenPort));
@@ -231,18 +242,20 @@ int OpenNICServer::initializeDNS()
   * @brief Perform the update function. Fetch DNS candidates, test for which to apply, and apply them.
   * @return the number of resolvers
   */
-int OpenNICServer::updateDNS()
+int OpenNICServer::updateDNS(int resolverCount)
 {
 	int n;
 	QStringList ips = resolver().getResolvers();
-	int resolverCount = mResolverCacheSize < ips.count() ? mResolverCacheSize : ips.count();
 	mResolverCache.clear();
 	for(n=0; n < resolverCount; n++)
 	{
-		QString ip = ips[n].trimmed();
-		mResolverCache.append(ip);
-		OpenNICLog::log(OpenNICLog::Information, "Using: " + ip);
-		OpenNICLog::log(OpenNICLog::Information, resolver().addResolver(ip,n+1));
+		if ( n < ips.count() )
+		{
+			QString ip = ips[n].trimmed();
+			mResolverCache.append(ip);
+			OpenNICLog::log(OpenNICLog::Information, "Using: " + ip);
+			OpenNICLog::log(OpenNICLog::Information, resolver().addResolver(ip,n+1));
+		}
 	}
 	return n;
 }
@@ -284,7 +297,7 @@ void OpenNICServer::timerEvent(QTimerEvent* e)
 	{
 		/* get here regularly... */
 		readSettings();
-		if ( updateDNS() )
+		if ( updateDNS(mResolverCacheSize) )
 		{
 			OpenNICLog::log(OpenNICLog::Information,resolver().getSettingsText().trimmed());
 		}
