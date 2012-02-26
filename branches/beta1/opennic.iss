@@ -96,12 +96,20 @@ Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#MyAppName}"; Fil
 Name: "{commonstartup}\OpenNIC Wizard"; Filename: "{app}\{#MyAppExeName}"
 
 [Run]
-Filename: "{app}\{#MyAppServiceName}"; Parameters: "-install"; WorkingDir: "{app}"; Flags: nowait postinstall runascurrentuser skipifsilent; Description: "{cm:LaunchProgram,{#StringChange(MyAppServiceName, "&", "&&")}}"
-Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"; Flags: nowait postinstall runasoriginaluser skipifsilent; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, "&", "&&")}}"
+Filename: "{app}\{#MyAppServiceName}"; WorkingDir: "{app}"; Parameters: "-terminate";
+Filename: "{app}\{#MyAppServiceName}"; WorkingDir: "{app}"; Parameters: "-uninstall";
+Filename: "{sys}\sc.exe"; Parameters: "stop OpenNIC";
+Filename: "{sys}\sc.exe"; Parameters: "delete OpenNIC";
+Filename: "{app}\{#MyAppServiceName}"; Parameters: "-install"; WorkingDir: "{app}"; Flags: nowait runascurrentuser skipifsilent; Description: "{cm:LaunchProgram,{#StringChange(MyAppServiceName, "&", "&&")}}"
+Filename: "{sys}\sc.exe"; Parameters: "stop OpenNIC";
+Filename: "{sys}\sc.exe"; Parameters: "start OpenNIC start=auto";
+Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"; Flags: nowait runasoriginaluser skipifsilent; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, "&", "&&")}}"
 
 [UninstallRun]
-Filename: "{app}\{#MyAppServiceName}"; Parameters: "-terminate";
-Filename: "{app}\{#MyAppServiceName}"; Parameters: "-uninstall";
+Filename: "{app}\{#MyAppServiceName}"; WorkingDir: "{app}"; Parameters: "-terminate";
+Filename: "{app}\{#MyAppServiceName}"; WorkingDir: "{app}"; Parameters: "-uninstall";
+Filename: "{sys}\sc.exe"; Parameters: "stop OpenNIC";
+Filename: "{sys}\sc.exe"; Parameters: "delete OpenNIC";
 
 [Code]
 function InitializeSetup(): Boolean;
