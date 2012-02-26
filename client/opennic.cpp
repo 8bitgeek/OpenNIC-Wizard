@@ -176,7 +176,10 @@ void OpenNIC::mapServerReply(QMap<QString,QVariant>& map)
 		else if ( key == "bootstrap_cache_size" )		mBootstrapCacheSize		=	value.toInt();
 		else if ( key == "bootstrap_random_select" )	mBootstrapRandomSelect	=	value.toBool();
 		else if ( key == "resolver_pool" )				updateResolverPool(value.toStringList());
+		else if ( key == "settings_log" )				uiSettings->logText->setPlainText(value.toString());
 	}
+	uiSettings->cache->setPlainText(mResolverCache.join("\n"));
+	uiSettings->t1List->setPlainText(mBootstrapT1List.join("\n"));
 }
 
 /**

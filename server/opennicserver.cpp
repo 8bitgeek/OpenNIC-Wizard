@@ -112,6 +112,7 @@ QMap<QString,QVariant> OpenNICServer::mapServerStatus()
 	map.insert("bootstrap_t1_list",			mBootstrapT1List);
 	map.insert("bootstrap_cache_size",		mBootstrapCacheSize);
 	map.insert("bootstrap_random_select",	mBootstrapRandomSelect);
+	map.insert("settings_log",				mResolver.getSettingsText());
 	return map;
 }
 
