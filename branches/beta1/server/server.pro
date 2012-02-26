@@ -19,13 +19,25 @@ SOURCES += main.cpp\
 		opennicresolver.cpp \
 		opennictest.cpp \
 		opennicdns.cpp \
-		openniclog.cpp
+		openniclog.cpp \
+		qtservice.cpp \
+
+
+win32::SOURCES += qtservice_win.cpp
+
+unix::SOURCES += qtservice_unix.cpp \
+		qtunixserversocket.cpp \
+		qtunixsocket.cpp
 
 HEADERS  += opennicserver.h \
 		opennicresolver.h \
 		opennictest.h \
 		opennicdns.h \
-		openniclog.h
+		openniclog.h \
+		qtservice.h \
+		qtservice_p.h \
+		qtunixserversocket.h \
+		qtunixsocket.h
 
 RESOURCES += \
 		opennicserver.qrc

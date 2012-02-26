@@ -14,6 +14,5 @@ CONFIG += warn_on \
 	uitools \
 	debug
 
-SUBDIRS = qtservice \
-		server \
+SUBDIRS = server \
 		client
