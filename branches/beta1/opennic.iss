@@ -2,25 +2,27 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "OpenNIC Wizard"
-#define MyAppVersion "0.0.7"
+#define MyAppServiceName "OpenNIC Service"
+#define MyAppVersion "0.1.0"
 #define MyAppPublisher "The OpenNIC Project"
 #define MyAppURL "http://www.opennicproject.org"
 #define MyAppExeName "OpenNIC.exe"
+#define MyAppServiceName "OpenNICServer.exe"
 
 ; !!! Inno Include seems to be broken !!
 ; #include "opennic-include.iss"
 #if 0
 ; My Windows 7 64-bit configuration
 #define MyOutputDir       "C:\Users\mike\Documents"
-#define MyOpenNICSource   "C:\Users\mike\Documents\OpenNIC"
-#define MyOpenNICBuild    "C:\Users\mike\Documents\OpenNIC-build-desktop_Debug\debug"
+#define MyOpenNICSource   "C:\Users\mike\Documents\OpenNIC\branches\beta1"
+#define MyOpenNICBuild    "C:\Users\mike\Documents\OpenNIC\branches\OpenNIC-build-desktop_Debug\"
 #define MyQtLib           "C:\QtSDK\Desktop\Qt\4.7.4\mingw\lib"
 #define MyMingwBin        "C:\QtSDK\mingw\bin"
 #else
 ; My Windows XP 32-bit configuration
 #define MyOutputDir       "C:\Documents and Settings\Mike\My Documents"
-#define MyOpenNICSource   "C:\Documents and Settings\Mike\My Documents\OpenNIC"
-#define MyOpenNICBuild    "C:\Documents and Settings\Mike\My Documents\OpenNIC-build-desktop_Debug\debug"
+#define MyOpenNICSource   "C:\Documents and Settings\Mike\My Documents\OpenNIC\branches\beta1"
+#define MyOpenNICBuild    "C:\Documents and Settings\Mike\My Documents\OpenNIC\branches\OpenNIC-build-desktop_Debug"
 #define MyQtLib           "C:\QtSDK\Desktop\Qt\4.7.4\mingw\lib"
 #define MyMingwBin        "C:\QtSDK\mingw\bin"
 #endif
@@ -44,21 +46,9 @@ LicenseFile={#MyOpenNICSource}\COPYING
 OutputDir={#MyOutputDir}
 OutputBaseFilename=OpenNIC Wizard {#MyAppVersion}
 WizardImageFile={#MyOpenNICSource}\installer.bmp
-SetupIconFile={#MyOpenNICSource}\images\opennic.ico
+SetupIconFile={#MyOpenNICSource}\client\images\opennic.ico
 Compression=lzma
 SolidCompression=yes
-
-[Code]
-function InitializeSetup(): Boolean;
-begin
-  Log('InitializeSetup() called');
-  Result := True;
-  if not IsAdminLoggedOn then
-  begin
-    MsgBox('This installer must be run as administrator',mbCriticalError,MB_OK);
-    Result := False;
-  end;
-end;
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -71,25 +61,27 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked; OnlyBelowVersion: 0,6.1
 
 [Files]
-Source: {#MyOpenNICBuild}\OpenNIC.exe; DestDir: {app}; Flags: ignoreversion; Permissions: admins-full; MinVersion: 0,5.1.2600;
+Source: {#MyOpenNICBuild}\client\debug\OpenNIC.exe; DestDir: {app}; Flags: ignoreversion; Permissions: admins-full; MinVersion: 0,5.1.2600;
+Source: {#MyOpenNICBuild}\server\debug\OpenNICServer.exe; DestDir: {app}; Flags: ignoreversion; Permissions: admins-full; MinVersion: 0,5.1.2600;
 Source: {#MyQtLib}\QtCored4.dll; DestDir: "{app}"; Flags: ignoreversion
 Source: {#MyQtLib}\QtGuid4.dll; DestDir: "{app}"; Flags: ignoreversion
 Source: {#MyQtLib}\QtNetworkd4.dll; DestDir: "{app}"; Flags: ignoreversion
 
-Source: {#MyOpenNICSource}\dig\install\bindevt.dll; DestDir: "{app}"; Flags: ignoreversion
-Source: {#MyOpenNICSource}\dig\install\dig.exe; DestDir: "{app}"; Flags: ignoreversion
-Source: {#MyOpenNICSource}\dig\install\libbind9.dll; DestDir: "{app}"; Flags: ignoreversion
-Source: {#MyOpenNICSource}\dig\install\libdns.dll; DestDir: "{app}"; Flags: ignoreversion
-Source: {#MyOpenNICSource}\dig\install\libeay32.dll; DestDir: "{app}"; Flags: ignoreversion
-Source: {#MyOpenNICSource}\dig\install\libisc.dll; DestDir: "{app}"; Flags: ignoreversion
-Source: {#MyOpenNICSource}\dig\install\libisccc.dll; DestDir: "{app}"; Flags: ignoreversion
-Source: {#MyOpenNICSource}\dig\install\libisccfg.dll; DestDir: "{app}"; Flags: ignoreversion
-Source: {#MyOpenNICSource}\dig\install\liblwres.dll; DestDir: "{app}"; Flags: ignoreversion
+Source: {#MyOpenNICSource}\server\dig\install\bindevt.dll; DestDir: "{app}"; Flags: ignoreversion
+Source: {#MyOpenNICSource}\server\dig\install\dig.exe; DestDir: "{app}"; Flags: ignoreversion
+Source: {#MyOpenNICSource}\server\dig\install\libbind9.dll; DestDir: "{app}"; Flags: ignoreversion
+Source: {#MyOpenNICSource}\server\dig\install\libdns.dll; DestDir: "{app}"; Flags: ignoreversion
+Source: {#MyOpenNICSource}\server\dig\install\libeay32.dll; DestDir: "{app}"; Flags: ignoreversion
+Source: {#MyOpenNICSource}\server\dig\install\libisc.dll; DestDir: "{app}"; Flags: ignoreversion
+Source: {#MyOpenNICSource}\server\dig\install\libisccc.dll; DestDir: "{app}"; Flags: ignoreversion
+Source: {#MyOpenNICSource}\server\dig\install\libisccfg.dll; DestDir: "{app}"; Flags: ignoreversion
+Source: {#MyOpenNICSource}\server\dig\install\liblwres.dll; DestDir: "{app}"; Flags: ignoreversion
 Source: {#MyOpenNICSource}\COPYING; DestDir: "{app}"; Flags: ignoreversion
 Source: {#MyOpenNICSource}\README; DestDir: "{app}"; Flags: ignoreversion
-Source: {#MyOpenNICSource}\bootstrap.t1; DestDir: {app}; Flags: ignoreversion; 
-Source: {#MyOpenNICSource}\bootstrap.domains; DestDir: {app}; Flags: ignoreversion; 
-Source: {#MyOpenNICSource}\OpenNIC.exe.manifest; DestDir: {app}; Flags: ignoreversion; 
+Source: {#MyOpenNICSource}\server\bootstrap.t1; DestDir: {app}; Flags: ignoreversion; 
+Source: {#MyOpenNICSource}\server\bootstrap.domains; DestDir: {app}; Flags: ignoreversion; 
+Source: {#MyOpenNICSource}\client\OpenNIC.exe.manifest; DestDir: {app}; Flags: ignoreversion; 
+Source: {#MyOpenNICSource}\server\OpenNICServer.exe.manifest; DestDir: {app}; Flags: ignoreversion; 
 
 Source: {#MyMingwBin}\mingwm10.dll; DestDir: "{app}"; Flags: ignoreversion
 Source: {#MyMingwBin}\libgcc_s_dw2-1.dll; DestDir: "{app}"; Flags: ignoreversion
@@ -104,5 +96,26 @@ Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#MyAppName}"; Fil
 Name: "{commonstartup}\OpenNIC Wizard"; Filename: "{app}\{#MyAppExeName}"
 
 [Run]
-Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, "&", "&&")}}"; Flags: nowait postinstall skipifsilent  runascurrentuser
+Filename: "{app}\{#MyAppServiceName}"; Parameters: "--install --start"; WorkingDir: "{app}"; Flags: nowait postinstall runascurrentuser skipifsilent; Description: "{cm:LaunchProgram,{#StringChange(MyAppServiceName, "&", "&&")}}"
+Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"; Flags: nowait postinstall runasoriginaluser skipifsilent; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, "&", "&&")}}"
 
+; Service Create command.
+; sc create OpenNIC binPath= "C:\Program Files\OpenNIC\OpenNICServer.exe" displayname= "OpenNIC DNS" depend= Tcpip start= auto
+; sc start OpenNIC
+
+[UninstallRun]
+Filename: "{app}\{#MyAppServiceName}"; Parameters: "--uninstall";
+; sc stop OpenNIC
+; sc delete OpenNIC
+
+[Code]
+function InitializeSetup(): Boolean;
+begin
+  Log('InitializeSetup() called');
+  Result := True;
+  if not IsAdminLoggedOn then
+  begin
+    MsgBox('This installer must be run as administrator',mbCriticalError,MB_OK);
+    Result := False;
+  end;
+end;
