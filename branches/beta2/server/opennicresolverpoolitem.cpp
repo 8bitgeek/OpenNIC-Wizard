@@ -8,10 +8,18 @@
  */
 #include "opennicresolverpoolitem.h"
 
-OpenNICResolverPoolItem::OpenNICResolverPoolItem(QObject *parent)
+OpenNICResolverPoolItem::OpenNICResolverPoolItem(QObject* parent)
 : QObject(parent)
 {
 	clear();
+}
+
+OpenNICResolverPoolItem::OpenNICResolverPoolItem(QHostAddress hostAddress, QString kind, QObject* parent)
+: QObject(parent)
+{
+	clear();
+	mHostAddress = hostAddress;
+	mKind = kind;
 }
 
 OpenNICResolverPoolItem::OpenNICResolverPoolItem(const OpenNICResolverPoolItem& other)
@@ -98,7 +106,7 @@ OpenNICResolverPoolItem& OpenNICResolverPoolItem::operator=(const OpenNICResolve
 
 /**
   * @brief convert to a formatted string
-  * @brief <hostAddress>;<testCount>;<replyCount>;<lastReply>;<lastTimeout>;<lastFault>;
+  * @brief <hostAddress>;<testCount>;<replyCount>;<lastReply>;<lastTimeout>;<lastFault>;<kind>;
   */
 void OpenNICResolverPoolItem::toString()
 {
@@ -125,6 +133,7 @@ OpenNICResolverPoolItem& OpenNICResolverPoolItem::copy(const OpenNICResolverPool
 	mLastReply		= other.mLastReply;
 	mLastTimeout	= other.mLastTimeout;
 	mLastFault		= other.mLastFault;
+	mKind			= other.mKind;
 	return *this;
 }
 
@@ -140,6 +149,7 @@ void OpenNICResolverPoolItem::clear()
 	mLastReply.fromTime_t(0);
 	mLastTimeout.fromTime_t(0);
 	mLastFault;
+	mKind.clear();
 }
 
 /**

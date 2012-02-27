@@ -6,8 +6,8 @@
  * can do whatever you want with this stuff. If we meet some day, and you think
  * this stuff is worth it, you can buy me a beer in return.
  */
-#ifndef OPENNICTESTER_H
-#define OPENNICTESTER_H
+#ifndef OPENNICRESOLVERTEST_H
+#define OPENNICRESOLVERTEST_H
 
 #include <QThread>
 #include <QList>
@@ -18,13 +18,12 @@
 
 #include "opennicdns.h"
 
-#define PURGE_TIMEOUT	120		/* purge timeout in seconds */
+#define PURGE_TIMEOUT	30		/* purge timeout in seconds */
 
 class OpenNICTest : public QObject
 {
 	Q_OBJECT
 	public:
-
 		typedef struct
 		{
 			QHostAddress	addr;		/* The host ip address */
@@ -34,28 +33,14 @@ class OpenNICTest : public QObject
 			qint64			latency;	/* Latency in mulliseconds */
 			int				error;		/* Error Code */
 		} query;
-
 		explicit OpenNICTest(QObject *parent=0);
 		virtual ~OpenNICTest();
-
-		OpenNICDns*			dns() {return mDns;}
-
-	public slots:
-
-		void				resolve(QHostAddress addr, QString name, quint16 port=DEFAULT_DNS_PORT);
-
-	signals:
-
-		void				queryResult(OpenNICTest::query* result);
-
 	protected slots:
-
-		void				reply(dns_cb_data& rdata);
-
+		virtual void		reply(dns_cb_data& rdata);
 	protected:
-
+		OpenNICDns*			dns() {return mDns;}
+		virtual void		resolve(QHostAddress addr, QString name, quint16 port=DEFAULT_DNS_PORT);
 		virtual void		timerEvent(QTimerEvent* e);
-
 	private:
 		void				dispose(query* q);
 		void				append(query* q);
@@ -66,4 +51,4 @@ class OpenNICTest : public QObject
 		OpenNICDns*			mDns;
 };
 
-#endif // OPENNICTESTER_H
+#endif // OPENNICRESOLVERTEST_H

@@ -21,17 +21,19 @@
 #include <QHostAddress>
 #include <QTcpSocket>
 
+#include "opennicsystem.h"
+#include "opennicresolverpoolitem.h"
+
 #if defined Q_OS_UNIX
-#define DEFAULT_LOG_FILE						"/dev/tty"
+#define DEFAULT_LOG_FILE									"/dev/tty"
 #else
-#define DEFAULT_LOG_FILE						"opennic.log"
+#define DEFAULT_LOG_FILE									"opennic.log"
 #endif
-#define DEFAULT_RESOLVER_REFRESH_RATE			15		/* minutes */
+#define DEFAULT_RESOLVER_REFRESH_RATE			15			/* minutes */
 #define DEFAULT_RESOLVER_CACHE_SIZE				3
 #define DEFAULT_BOOTSTRAP_CACHE_SIZE			3
-#define DEFAULT_BOOTSTRAP_RANDOM_SELECT			true
 #define DEFAULT_CLIENT_TIMEOUT_MSEC				3000		/* msecs */
-#define DEFAULT_TCP_LISTEN_PORT				    19803
+#define DEFAULT_TCP_LISTEN_PORT				    19803		/* localhost port for communication with GUI */
 
 #define inherited QObject
 
@@ -39,6 +41,7 @@ OpenNICServer::OpenNICServer(QObject *parent)
 : inherited(parent)
 , mEnabled(true)
 {
+	mResolverPool.activate();
 	readSettings();
 	initializeServer();
 	mStartTimer = startTimer(1000);
@@ -46,20 +49,6 @@ OpenNICServer::OpenNICServer(QObject *parent)
 
 OpenNICServer::~OpenNICServer()
 {
-}
-
-QStringList OpenNICServer::textToStringList(QString text)
-{
-	QStringList rc;
-	rc = text.split('\n');
-	return rc;
-}
-
-QString OpenNICServer::stringListToText(QStringList list)
-{
-	QString rc;
-	rc = list.join("\n");
-	return rc;
 }
 
 /**
@@ -73,9 +62,6 @@ void OpenNICServer::readSettings()
 	mResolverCache			= settings.value("resolver_cache").toStringList();
 	mResolverRefreshRate	= settings.value("resolver_refresh_rate",	DEFAULT_RESOLVER_REFRESH_RATE).toInt();
 	mResolverCacheSize		= settings.value("resolver_cache_size",		DEFAULT_RESOLVER_CACHE_SIZE).toInt();
-	mBootstrapT1List		= settings.value("bootstrap_t1_list",		resolver().defaultT1List()).toStringList();
-	mBootstrapCacheSize		= settings.value("bootstrap_cache_size",	DEFAULT_BOOTSTRAP_CACHE_SIZE).toInt();
-	mBootstrapRandomSelect	= settings.value("bootstrap_random_select",	DEFAULT_BOOTSTRAP_RANDOM_SELECT).toBool();
 }
 
 /**
@@ -89,9 +75,6 @@ void OpenNICServer::writeSettings()
 	settings.setValue("resolver_cache",				mResolverCache);
 	settings.setValue("resolver_refresh_rate",		mResolverRefreshRate);
 	settings.setValue("resolver_cache_size",		mResolverCacheSize);
-	settings.setValue("bootstrap_t1_list",			mBootstrapT1List);
-	settings.setValue("bootstrap_cache_size",		mBootstrapCacheSize);
-	settings.setValue("bootstrap_random_select",	mBootstrapRandomSelect);
 
 	killTimer(mRefreshTimer);
 	mRefreshTimer = startTimer((mResolverRefreshRate*60)*1000);
@@ -105,14 +88,10 @@ QMap<QString,QVariant> OpenNICServer::mapServerStatus()
 {
 	QMap<QString,QVariant> map;
 	map.insert("tcp_listen_port",			mTcpListenPort);
-	map.insert("resolver_pool",				mResolver.getResolverPoolStringList()); /* <ipaddr>;<latency> */
+	map.insert("resolver_pool",				mResolverPool.toStringList());
 	map.insert("resolver_cache",			mResolverCache);
 	map.insert("resolver_refresh_rate",		mResolverRefreshRate);
 	map.insert("resolver_cache_size",		mResolverCacheSize);
-	map.insert("bootstrap_t1_list",			mBootstrapT1List);
-	map.insert("bootstrap_cache_size",		mBootstrapCacheSize);
-	map.insert("bootstrap_random_select",	mBootstrapRandomSelect);
-	map.insert("settings_log",				mResolver.getSettingsText());
 	return map;
 }
 
@@ -144,9 +123,6 @@ void OpenNICServer::mapClientRequest(QMap<QString,QVariant>& map)
 			if ( value.toInt() != mResolverCacheSize ) updateDNS(value.toInt());
 			mResolverCacheSize = value.toInt();
 		}
-		else if ( key == "bootstrap_t1_list" )			mBootstrapT1List		=	value.toStringList();
-		else if ( key == "bootstrap_cache_size" )		mBootstrapCacheSize		=	value.toInt();
-		else if ( key == "bootstrap_random_select" )	mBootstrapRandomSelect	=	value.toBool();
 		else OpenNICLog::log(OpenNICLog::Debug,"unknown key '"+key+"'");
 	}
 }
@@ -225,16 +201,28 @@ int OpenNICServer::initializeServer()
   * @brief Perform the update function. Fetch DNS candidates, test for which to apply, and apply them.
   * @return the number of resolvers
   */
-int OpenNICServer::initializeDNS()
+int OpenNICServer::initializeResolvers()
 {
-	int n;
-	int resolverCount = mBootstrapCacheSize < mBootstrapT1List.count() ? mBootstrapCacheSize : mBootstrapT1List.count();
-	for(n=0; n < resolverCount; n++)
+	/** get and apply the bootstrap resolvers... */
+	QStringList bootstrapList = OpenNICSystem::getBootstrapT1List();
+	for(int n=0; n < bootstrapList.count(); n++);
+	{
+		QString resolver = bootstrapList.at(n).trimmed();
+		if ( !resolver.isEmpty() )
+		{
+			OpenNICResolverPoolItem item(resolver,"T1");
+			mResolverPool.insort(item);
+		}
+	}
+	OpenNICResolverPool bootstrapPool
+	for(n=0; n < 4 && n < ; n++)
 	{
 		OpenNICLog::log(OpenNICLog::Information, "Using: " + mBootstrapT1List[n]);
 		OpenNICLog::log(OpenNICLog::Information, resolver().addResolver(mBootstrapT1List[n],n+1));
 	}
 	return n;
+	QStringList OpenNICSystem::getBootstrapT2List()
+
 }
 
 /**

@@ -14,16 +14,17 @@
 #include <QDateTime>
 #include <QString>
 
-#include "opennicresolvertestresult.h"
+#include "opennicresolvertest.h"
 
 #define RESOLVER_SAMPLE_STORAGE_LIMIT		10			/* number of samples to remember for averaging */
 
-class OpenNICResolverPoolItem : public QObject
+class OpenNICResolverPoolItem : public OpenNICResolverTest
 {
 	Q_OBJECT
 	public:
 
 		OpenNICResolverPoolItem(QObject *parent = 0);
+		OpenNICResolverPoolItem(QHostAddress hostAddress, QString kind="", QObject* parent=NULL);
 		OpenNICResolverPoolItem(const OpenNICResolverPoolItem& other);
 		virtual ~OpenNICResolverPoolItem();
 
@@ -39,6 +40,9 @@ class OpenNICResolverPoolItem : public QObject
 		QString						lastFault()			{return mLastFault;}
 		bool						alive()				{return lastReply() > lastTimeout();}
 
+		QString						kind()				{return mKind;}
+		void						setKind(QString kind) {mKind=kind;}
+
 		OpenNICResolverPoolItem&	operator=(const OpenNICResolverPoolItem& other);
 		bool						operator==(OpenNICResolverPoolItem &other);
 		bool						operator>(OpenNICResolverPoolItem &other);
@@ -48,11 +52,9 @@ class OpenNICResolverPoolItem : public QObject
 
 		QString						toString();
 
-	signals:
-		void						latencyRequest(OpenNICResolverPoolItem* poolItem);
+		void						result(QHostAddress hostAddress, int latency, int faultCode, QString fault);
 
 	public slots:
-		void						latencyReply(OpenNICResolverTestResult result);
 		void						clear();
 
 	private:
@@ -63,6 +65,7 @@ class OpenNICResolverPoolItem : public QObject
 		QDateTime					mLastReply;			/* the time of teh last reply */
 		QDateTime					mLastTimeout;		/* the time of the last timeout */
 		QString						mLastFault;			/* the last fault message */
+		QString						mKind;				/* the kind of resolver */
 };
 
 

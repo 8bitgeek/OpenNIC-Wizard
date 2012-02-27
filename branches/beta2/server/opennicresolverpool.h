@@ -12,6 +12,7 @@
 #include <QObject>
 #include <QList>
 #include <QStringList>
+#include <QTimerEvent>
 #include "opennicresolverpoolitem.h"
 
 class OpenNICResolverPool : public QObject
@@ -31,10 +32,12 @@ class OpenNICResolverPool : public QObject
 		OpenNICResolverPoolItem			at(int pos)		{return items().at(pos);}
 		void							append(OpenNICResolverPoolItem item);
 		void							insort(OpenNICResolverPoolItem item);
+		int								indexOf(OpenNICResolverPoolItem item);
+		int								indexOf(QHostAddress hostAddress);
 		QStringList						toStringList();
 	public slots:
+		void							result(QHostAddress hostAddress, int latency, int faultCode, QString fault);
 		void							sort();
-
 	private:
 		void							swap(int a,int b);
 		QList<OpenNICResolverPoolItem>	mItems;
