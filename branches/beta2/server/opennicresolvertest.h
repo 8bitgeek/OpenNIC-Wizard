@@ -16,11 +16,11 @@
 #include <QHostAddress>
 #include <QTimerEvent>
 
-#include "opennicdns.h"
+#include "opennicdnsclient.h"
 
 #define PURGE_TIMEOUT	30		/* purge timeout in seconds */
 
-class OpenNICResolverTest : public QObject
+class OpenNICResolverTest : public OpenNICDnsClient
 {
 	Q_OBJECT
 	public:
@@ -39,7 +39,6 @@ class OpenNICResolverTest : public QObject
 		virtual void		reply(dns_cb_data& rdata);
 		virtual	void		setInterval(int seconds);
 	protected:
-		OpenNICDns*			dns() {return mDns;}
 		virtual void		resolve(QHostAddress addr, QString name, quint16 port=DEFAULT_DNS_PORT);
 		virtual void		timerEvent(QTimerEvent* e);
 	private:
@@ -49,7 +48,6 @@ class OpenNICResolverTest : public QObject
 		void				purge();
 		int					mSecondTimer;
 		QList<query*>		mQueries;
-		OpenNICDns*			mDns;
 };
 
 #endif // OPENNICRESOLVERTEST_H

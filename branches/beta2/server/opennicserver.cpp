@@ -202,26 +202,38 @@ int OpenNICServer::initializeServer()
   */
 int OpenNICServer::initializeResolvers()
 {
-	/** get and apply the bootstrap resolvers... */
+	int n, rc;
+	/** get the bootstrap resolvers... */
 	QStringList bootstrapList = OpenNICSystem::getBootstrapT1List();
-	for(int n=0; n < bootstrapList.count(); n++);
+	for(n=0; n < bootstrapList.count(); n++);
 	{
 		QString resolver = bootstrapList.at(n).trimmed();
 		if ( !resolver.isEmpty() )
 		{
-			OpenNICResolverPoolItem item(resolver,"T1");
+			OpenNICResolverPoolItem item(QHostAddress(resolver),"T1");
 			mResolverPool.insort(item);
 		}
 	}
-	OpenNICResolverPool bootstrapPool
-	for(n=0; n < 4 && n < ; n++)
+	/** apply the bootstrap resolvers */
+	mResolverPool.sort();
+	for(n=0; n < mResolverCacheSize && n < mResolverPool.count(); n++)
 	{
-		OpenNICLog::log(OpenNICLog::Information, "Using: " + mBootstrapT1List[n]);
-		OpenNICLog::log(OpenNICLog::Information, resolver().addResolver(mBootstrapT1List[n],n+1));
+		OpenNICResolverPoolItem item = mResolverPool.at(n);
+		OpenNICSystem::insertSystemResolver(item.hostAddress(),n+1);
 	}
-	return n;
-	QStringList OpenNICSystem::getBootstrapT2List()
-
+	rc=n;
+	/** get the T2 resolvers */
+	QStringList t2List = OpenNICSystem::getBootstrapT2List();
+	for(n=0; n < t2List.count(); n++)
+	{
+		QString resolver = t2List.at(n).trimmed();
+		if ( !resolver.isEmpty() )
+		{
+			OpenNICResolverPoolItem item(QHostAddress(resolver),"T2");
+			mResolverPool.insort(item);
+		}
+	}
+	return rc;
 }
 
 /**
@@ -231,17 +243,12 @@ int OpenNICServer::initializeResolvers()
 int OpenNICServer::updateDNS(int resolverCount)
 {
 	int n;
-	QStringList ips = resolver().getResolvers();
 	mResolverCache.clear();
-	for(n=0; n < resolverCount; n++)
+	mResolverPool.sort();
+	for(n=0; n < mResolverPool.count() && n < resolverCount; n++)
 	{
-		if ( n < ips.count() )
-		{
-			QString ip = ips[n].trimmed();
-			mResolverCache.append(ip);
-			OpenNICLog::log(OpenNICLog::Information, "Using: " + ip);
-			OpenNICLog::log(OpenNICLog::Information, resolver().addResolver(ip,n+1));
-		}
+		OpenNICResolverPoolItem item = mResolverPool.at(n);
+		OpenNICSystem::insertSystemResolver(item.hostAddress(),n+1);
 	}
 	return n;
 }
@@ -270,10 +277,9 @@ void OpenNICServer::timerEvent(QTimerEvent* e)
 	{
 		/* get here just once just after startup */
 		readSettings();
-		if ( initializeDNS() )
+		if ( initializeResolvers() )
 		{
 			initializeServer();
-			OpenNICLog::log(OpenNICLog::Information,resolver().getSettingsText().trimmed());
 		}
 		killTimer(mStartTimer);									/* don't need start timer any more */
 		mStartTimer=-1;
@@ -283,10 +289,7 @@ void OpenNICServer::timerEvent(QTimerEvent* e)
 	{
 		/* get here regularly... */
 		readSettings();
-		if ( updateDNS(mResolverCacheSize) )
-		{
-			OpenNICLog::log(OpenNICLog::Information,resolver().getSettingsText().trimmed());
-		}
+		updateDNS(mResolverCacheSize);
 		/* in case we got here on the short timer, extend it to the settings value... */
 		killTimer(mRefreshTimer);
 		mRefreshTimer = startTimer((mResolverRefreshRate*60)*1000);

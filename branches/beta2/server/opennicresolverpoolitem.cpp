@@ -8,14 +8,16 @@
  */
 #include "opennicresolverpoolitem.h"
 
+#define inherited OpenNICResolverTest
+
 OpenNICResolverPoolItem::OpenNICResolverPoolItem(QObject* parent)
-: QObject(parent)
+: inherited(parent)
 {
 	clear();
 }
 
 OpenNICResolverPoolItem::OpenNICResolverPoolItem(QHostAddress hostAddress, QString kind, QObject* parent)
-: QObject(parent)
+: inherited(parent)
 {
 	clear();
 	mHostAddress = hostAddress;
@@ -108,7 +110,7 @@ OpenNICResolverPoolItem& OpenNICResolverPoolItem::operator=(const OpenNICResolve
   * @brief convert to a formatted string
   * @brief <hostAddress>;<testCount>;<replyCount>;<lastReply>;<lastTimeout>;<lastFault>;<kind>;
   */
-void OpenNICResolverPoolItem::toString()
+QString OpenNICResolverPoolItem::toString()
 {
 	QString rc;
 	rc += hostAddress().toString() + ";";
