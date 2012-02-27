@@ -4,15 +4,27 @@
 #
 #-------------------------------------------------
 
-QT += core gui network
+QT       += core gui network
 
 TARGET = OpenNIC
-TEMPLATE = subdirs
+TEMPLATE = app
 CONFIG += warn_on \
 	thread \
 	qt \
 	uitools \
 	debug
 
-SUBDIRS = server \
-		client
+SOURCES += main.cpp\
+		opennic.cpp
+
+HEADERS  += opennic.h
+
+FORMS    += opennic.ui \
+		settings.ui
+
+RESOURCES += \
+		opennic.qrc
+
+win32:LIBS += C:/QtSDK/mingw/lib/libwsock32.a
+
+
