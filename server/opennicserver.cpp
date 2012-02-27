@@ -101,31 +101,31 @@ QMap<QString,QVariant> OpenNICServer::mapServerStatus()
   */
 void OpenNICServer::mapClientRequest(QMap<QString,QVariant>& map)
 {
-	QMapIterator<QString, QVariant>i(map);
-	while (i.hasNext())
-	{
-		i.next();
-		QString key = i.key();
-		QVariant value = i.value();
-		if ( key == "tcp_listen_port" )					mTcpListenPort			=	value.toInt();
-		else if ( key == "log_file" )					mLogFile				=	value.toString();
-		else if ( key == "resolver_cache" )				mResolverCache			=	value.toStringList();
-		else if ( key == "resolver_refresh_rate" )
-		{
-			if ( value.toInt() != mResolverRefreshRate )
-			{
-				killTimer(mRefreshTimer);
-				mRefreshTimer = startTimer((value.toInt()*60)*1000);
-			}
-			mResolverRefreshRate	=	value.toInt();
-		}
-		else if ( key == "resolver_cache_size" )
-		{
-			if ( value.toInt() != mResolverCacheSize ) updateDNS(value.toInt());
-			mResolverCacheSize = value.toInt();
-		}
-		else OpenNICLog::log(OpenNICLog::Debug,"unknown key '"+key+"'");
-	}
+    QMapIterator<QString, QVariant>i(map);
+    while (i.hasNext())
+    {
+        i.next();
+        QString key = i.key();
+        QVariant value = i.value();
+        if ( key == "tcp_listen_port" )					mTcpListenPort			=	value.toInt();
+        else if ( key == "log_file" )					mLogFile				=	value.toString();
+        else if ( key == "resolver_cache" )				mResolverCache			=	value.toStringList();
+        else if ( key == "resolver_refresh_rate" )
+        {
+            if ( value.toInt() != mResolverRefreshRate )
+            {
+                killTimer(mRefreshTimer);
+                mRefreshTimer = startTimer((value.toInt()*60)*1000);
+            }
+            mResolverRefreshRate	=	value.toInt();
+        }
+        else if ( key == "resolver_cache_size" )
+        {
+            if ( value.toInt() != mResolverCacheSize ) updateDNS(value.toInt());
+            mResolverCacheSize = value.toInt();
+        }
+        else OpenNICLog::log(OpenNICLog::Debug,"unknown key '"+key+"'");
+    }
 }
 
 /**

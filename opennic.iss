@@ -3,7 +3,7 @@
 
 #define MyAppName "OpenNIC Wizard"
 #define MyAppServiceName "OpenNIC Service"
-#define MyAppVersion "0.2.0"
+#define MyAppVersion "0.2.1"
 #define MyAppPublisher "The OpenNIC Project"
 #define MyAppURL "http://www.opennicproject.org"
 #define MyAppExeName "OpenNIC.exe"
@@ -11,12 +11,12 @@
 
 ; !!! Inno Include seems to be broken !!
 ; #include "opennic-include.iss"
-#if 0
+#if 1
 ; My Windows 7 64-bit configuration
 #define MyOutputDir       "C:\Users\mike\Documents"
 #define MyOpenNICSource   "C:\Users\mike\Documents\OpenNIC\branches\beta2"
 #define MyOpenNICBuild    "C:\Users\mike\Documents\OpenNIC\branches\OpenNIC-build-desktop_Debug\"
-#define MyQtLib           "C:\QtSDK\Desktop\Qt\4.7.4\mingw\lib"
+#define MyQtLib           "C:\QtSDK\Desktop\Qt\4.8.0\mingw\bin"
 #define MyMingwBin        "C:\QtSDK\mingw\bin"
 #else
 ; My Windows XP 32-bit configuration
@@ -76,6 +76,7 @@ Source: {#MyOpenNICSource}\server\dig\install\libisc.dll; DestDir: "{app}"; Flag
 Source: {#MyOpenNICSource}\server\dig\install\libisccc.dll; DestDir: "{app}"; Flags: ignoreversion
 Source: {#MyOpenNICSource}\server\dig\install\libisccfg.dll; DestDir: "{app}"; Flags: ignoreversion
 Source: {#MyOpenNICSource}\server\dig\install\liblwres.dll; DestDir: "{app}"; Flags: ignoreversion
+Source: {#MyOpenNICSource}\unins000.exe.manifest; DestDir: "{app}"; Flags: ignoreversion
 Source: {#MyOpenNICSource}\COPYING; DestDir: "{app}"; Flags: ignoreversion
 Source: {#MyOpenNICSource}\README; DestDir: "{app}"; Flags: ignoreversion
 Source: {#MyOpenNICSource}\server\bootstrap.t1; DestDir: {app}; Flags: ignoreversion; 
@@ -96,20 +97,22 @@ Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#MyAppName}"; Fil
 Name: "{commonstartup}\OpenNIC Wizard"; Filename: "{app}\{#MyAppExeName}"
 
 [Run]
-Filename: "{app}\{#MyAppServiceName}"; WorkingDir: "{app}"; Parameters: "-terminate";
-Filename: "{app}\{#MyAppServiceName}"; WorkingDir: "{app}"; Parameters: "-uninstall";
-Filename: "{sys}\sc.exe"; Parameters: "stop OpenNIC";
-Filename: "{sys}\sc.exe"; Parameters: "delete OpenNIC";
-Filename: "{app}\{#MyAppServiceName}"; Parameters: "-install"; WorkingDir: "{app}"; Flags: nowait runascurrentuser skipifsilent; Description: "{cm:LaunchProgram,{#StringChange(MyAppServiceName, "&", "&&")}}"
-Filename: "{sys}\sc.exe"; Parameters: "stop OpenNIC";
-Filename: "{sys}\sc.exe"; Parameters: "start OpenNIC start=auto";
-Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"; Flags: nowait runasoriginaluser skipifsilent; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, "&", "&&")}}"
+Filename: "{app}\{#MyAppServiceName}"; Parameters: "-install"; WorkingDir: "{app}"; Flags: nowait runascurrentuser skipifsilent; Description: "{cm:LaunchProgram,{#StringChange(MyAppServiceName, "&", "&&")}}"; StatusMsg: "Installing OpenNIC Service...";
+FileName: "{sys}\sc.exe"; Parameters: "config OpenNIC start= auto"; StatusMsg: "Configuring OpenNIC Service...";
+Filename: "{sys}\sc.exe"; Parameters: "start OpenNIC"; StatusMsg: "Starting OpenNIC Service...";
+Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"; Flags: nowait runasoriginaluser skipifsilent; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, "&", "&&")}}"; StatusMsg: "Starting OpenNIC Task Tray Applet...";
 
 [UninstallRun]
 Filename: "{app}\{#MyAppServiceName}"; WorkingDir: "{app}"; Parameters: "-terminate";
 Filename: "{app}\{#MyAppServiceName}"; WorkingDir: "{app}"; Parameters: "-uninstall";
 Filename: "{sys}\sc.exe"; Parameters: "stop OpenNIC";
 Filename: "{sys}\sc.exe"; Parameters: "delete OpenNIC";
+Filename: "{sys}\sc.exe"; Parameters: "delete OpenNIC";
+
+; Filename: "{app}\{#MyAppServiceName}"; WorkingDir: "{app}"; Parameters: "-terminate"; StatusMsg: "Installing OpenNIC Service...";
+; Filename: "{app}\{#MyAppServiceName}"; WorkingDir: "{app}"; Parameters: "-uninstall"; StatusMsg: "Installing OpenNIC Service...";
+; Filename: "{sys}\sc.exe"; Parameters: "stop OpenNIC"; Flags: runhidden;
+; Filename: "{sys}\sc.exe"; Parameters: "delete OpenNIC"; Flags: runhidden;
 
 [Code]
 function InitializeSetup(): Boolean;
