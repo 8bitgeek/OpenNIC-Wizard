@@ -75,6 +75,7 @@ class OpenNIC : public QDialog
 		Ui::OpenNICSettings*	uiSettings;
 		int						mRefreshTimer;
 		QTcpSocket				mTcpSocket;
+        QString                 mBalloonStatus;             /** status message to apply to ballon */
 		/** server settings **/
 		int						mTcpListenPort;				/** the TCP listen port */
 		QString					mLogFile;					/** the log file */
