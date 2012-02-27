@@ -97,22 +97,6 @@ OpenNICResolverPoolItem& OpenNICResolverPoolItem::operator=(const OpenNICResolve
 }
 
 /**
-  * @brief convert to a formatted string
-  * @brief <hostAddress>;<testCount>;<replyCount>;<lastReply>;<lastTimeout>;<lastFault>;
-  */
-void OpenNICResolverPoolItem::toString()
-{
-	QString rc;
-	rc += hostAddress().toString() + ";";
-	rc += QString::number(testCount()) + ";";
-	rc += QString::number(replyCount()) + ";";
-	rc += lastReply.toString() + ";";
-	rc += lastTimeout().toString() + ";";
-	rc += lastFault().toString() + ";";
-	return rc;
-}
-
-/**
   * @brief copy from another.
   * @return a self reference
   */

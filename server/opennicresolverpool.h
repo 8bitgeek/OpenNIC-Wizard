@@ -11,6 +11,7 @@
 
 #include <QObject>
 #include <QList>
+#include <QStringList>
 #include "opennicresolverpoolitem.h"
 
 class OpenNICResolverPool : public QObject
@@ -28,7 +29,9 @@ class OpenNICResolverPool : public QObject
 		QList<OpenNICResolverPoolItem>&	items()			{return mItems;}
 		int								count()			{mItems.count();}
 		OpenNICResolverPoolItem			at(int pos)		{return items().at(pos);}
-
+		void							append(OpenNICResolverPoolItem item);
+		void							insort(OpenNICResolverPoolItem item);
+		QStringList						toStringList();
 	public slots:
 		void							sort();
 

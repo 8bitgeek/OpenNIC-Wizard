@@ -213,7 +213,7 @@ void OpenNIC::tcpConnected()
 	QMap<QString,QVariant> serverPacket;
 	if ( !mInitialized )
 	{
-		clientPacket.insert("initialize","initialize"); /* something to get a replty */
+		clientPacket.insert("initialize",VERSION_STRING); /* something to get a reply */
 	}
 	else
 	{

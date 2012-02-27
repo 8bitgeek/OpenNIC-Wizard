@@ -6,7 +6,7 @@
  * can do whatever you want with this stuff. If we meet some day, and you think
  * this stuff is worth it, you can buy me a beer in return.
  */
-#include "opennicresolver.h"
+#include "opennicsystem.h"
 
 #include <QObject>
 #include <QMessageBox>
@@ -20,14 +20,14 @@
 #include <QSpinBox>
 #include <QFile>
 
-OpenNICResolver::OpenNICResolver(QObject *parent)
+OpenNICSystem::OpenNICSystem(QObject *parent)
 : QObject(parent)
 {
 	QObject::connect(&mTest,SIGNAL(queryResult(OpenNICTest::query*)),this,SLOT(insertResult(OpenNICTest::query*)));
 	mTimer = startTimer(1000*1);
 }
 
-OpenNICResolver::~OpenNICResolver()
+OpenNICSystem::~OpenNICSystem()
 {
 	killTimer(mTimer);
 }
@@ -35,7 +35,7 @@ OpenNICResolver::~OpenNICResolver()
 /**
   * @brief Return the resolver pool as a formatted string list <ip addr>;<latency>
   */
-QStringList OpenNICResolver::getResolverPoolStringList()
+QStringList OpenNICSystem::getResolverPoolStringList()
 {
 	QStringList rc;
 	QMutableMapIterator<quint64,QString>i(mResolvers);
@@ -53,7 +53,7 @@ QStringList OpenNICResolver::getResolverPoolStringList()
   * @brief If the reply contains a latency value, insert it into the resolver list.
   * @param result The result of the DNS query including a latency in msecs.
   */
-void OpenNICResolver::insertResult(OpenNICTest::query *result)
+void OpenNICSystem::insertResult(OpenNICTest::query *result)
 {
 	if ( result != NULL )
 	{
@@ -85,7 +85,7 @@ void OpenNICResolver::insertResult(OpenNICTest::query *result)
 /**
   * @brief Evaluate the peformance of resolver.
   */
-void OpenNICResolver::evaluateResolver()
+void OpenNICSystem::evaluateResolver()
 {
 	QStringList domains = getDomains();
 	if ( !domains.empty() && !mResolvers.empty() )
@@ -111,7 +111,7 @@ void OpenNICResolver::evaluateResolver()
   * @brief Get a default T1 list from the bootstrap file.
   * @return A string list of IP numbers representing potential T1s.
   */
-QStringList OpenNICResolver::defaultT1List()
+QStringList OpenNICSystem::defaultT1List()
 {
 	QStringList rc;
 	QFile file(OPENNIC_T1_BOOTSTRAP);
@@ -146,7 +146,7 @@ QStringList OpenNICResolver::defaultT1List()
   * @brief Get a default domains list from the bootstrap file.
   * @return A string list of domains to test.
   */
-QStringList OpenNICResolver::getDomains()
+QStringList OpenNICSystem::getDomains()
 {
 	if ( mDomains.empty() )
 	{
@@ -184,7 +184,7 @@ QStringList OpenNICResolver::getDomains()
 /**
   * @brief Fetch the list of DNS resolvers and return them as strings.
   */
-QStringList OpenNICResolver::getResolvers()
+QStringList OpenNICSystem::getResolvers()
 {
 	QStringList ips;
 	/* If there are current no resolvers in the map table, then try to populate it... */
@@ -212,7 +212,7 @@ QStringList OpenNICResolver::getResolvers()
 /**
   * @brief Add a dns entry to the system's list of DNS resolvers.
   */
-QString OpenNICResolver::addResolver(QString dns,int index)
+QString OpenNICSystem::addResolver(QString dns,int index)
 {
 	QString rc;
 	QEventLoop loop;
@@ -240,7 +240,7 @@ QString OpenNICResolver::addResolver(QString dns,int index)
 /**
   * @brief Get the text which will show the current DNS resolver settings.
   */
-QString OpenNICResolver::getSettingsText()
+QString OpenNICSystem::getSettingsText()
 {
 	QByteArray output;
 	QEventLoop loop;
@@ -261,7 +261,7 @@ QString OpenNICResolver::getSettingsText()
 /**
   * @brief Fetch the raw list of DNS resolvers and return them as strings.
   */
-QStringList OpenNICResolver::getBootstrapResolverList()
+QStringList OpenNICSystem::getBootstrapResolverList()
 {
 	QStringList outputList;
 	QStringList ips;
@@ -299,7 +299,7 @@ QStringList OpenNICResolver::getBootstrapResolverList()
 /**
   * @brief Fetch the raw list of resolvers and insert into the map table.
   */
-void OpenNICResolver::initializeResolvers()
+void OpenNICSystem::initializeResolvers()
 {
 	QStringList ips = getBootstrapResolverList();
 	for(int n=0; n < ips.count(); n++)
@@ -312,7 +312,7 @@ void OpenNICResolver::initializeResolvers()
 /**
   * @brief Generate a randome number.between low and high
   */
-int OpenNICResolver::randInt(int low, int high)
+int OpenNICSystem::randInt(int low, int high)
 {
 	return qrand()%((high+1)-low)+low;
 }
@@ -320,7 +320,7 @@ int OpenNICResolver::randInt(int low, int high)
 /**
   * @brief Get here on timer events
   */
-void OpenNICResolver::timerEvent(QTimerEvent* e)
+void OpenNICSystem::timerEvent(QTimerEvent* e)
 {
 	if ( e->timerId() == mTimer )
 	{
