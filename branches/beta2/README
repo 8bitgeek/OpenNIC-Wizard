@@ -1,0 +1,16 @@
+OpenNIC Wizard
+
+Windows:
+
+1) Run the installer and allow the installer to launch th application.
+
+2) Wait for the initialization progress dielog to complete.
+
+3) Task Tray Icon should appear shortly.
+
+4) Right click on task tray icon to access controls.
+
+5) Left click on task tray icon to see current resolver cache.
+
+The OpenNIC Wizard Task Tray applet should appear from now on each time you restart.
+
