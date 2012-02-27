@@ -170,7 +170,7 @@ QStringList OpenNICSystem::getResolvers()
   * @param resolver The IP address of teh resolver to add to the system
   * @param index resolver sequence (1..n)
   */
-QString OpenNICSystem::insertSystemResolver(QString resolver,int index)
+QString OpenNICSystem::insertSystemResolver(QHostAddress resolver,int index)
 {
 	QString rc;
 	QEventLoop loop;
@@ -178,11 +178,11 @@ QString OpenNICSystem::insertSystemResolver(QString resolver,int index)
 	QStringList arguments;
 	if ( index == 1 )
 	{
-		arguments << "interface" << "ip" << "set" << "dns" << "Local Area Connection" << "static" << dns;
+		arguments << "interface" << "ip" << "set" << "dns" << "Local Area Connection" << "static" << resolver.toString();
 	}
 	else
 	{
-		arguments << "interface" << "ip" << "add" << "dns" << "Local Area Connection" << dns << "index="+QString::number(index);
+		arguments << "interface" << "ip" << "add" << "dns" << "Local Area Connection" << resolver.toString() << "index="+QString::number(index);
 	}
 	QProcess *process = new QProcess(this);
 	process->start(program, arguments);
@@ -223,12 +223,12 @@ QString OpenNICSystem::getSystemResolverList()
   * @param resolver The IP address of teh resolver to add to the system
   * @param index resolver sequence (1..n)
   */
-QString OpenNICSystem::insertSystemResolver(QString resolver,int index)
+QString OpenNICSystem::insertSystemResolver(QHostAddress resolver,int index)
 {
 	QFile file("/etc/resolv.conf");
 	if ( (index==1) ? file.open(QIODevice::ReadWrite|QIODevice::Truncate) : file.open(QIODevice::ReadWrite|QIODevice::Append) )
 	{
-		QString line("nameserver "+resolver+"\n");
+		QString line("nameserver "+resolver.toString()+"\n");
 		file.write(line);
 		file.close();
 		return resolver;

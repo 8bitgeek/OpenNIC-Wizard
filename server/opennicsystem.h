@@ -15,6 +15,7 @@
 #include <QStringList>
 #include <QMultiMap>
 #include <QTimerEvent>
+#include <QHostAddress>
 
 class OpenNICSystem
 {
@@ -24,7 +25,7 @@ class OpenNICSystem
 		static QStringList			getBootstrapT2List();
 		static QStringList			getTestDomains();
 		static QString				getSystemResolverList();
-		static QString				insertSystemResolver(QString dns,int index);
+		static QString				insertSystemResolver(QHostAddress dns,int index);
 };
 
 #endif // OPENNICSYSTEM_H
