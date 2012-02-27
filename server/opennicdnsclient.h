@@ -6,8 +6,8 @@
  * can do whatever you want with this stuff. If we meet some day, and you think
  * this stuff is worth it, you can buy me a beer in return.
  */
-#ifndef OPENNICDNS_H
-#define OPENNICDNS_H
+#ifndef OPENNICDNSCLIENT_H
+#define OPENNICDNSCLIENT_H
 
 #include <QObject>
 #include <QUdpSocket>
@@ -26,7 +26,7 @@
 #define DEFAULT_DNS_PORT	53		/* The default DNS UDP oprt */
 
 class dns_cb_data;
-class OpenNICDns : public QObject
+class OpenNICDnsClient : public QObject
 {
 	Q_OBJECT
 	public:
@@ -76,8 +76,8 @@ class OpenNICDns : public QObject
 			DNS_ERROR					/* No memory or other error */
 		} dns_error;
 
-		OpenNICDns(QObject *parent = 0);
-		virtual ~OpenNICDns();
+		OpenNICDnsClient(QObject *parent = 0);
+		virtual ~OpenNICDnsClient();
 		void						setResolver(QHostAddress& resolverAddress);
 		QHostAddress&				resolverAddress();
 
@@ -120,17 +120,17 @@ class dns_cb_data {
 public:
 	dns_cb_data()
 		: context(NULL)
-		, error(OpenNICDns::DNS_OK)
-		, query_type(OpenNICDns::DNS_A_RECORD)
+		, error(OpenNICDnsClient::DNS_OK)
+		, query_type(OpenNICDnsClient::DNS_A_RECORD)
 		{}
 	~dns_cb_data() {}
 	void*								context;	/* Application context */
-	OpenNICDns::dns_error				error;		/* Result code */
-	OpenNICDns::dns_query_type			query_type;	/* Query type */
+	OpenNICDnsClient::dns_error				error;		/* Result code */
+	OpenNICDnsClient::dns_query_type			query_type;	/* Query type */
 	QString								name;		/* Requested host name	*/
 	QHostAddress						addr;		/* Resolved address	*/
 	QString								mxName;		/* MX record host name. */
 };
 
 
-#endif // OPENNICDNS_H
+#endif // OPENNICDNSCLIENT_H

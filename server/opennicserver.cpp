@@ -41,7 +41,6 @@ OpenNICServer::OpenNICServer(QObject *parent)
 : inherited(parent)
 , mEnabled(true)
 {
-	mResolverPool.activate();
 	readSettings();
 	initializeServer();
 	mStartTimer = startTimer(1000);
