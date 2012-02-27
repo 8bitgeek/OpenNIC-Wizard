@@ -245,9 +245,14 @@ void OpenNIC::tcpConnected()
 	}
 	if (!serverPacket.isEmpty() )
 	{
+        mBalloonStatus="";
 		mapServerReply(serverPacket);
 		mInitialized=true;
 	}
+    else
+    {
+        mBalloonStatus="OpenNIC Service failed to reply";
+    }
 }
 
 void OpenNIC::tcpDisconnected()
@@ -256,6 +261,7 @@ void OpenNIC::tcpDisconnected()
 
 void OpenNIC::tcpError(QAbstractSocket::SocketError socketError)
 {
+    mBalloonStatus = tr( "Failed to connect to OpenNIC service. [" ) + QString::number((int)socketError) + "]";
 }
 
 void OpenNIC::tcpHostFound()
