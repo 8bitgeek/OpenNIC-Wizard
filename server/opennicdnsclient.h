@@ -78,23 +78,19 @@ class OpenNICDnsClient : public QObject
 
 		OpenNICDnsClient(QObject *parent = 0);
 		virtual ~OpenNICDnsClient();
-		void						setResolver(QHostAddress& resolverAddress);
-		QHostAddress&				resolverAddress();
-
-		bool						isOpen() {return mClientSocket != NULL; }
-		bool						open();
-		void						close();
-
-		void						lookup(QHostAddress resolverAddress, QString name, dns_query_type qtype, void* context=NULL, quint16 port=DEFAULT_DNS_PORT);
-		void						lookup(QString name, dns_query_type qtype, void* context, quint16 port=DEFAULT_DNS_PORT);
-
-	signals:
-		void						reply(dns_cb_data& data);
 
 	public slots:
 		void						cancel(void* context);
 
 	protected:
+		void						setResolver(QHostAddress& resolverAddress);
+		QHostAddress&				resolverAddress();
+		bool						isOpen() {return mClientSocket != NULL; }
+		bool						open();
+		void						close();
+		virtual void				lookup(QHostAddress resolverAddress, QString name, dns_query_type qtype, void* context=NULL, quint16 port=DEFAULT_DNS_PORT);
+		virtual void				lookup(QString name, dns_query_type qtype, void* context, quint16 port=DEFAULT_DNS_PORT);
+		virtual void				reply(dns_cb_data& data);
 		virtual void				timerEvent(QTimerEvent* e);
 
 	private slots:

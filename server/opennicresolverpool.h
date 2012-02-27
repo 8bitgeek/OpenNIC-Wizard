@@ -36,7 +36,6 @@ class OpenNICResolverPool : public QObject
 		int								indexOf(QHostAddress hostAddress);
 		QStringList						toStringList();
 	public slots:
-		void							result(QHostAddress hostAddress, int latency, int faultCode, QString fault);
 		void							sort();
 	private:
 		void							swap(int a,int b);
