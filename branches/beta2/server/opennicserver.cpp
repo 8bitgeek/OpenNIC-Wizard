@@ -205,7 +205,7 @@ int OpenNICServer::initializeResolvers()
 	int n, rc;
 	/** get the bootstrap resolvers... */
 	QStringList bootstrapList = OpenNICSystem::getBootstrapT1List();
-	for(n=0; n < bootstrapList.count(); n++);
+	for(n=0; n < bootstrapList.count(); n++)
 	{
 		QString resolver = bootstrapList.at(n).trimmed();
 		if ( !resolver.isEmpty() )

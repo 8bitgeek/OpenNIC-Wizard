@@ -7,6 +7,7 @@
  * this stuff is worth it, you can buy me a beer in return.
  */
 #include "opennicresolverpoolitem.h"
+#include "opennicsystem.h"
 
 #define inherited OpenNICResolverTest
 
@@ -176,9 +177,15 @@ double OpenNICResolverPoolItem::averageLatency()
   */
 void OpenNICResolverPoolItem::reply(dns_cb_data& data)
 {
-	/* FIXME - do stuff */
 }
 
+/**
+  * @brief get here once in a while to run a test
+  */
+void OpenNICResolverPoolItem::test()
+{
+	resolve(hostAddress(), OpenNICSystem::randomDomain());
+}
 
 
 

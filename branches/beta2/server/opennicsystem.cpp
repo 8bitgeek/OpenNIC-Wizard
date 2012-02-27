@@ -23,6 +23,8 @@
 #define OPENNIC_T1_BOOTSTRAP		"bootstrap.t1"
 #define	OPENNIC_DOMAINS_BOOTSTRAP	"bootstrap.domains"
 
+#define rand_int(low,high) (qrand()%((high+1)-low)+low)
+
 QStringList OpenNICSystem::mTestDomains;
 
 /**
@@ -136,6 +138,16 @@ QStringList OpenNICSystem::getTestDomains()
 		return rc;
 	}
 	return mTestDomains;
+}
+
+/**
+  * @brief retrieve a random domain
+  */
+QString OpenNICSystem::randomDomain()
+{
+	QStringList domains = getTestDomains();
+	int n = rand_int(0,domains.count()-1);
+	return domains.at(n);
 }
 
 #if defined(Q_OS_WIN32)

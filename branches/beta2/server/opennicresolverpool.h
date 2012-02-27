@@ -24,7 +24,6 @@ class OpenNICResolverPool : public QObject
 		virtual ~OpenNICResolverPool();
 
 		OpenNICResolverPool&			copy(OpenNICResolverPool& other);
-		OpenNICResolverPool				fastest(int num);
 		bool							contains(OpenNICResolverPoolItem item);
 		bool							contains(QHostAddress item);
 		QList<OpenNICResolverPoolItem>&	items()			{return mItems;}
