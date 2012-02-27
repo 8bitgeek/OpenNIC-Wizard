@@ -11,9 +11,14 @@
 
 #define inherited OpenNICDnsClient
 
+#define TIMER_RESOLUTION	5	/* seconds */
+
 OpenNICResolverTest::OpenNICResolverTest(QObject *parent)
 : inherited(parent)
+, mTimerInterval(0)
+, mTimerCount(0)
 {
+	mSecondTimer = startTimer(1000*TIMER_RESOLUTION);
 	setInterval(10); /* a small delay for bootstrap */
 }
 
@@ -33,15 +38,7 @@ OpenNICResolverTest::~OpenNICResolverTest()
   */
 void OpenNICResolverTest::setInterval(int seconds)
 {
-	if ( mSecondTimer >= 0 )
-	{
-		killTimer(mSecondTimer);
-		mSecondTimer=(-1);
-	}
-	if ( seconds > 0 )
-	{
-		mSecondTimer = startTimer(seconds*1000);
-	}
+	mTimerInterval = seconds;
 }
 
 /**
@@ -82,6 +79,7 @@ OpenNICResolverTest::query* OpenNICResolverTest::find(void* context)
   */
 void OpenNICResolverTest::purge()
 {
+	inherited::purge();
 	QDateTime now = QDateTime::currentDateTime();
 	for(int n=0; n < mQueries.count(); n++ )
 	{
@@ -128,9 +126,15 @@ void OpenNICResolverTest::timerEvent(QTimerEvent *e)
 	inherited::timerEvent(e);
 	if ( mSecondTimer == e->timerId() )
 	{
-		test();
 		purge();
-		setInterval(OpenNICSystem::random(10,60*15)); /* beween 10 seconds to 15 minutes */
+		mTimerCount += TIMER_RESOLUTION;
+		if (mTimerCount >= mTimerInterval)
+		{
+			test();
+			//setInterval(OpenNICSystem::random(10,60*15)); /* beween 10 seconds to 15 minutes */
+			setInterval(OpenNICSystem::random(10,60*5)); /* beween 10 seconds to 15 minutes */
+			mTimerCount=0;
+		}
 	}
 }
 

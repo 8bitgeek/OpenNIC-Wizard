@@ -83,6 +83,7 @@ class OpenNICDnsClient : public QObject
 		void						cancel(void* context);
 
 	protected:
+		void						purge();
 		void						setResolver(QHostAddress& resolverAddress);
 		QHostAddress&				resolverAddress();
 		bool						isOpen() {return mClientSocket != NULL; }
@@ -91,20 +92,17 @@ class OpenNICDnsClient : public QObject
 		virtual void				lookup(QHostAddress resolverAddress, QString name, dns_query_type qtype, void* context=NULL, quint16 port=DEFAULT_DNS_PORT);
 		virtual void				lookup(QString name, dns_query_type qtype, void* context, quint16 port=DEFAULT_DNS_PORT);
 		virtual void				reply(dns_cb_data& data);
-		virtual void				timerEvent(QTimerEvent* e);
 
 	private slots:
 		void						readPendingDatagrams();
 
 	private:
-		void						purgeExpiredQueries();
 		void						appendActiveQuery(query* q);
 		query*						findActiveQuery(quint16 tid);
 		void						disposeQuery(query* q);
 		void						fetch(const quint8 *pkt, const quint8 *s, int pktsiz, char *dst, int dstlen);
 		void						doReply(query* q, dns_error error);
 		void						processDatagram(QByteArray datagram);
-		int							mSecondTimer;		/* A one second timer */
 		quint16						m_tid;				/* Latest tid used		*/
 		QHostAddress				mResolverAddress;	/* The resolver address */
 		QUdpSocket*					mClientSocket;		/* UDP socket used for queries	*/

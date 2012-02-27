@@ -39,6 +39,7 @@ class OpenNICResolverTest : public OpenNICDnsClient
 		virtual void		reply(dns_cb_data& rdata);
 		virtual	void		setInterval(int seconds);
 	protected:
+		virtual void		purge();
 		virtual	void		test() {}
 		virtual void		resolve(QHostAddress addr, QString name, quint16 port=DEFAULT_DNS_PORT);
 		virtual void		timerEvent(QTimerEvent* e);
@@ -46,9 +47,10 @@ class OpenNICResolverTest : public OpenNICDnsClient
 		void				dispose(query* q);
 		void				append(query* q);
 		query*				find(void* context);
-		void				purge();
-		int					mSecondTimer;
 		QList<query*>		mQueries;
+		int					mSecondTimer;
+		int					mTimerInterval;
+		int					mTimerCount;
 };
 
 #endif // OPENNICRESOLVERTEST_H

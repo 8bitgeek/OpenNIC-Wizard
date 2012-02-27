@@ -32,7 +32,7 @@ class OpenNICResolverPoolItem : public OpenNICResolverTest
 		QHostAddress				hostAddress()		{return mHostAddress;}
 		int							testCount()			{return mTestCount;}
 		int							replyCount()		{return mReplyCount;}
-		int							failCount()			{return testCount()-replyCount();}
+		int							timeoutCount()		{return mTimeoutCount;}
 		int							lastLatency()		{return mLatencySamples.count() ? mLatencySamples.at(mLatencySamples.count()-1) : 0;}
 		double						averageLatency();
 		QDateTime					lastReply()			{return mLastReply;}
@@ -64,6 +64,7 @@ class OpenNICResolverPoolItem : public OpenNICResolverTest
 		QHostAddress				mHostAddress;		/* host address wrapper */
 		int							mTestCount;			/* number of tests conducted */
 		int							mReplyCount;		/* number of replies received */
+		int							mTimeoutCount;		/* number of tests resulting in a timeout */
 		QList<int>					mLatencySamples;	/* last latency samples (msec) */
 		QDateTime					mLastReply;			/* the time of teh last reply */
 		QDateTime					mLastTimeout;		/* the time of the last timeout */

@@ -60,6 +60,10 @@ bool OpenNICResolverPoolItem::operator>(OpenNICResolverPoolItem &other)
 	{
 		return alive();
 	}
+	if ( kind() != other.kind() )
+	{
+		return kind() > other.kind();
+	}
 	return averageLatency() < other.averageLatency();  /* less is more */
 }
 
@@ -72,6 +76,10 @@ bool OpenNICResolverPoolItem::operator<(OpenNICResolverPoolItem &other)
 	if ( alive() != other.alive() )
 	{
 		return !alive();
+	}
+	if ( kind() != other.kind() )
+	{
+		return kind() < other.kind();
 	}
 	return averageLatency() > other.averageLatency();  /* less is more */
 }
@@ -86,6 +94,10 @@ bool OpenNICResolverPoolItem::operator>=(OpenNICResolverPoolItem &other)
 	{
 		return alive();
 	}
+	if ( kind() != other.kind() )
+	{
+		return kind() > other.kind();
+	}
 	return averageLatency() <= other.averageLatency();  /* less is more */
 }
 
@@ -98,6 +110,10 @@ bool OpenNICResolverPoolItem::operator<=(OpenNICResolverPoolItem &other)
 	if ( alive() != other.alive() )
 	{
 		return !alive();
+	}
+	if ( kind() != other.kind() )
+	{
+		return kind() < other.kind();
 	}
 	return averageLatency() >= other.averageLatency();  /* less is more */
 }
@@ -122,6 +138,7 @@ QString OpenNICResolverPoolItem::toString()
 	rc += QString::number((int)averageLatency()) + ";";
 	rc += QString::number(testCount()) + ";";
 	rc += QString::number(replyCount()) + ";";
+	rc += QString::number(timeoutCount()) + ";";
 	rc += lastReply().toString() + ";";
 	rc += lastTimeout().toString() + ";";
 	rc += lastFault() + ";";
@@ -138,6 +155,7 @@ OpenNICResolverPoolItem& OpenNICResolverPoolItem::copy(const OpenNICResolverPool
 	mHostAddress	= other.mHostAddress;
 	mTestCount		= other.mTestCount;
 	mReplyCount		= other.mReplyCount;
+	mTimeoutCount	= other.mTimeoutCount;
 	mLatencySamples	= other.mLatencySamples;
 	mLastReply		= other.mLastReply;
 	mLastTimeout	= other.mLastTimeout;
@@ -154,6 +172,7 @@ void OpenNICResolverPoolItem::clear()
 	mHostAddress.clear();
 	mTestCount=0;
 	mReplyCount=0;
+	mTimeoutCount=0;
 	mLatencySamples.clear();
 	mLastReply.fromTime_t(0);
 	mLastTimeout.fromTime_t(0);
@@ -202,6 +221,7 @@ void OpenNICResolverPoolItem::reply(dns_cb_data& data)
 		}
 		else if (data.error == OpenNICDnsClient::DNS_TIMEOUT)
 		{
+			++mTimeoutCount;
 			mLastTimeout = now;
 			mLastFault="DNS_TIMEOUT " + data.name;
 		}

@@ -21,7 +21,6 @@ OpenNICDnsClient::OpenNICDnsClient(QObject *parent)
 , m_tid(0)
 , mClientSocket(NULL)
 {
-	mSecondTimer = startTimer(1000);
 }
 
 /**
@@ -99,7 +98,7 @@ void OpenNICDnsClient::readPendingDatagrams()
 /**
   * @brief get here once in a while to purge expired queries from the queue.
   */
-void OpenNICDnsClient::purgeExpiredQueries()
+void OpenNICDnsClient::purge()
 {
 	QDateTime now = QDateTime::currentDateTime();
 	for(int n=0; n < mQueries.count(); n++ )
@@ -428,15 +427,4 @@ void OpenNICDnsClient::reply(dns_cb_data& data)
 	/* NOP */
 }
 
-
-/**
-  * @brief Get here on timer events
-  */
-void OpenNICDnsClient::timerEvent(QTimerEvent* e)
-{
-	if ( e->timerId() == mSecondTimer )
-	{
-		purgeExpiredQueries();
-	}
-}
 
