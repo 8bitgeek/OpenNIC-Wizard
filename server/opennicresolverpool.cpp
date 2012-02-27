@@ -8,8 +8,6 @@
  */
 #include "opennicresolverpool.h"
 
-#define rand_int(low,high) (qrand()%((high+1)-low)+low)
-
 OpenNICResolverPool::OpenNICResolverPool(QObject *parent)
 : QObject(parent)
 {
@@ -147,21 +145,6 @@ int OpenNICResolverPool::indexOf(QHostAddress hostAddress)
 	}
 	return -1;
 }
-
-/**
-  * @brief determine the fastest resolvers
-  * @return a pool containing the selected resolvers.
-  */
-OpenNICResolverPool OpenNICResolverPool::fastest(int num)
-{
-	OpenNICResolverPool pool;
-	while(pool.count() < num && pool.count() < count() )
-	{
-
-	}
-	return pool;
-}
-
 
 
 

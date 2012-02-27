@@ -24,6 +24,7 @@ class OpenNICSystem
 		static QStringList			getBootstrapT1List();
 		static QStringList			getBootstrapT2List();
 		static QStringList			getTestDomains();
+		static QString				randomDomain();
 		static QString				getSystemResolverList();
 		static QString				insertSystemResolver(QHostAddress dns,int index);
 	private:

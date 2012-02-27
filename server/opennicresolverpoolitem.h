@@ -53,6 +53,7 @@ class OpenNICResolverPoolItem : public OpenNICResolverTest
 		QString						toString();
 
 	protected:
+		virtual void				test();
 		virtual void				reply(dns_cb_data& data);
 
 	public slots:

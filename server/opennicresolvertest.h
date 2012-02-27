@@ -39,6 +39,7 @@ class OpenNICResolverTest : public OpenNICDnsClient
 		virtual void		reply(dns_cb_data& rdata);
 		virtual	void		setInterval(int seconds);
 	protected:
+		virtual	void		test() {}
 		virtual void		resolve(QHostAddress addr, QString name, quint16 port=DEFAULT_DNS_PORT);
 		virtual void		timerEvent(QTimerEvent* e);
 	private:

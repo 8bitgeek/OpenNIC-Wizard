@@ -127,6 +127,7 @@ void OpenNICResolverTest::timerEvent(QTimerEvent *e)
 	inherited::timerEvent(e);
 	if ( mSecondTimer == e->timerId() )
 	{
+		test();
 		purge();
 	}
 }
