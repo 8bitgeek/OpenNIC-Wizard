@@ -14,6 +14,8 @@
 #include <QDateTime>
 #include <QString>
 
+#include "opennicresolvertestresult.h"
+
 #define RESOLVER_SAMPLE_STORAGE_LIMIT		10			/* number of samples to remember for averaging */
 
 class OpenNICResolverPoolItem : public QObject
@@ -44,7 +46,13 @@ class OpenNICResolverPoolItem : public QObject
 		bool						operator>=(OpenNICResolverPoolItem &other);
 		bool						operator<=(OpenNICResolverPoolItem &other);
 
+		QString						toString();
+
+	signals:
+		void						latencyRequest(OpenNICResolverPoolItem* poolItem);
+
 	public slots:
+		void						latencyReply(OpenNICResolverTestResult result);
 		void						clear();
 
 	private:

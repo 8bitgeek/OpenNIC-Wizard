@@ -10,12 +10,13 @@
 #define OPENNICTESTER_H
 
 #include <QThread>
-#include "opennicdns.h"
 #include <QList>
 #include <QMutex>
 #include <QDateTime>
 #include <QHostAddress>
 #include <QTimerEvent>
+
+#include "opennicdns.h"
 
 #define PURGE_TIMEOUT	120		/* purge timeout in seconds */
 

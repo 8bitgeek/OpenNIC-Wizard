@@ -6,8 +6,8 @@
  * can do whatever you want with this stuff. If we meet some day, and you think
  * this stuff is worth it, you can buy me a beer in return.
  */
-#ifndef OPENNICRESOLVER_H
-#define OPENNICRESOLVER_H
+#ifndef OPENNICSYSTEM_H
+#define OPENNICSYSTEM_H
 
 #include <QObject>
 #include <QList>
@@ -16,17 +16,15 @@
 #include <QMultiMap>
 #include <QTimerEvent>
 
-#include "opennictest.h"
-
 #define OPENNIC_T1_BOOTSTRAP		"bootstrap.t1"
 #define	OPENNIC_DOMAINS_BOOTSTRAP	"bootstrap.domains"
 
-class OpenNICResolver : public QObject
+class OpenNICSystem : public QObject
 {
 	Q_OBJECT
 	public:
-		explicit OpenNICResolver(QObject *parent=0);
-		virtual ~OpenNICResolver();
+		explicit OpenNICSystem(QObject *parent=0);
+		virtual ~OpenNICSystem();
 
 		QStringList					defaultT1List();
 		QString						addResolver(QString dns,int index);
@@ -53,7 +51,6 @@ class OpenNICResolver : public QObject
 		QMultiMap<quint64,QString>	mResolvers;					/* latency (msecs) mapped to ip address */
 		int							mTimer;						/*  resolution */
 		QStringList					mDomains;					/* domains to test with */
-		OpenNICTest					mTest;						/* resolver tester */
 };
 
-#endif // OPENNICRESOLVER_H
+#endif // OPENNICSYSTEM_H

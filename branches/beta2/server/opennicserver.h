@@ -19,7 +19,7 @@
 #include <QVariant>
 #include "opennicresolver.h"
 
-#define	VERSION_STRING				"0.1.1"
+#define	VERSION_STRING				"0.2.0"
 
 class OpenNICServer : public QObject
 {

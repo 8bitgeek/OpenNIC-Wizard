@@ -27,6 +27,39 @@ OpenNICResolverPool& OpenNICResolverPool::copy(OpenNICResolverPool& other)
 }
 
 /**
+  * @brief export to a tring list format
+  */
+QStringList OpenNICResolverPool::toStringList()
+{
+	QStringList rc;
+	sort();
+	for(int n=0; n < count(); n++)
+	{
+		OpenNICResolverPoolItem item = at(n);
+		QString itemString = item.toString();
+		rc.append(itemString);
+	}
+	return rc;
+}
+
+/**
+  * @brief append an item
+  */
+void OpenNICResolverPool::append(OpenNICResolverPoolItem item)
+{
+	mItems.append(item);
+}
+
+/**
+  * @brief append and sort
+  */
+void OpenNICResolverPool::insort(OpenNICResolverPoolItem item)
+{
+	mItems.append(item);
+	sort();
+}
+
+/**
   * @brief swap the positions of one item with another
   */
 void OpenNICResolverPool::swap(int a,int b)
