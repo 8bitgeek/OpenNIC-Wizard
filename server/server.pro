@@ -21,6 +21,8 @@ SOURCES += main.cpp\
 		opennicdns.cpp \
 		openniclog.cpp \
 		qtservice.cpp \
+    opennicresolverpoolitem.cpp \
+    opennicresolverpool.cpp
 
 
 win32::SOURCES += qtservice_win.cpp
@@ -37,11 +39,11 @@ HEADERS  += opennicserver.h \
 		qtservice.h \
 		qtservice_p.h \
 		qtunixserversocket.h \
-		qtunixsocket.h
+		qtunixsocket.h \
+    opennicresolverpoolitem.h \
+    opennicresolverpool.h
 
 RESOURCES += \
 		opennicserver.qrc
 
 win32:LIBS += C:/QtSDK/mingw/lib/libwsock32.a
-
-
