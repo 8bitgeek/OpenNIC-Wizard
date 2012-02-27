@@ -21,6 +21,7 @@ class OpenNICSystem
 {
 	public:
 
+		static int					random(int low, int high) {return (qrand()%((high+1)-low)+low);}
 		static QStringList			getBootstrapT1List();
 		static QStringList			getBootstrapT2List();
 		static QStringList			getTestDomains();

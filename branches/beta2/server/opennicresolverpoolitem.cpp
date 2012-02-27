@@ -175,7 +175,7 @@ double OpenNICResolverPoolItem::averageLatency()
 		}
 		return total/mLatencySamples.count();
 	}
-	return 0.0;
+	return 10000;
 }
 
 /**
@@ -188,12 +188,14 @@ void OpenNICResolverPoolItem::reply(dns_cb_data& data)
 		QDateTime now = QDateTime::currentDateTime();
 		if (data.error == OpenNICDnsClient::DNS_OK)
 		{
+			++mReplyCount;
 			mLastReply = now;
 			mLatencySamples.append(mTestBegin.msecsTo(now));
 			mLastFault="DNS_OK " + data.addr.toString() + " " + data.name;
 		}
 		else if (data.error == OpenNICDnsClient::DNS_DOES_NOT_EXIST)
 		{
+			++mReplyCount;
 			mLastReply = now;
 			mLatencySamples.append(mTestBegin.msecsTo(now));
 			mLastFault="DNS_DOES_NOT_EXIST " + data.name;

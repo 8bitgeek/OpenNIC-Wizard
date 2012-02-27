@@ -7,13 +7,14 @@
  * this stuff is worth it, you can buy me a beer in return.
  */
 #include "opennicresolvertest.h"
+#include "opennicsystem.h"
 
 #define inherited OpenNICDnsClient
 
 OpenNICResolverTest::OpenNICResolverTest(QObject *parent)
 : inherited(parent)
 {
-	setInterval(10);
+	setInterval(10); /* a small delay for bootstrap */
 }
 
 OpenNICResolverTest::~OpenNICResolverTest()
@@ -129,6 +130,7 @@ void OpenNICResolverTest::timerEvent(QTimerEvent *e)
 	{
 		test();
 		purge();
+		setInterval(OpenNICSystem::random(10,60*15)); /* beween 10 seconds to 15 minutes */
 	}
 }
 
