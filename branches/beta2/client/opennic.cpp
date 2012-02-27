@@ -155,18 +155,20 @@ void OpenNIC::updateResolverPool(QStringList resolverPool)
 		QString latency = resolverData.at(1);
 		QString testCount = resolverData.at(2);
 		QString replyCount = resolverData.at(3);
-		QString lastReply = resolverData.at(4);
-		QString lastTimeout = resolverData.at(5);
-		QString status = resolverData.at(6);
-		QString kind = resolverData.at(7);
+		QString timeoutCount = resolverData.at(4);
+		QString lastReply = resolverData.at(5);
+		QString lastTimeout = resolverData.at(6);
+		QString status = resolverData.at(7);
+		QString kind = resolverData.at(8);
 		table->setItem(row,0,new QTableWidgetItem(kind));
 		table->setItem(row,1,new QTableWidgetItem(ip));
 		table->setItem(row,2,new QTableWidgetItem(latency));
 		table->setItem(row,3,new QTableWidgetItem(status));
 		table->setItem(row,4,new QTableWidgetItem(testCount));
 		table->setItem(row,5,new QTableWidgetItem(replyCount));
-		table->setItem(row,6,new QTableWidgetItem(lastReply));
-		table->setItem(row,7,new QTableWidgetItem(lastTimeout));
+		table->setItem(row,6,new QTableWidgetItem(timeoutCount));
+		table->setItem(row,7,new QTableWidgetItem(lastReply));
+		table->setItem(row,8,new QTableWidgetItem(lastTimeout));
 	}
 	table->resizeColumnsToContents();
 	table->resizeRowsToContents();

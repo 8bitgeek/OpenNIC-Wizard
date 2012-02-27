@@ -197,10 +197,20 @@ QString OpenNICSystem::getSystemResolverList()
 	}
 	output = process->readAllStandardOutput();
 	delete process;
+	if (output.trimmed().isEmpty())
+	{
+		return "Could not obtain system resolver list.";
+	}
 	return output;
 }
 
 #elif defined(Q_OS_UNIX)
+
+#define SIMULATE 1
+
+#ifdef SIMULATE
+QString sResolvConf;
+#endif
 
 /**
   * @brief Add a dns entry to the system's list of DNS resolvers.
@@ -209,6 +219,11 @@ QString OpenNICSystem::getSystemResolverList()
   */
 QString OpenNICSystem::insertSystemResolver(QHostAddress resolver,int index)
 {
+#ifdef SIMULATE
+		if (index == 1) sResolvConf.clear();
+		sResolvConf += "nameserver "+resolver.toString()+"\n";
+		return resolver.toString();
+#else
 	QFile file("/etc/resolv.conf");
 	if ( (index==1) ? file.open(QIODevice::ReadWrite|QIODevice::Truncate) : file.open(QIODevice::ReadWrite|QIODevice::Append) )
 	{
@@ -218,6 +233,7 @@ QString OpenNICSystem::insertSystemResolver(QHostAddress resolver,int index)
 		return resolver.toString();
 	}
 	return "";
+#endif
 }
 
 
@@ -226,6 +242,9 @@ QString OpenNICSystem::insertSystemResolver(QHostAddress resolver,int index)
   */
 QString OpenNICSystem::getSystemResolverList()
 {
+#ifdef SIMULATE
+	return sResolvConf;
+#else
 	QFile file("/etc/resolv.conf");
 	if ( file.open(QIODevice::ReadOnly) )
 	{
@@ -234,6 +253,7 @@ QString OpenNICSystem::getSystemResolverList()
 		return text;
 	}
 	return "Could not obtain system resolver list.";
+#endif
 }
 
 #endif
