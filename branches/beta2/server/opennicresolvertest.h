@@ -20,7 +20,7 @@
 
 #define PURGE_TIMEOUT	30		/* purge timeout in seconds */
 
-class OpenNICTest : public QObject
+class OpenNICResolverTest : public QObject
 {
 	Q_OBJECT
 	public:
@@ -33,10 +33,11 @@ class OpenNICTest : public QObject
 			qint64			latency;	/* Latency in mulliseconds */
 			int				error;		/* Error Code */
 		} query;
-		explicit OpenNICTest(QObject *parent=0);
-		virtual ~OpenNICTest();
+		explicit OpenNICResolverTest(QObject *parent=0);
+		virtual ~OpenNICResolverTest();
 	protected slots:
 		virtual void		reply(dns_cb_data& rdata);
+		virtual	void		setInterval(int seconds);
 	protected:
 		OpenNICDns*			dns() {return mDns;}
 		virtual void		resolve(QHostAddress addr, QString name, quint16 port=DEFAULT_DNS_PORT);

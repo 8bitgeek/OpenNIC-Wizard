@@ -15,7 +15,7 @@ OpenNICResolverTest::OpenNICResolverTest(QObject *parent)
 {
 	mDns = new OpenNICDns(this);
 	QObject::connect(mDns,SIGNAL(reply(dns_cb_data&)),this,SLOT(reply(dns_cb_data&)));
-	mSecondTimer = startTimer(1000*10);
+	setInterval(10);
 }
 
 OpenNICResolverTest::~OpenNICResolverTest()
@@ -28,6 +28,23 @@ OpenNICResolverTest::~OpenNICResolverTest()
 		delete mQueries.at(n);
 	}
 	mQueries.clear();
+}
+
+/**
+  * @brief Set interval
+  * @param sedconds or stop time if <= 0
+  */
+void OpenNICResolverTest::setInterval(int seconds)
+{
+	if ( mSecondTimer >= 0 )
+	{
+		killTimer(mSecondTimer);
+		mSecondTimer=(-1);
+	}
+	if ( seconds > 0 )
+	{
+		mSecondTimer = startTimer(seconds*1000);
+	}
 }
 
 /**

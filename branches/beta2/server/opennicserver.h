@@ -45,7 +45,7 @@ class OpenNICServer : public QObject
 		void					mapClientRequest(QMap<QString,QVariant>& map);
 		void					process(QTcpSocket* client);
 		int						initializeServer();
-		int						initializeDNS();
+		int						initializeResolvers();
 		int						updateDNS(int resolver_count);
 		virtual void			timerEvent(QTimerEvent* e);
 

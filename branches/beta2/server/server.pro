@@ -16,13 +16,13 @@ CONFIG += warn_on \
 
 SOURCES += main.cpp\
 		opennicserver.cpp \
-		opennicdns.cpp \
 		openniclog.cpp \
 		qtservice.cpp \
     opennicresolverpoolitem.cpp \
     opennicresolverpool.cpp \
     opennicsystem.cpp \
-    opennicresolvertest.cpp
+    opennicresolvertest.cpp \
+    opennicdnsclient.cpp
 
 
 win32::SOURCES += qtservice_win.cpp
@@ -32,7 +32,6 @@ unix::SOURCES += qtservice_unix.cpp \
 		qtunixsocket.cpp
 
 HEADERS  += opennicserver.h \
-		opennicdns.h \
 		openniclog.h \
 		qtservice.h \
 		qtservice_p.h \
@@ -41,7 +40,8 @@ HEADERS  += opennicserver.h \
     opennicresolverpoolitem.h \
     opennicresolverpool.h \
     opennicsystem.h \
-    opennicresolvertest.h
+    opennicresolvertest.h \
+    opennicdnsclient.h
 
 RESOURCES += \
 		opennicserver.qrc
