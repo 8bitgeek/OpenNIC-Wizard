@@ -11,12 +11,12 @@
 
 ; !!! Inno Include seems to be broken !!
 ; #include "opennic-include.iss"
-#if 0
+#if 1
 ; My Windows 7 64-bit configuration
 #define MyOutputDir       "C:\Users\mike\Documents"
 #define MyOpenNICSource   "C:\Users\mike\Documents\OpenNIC\branches\beta1"
 #define MyOpenNICBuild    "C:\Users\mike\Documents\OpenNIC\branches\OpenNIC-build-desktop_Debug\"
-#define MyQtLib           "C:\QtSDK\Desktop\Qt\4.7.4\mingw\lib"
+#define MyQtLib           "C:\QtSDK\Desktop\Qt\4.8.0\mingw\bin"
 #define MyMingwBin        "C:\QtSDK\mingw\bin"
 #else
 ; My Windows XP 32-bit configuration
