@@ -116,9 +116,9 @@ QString OpenNICResolverPoolItem::toString()
 	rc += hostAddress().toString() + ";";
 	rc += QString::number(testCount()) + ";";
 	rc += QString::number(replyCount()) + ";";
-	rc += lastReply.toString() + ";";
+	rc += lastReply().toString() + ";";
 	rc += lastTimeout().toString() + ";";
-	rc += lastFault().toString() + ";";
+	rc += lastFault() + ";";
 	return rc;
 }
 
@@ -170,6 +170,15 @@ double OpenNICResolverPoolItem::averageLatency()
 	}
 	return 0.0;
 }
+
+/**
+  * @brief get here on dns callback data
+  */
+void OpenNICResolverPoolItem::reply(dns_cb_data& data)
+{
+	/* FIXME - do stuff */
+}
+
 
 
 

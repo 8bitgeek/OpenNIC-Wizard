@@ -26,6 +26,8 @@ class OpenNICSystem
 		static QStringList			getTestDomains();
 		static QString				getSystemResolverList();
 		static QString				insertSystemResolver(QHostAddress dns,int index);
+	private:
+		static QStringList			mTestDomains;
 };
 
 #endif // OPENNICSYSTEM_H

@@ -23,6 +23,7 @@
 #define OPENNIC_T1_BOOTSTRAP		"bootstrap.t1"
 #define	OPENNIC_DOMAINS_BOOTSTRAP	"bootstrap.domains"
 
+QStringList OpenNICSystem::mTestDomains;
 
 /**
   * @brief Get a default T1 list from the bootstrap file.
@@ -71,7 +72,7 @@ QStringList OpenNICSystem::getBootstrapT2List()
 	QStringList arguments;
 	QString output;
 	arguments << "dns.opennic.glue" << "+short";
-	QProcess *process = new QProcess(this);
+	QProcess* process = new QProcess();
 	process->start(program, arguments);
 	while (process->waitForFinished(10000))
 	{
@@ -94,6 +95,7 @@ QStringList OpenNICSystem::getBootstrapT2List()
 			}
 		}
 	}
+	delete process;
 	return ips;
 }
 
@@ -103,7 +105,7 @@ QStringList OpenNICSystem::getBootstrapT2List()
   */
 QStringList OpenNICSystem::getTestDomains()
 {
-	if ( mDomains.empty() )
+	if ( mTestDomains.empty() )
 	{
 		QStringList rc;
 		QFile file(OPENNIC_DOMAINS_BOOTSTRAP);
@@ -133,35 +135,7 @@ QStringList OpenNICSystem::getTestDomains()
 		}
 		return rc;
 	}
-	return mDomains;
-}
-
-/**
-  * @brief Fetch the list of DNS resolvers and return them as strings.
-  */
-QStringList OpenNICSystem::getResolvers()
-{
-	QStringList ips;
-	/* If there are current no resolvers in the map table, then try to populate it... */
-	if ( mResolvers.isEmpty() )
-	{
-		initializeResolvers();		/* fetch the intial list of T2s */
-	}
-	if ( mResolvers.isEmpty() )
-	{
-		ips = defaultT1List();		/* something is wrong - return the T1s */
-	}
-	else
-	{
-		/** sort the latenct times in ascending order */
-		QMutableMapIterator<quint64,QString>i(mResolvers);
-		while (i.hasNext())
-		{
-			i.next();
-			ips.append(i.value());
-		}
-	}
-	return ips;
+	return mTestDomains;
 }
 
 #if defined(Q_OS_WIN32)
@@ -184,7 +158,7 @@ QString OpenNICSystem::insertSystemResolver(QHostAddress resolver,int index)
 	{
 		arguments << "interface" << "ip" << "add" << "dns" << "Local Area Connection" << resolver.toString() << "index="+QString::number(index);
 	}
-	QProcess *process = new QProcess(this);
+	QProcess* process = new QProcess(this);
 	process->start(program, arguments);
 	while (process->waitForFinished(3000))
 	{
@@ -205,7 +179,7 @@ QString OpenNICSystem::getSystemResolverList()
 	QString program = "netsh";
 	QStringList arguments;
 	arguments << "interface" << "ip" << "show" << "config" << "Local Area Connection";
-	QProcess *process = new QProcess(this);
+	QProcess* process = new QProcess(this);
 	process->start(program, arguments);
 	while (process->waitForFinished(10000))
 	{
@@ -229,9 +203,9 @@ QString OpenNICSystem::insertSystemResolver(QHostAddress resolver,int index)
 	if ( (index==1) ? file.open(QIODevice::ReadWrite|QIODevice::Truncate) : file.open(QIODevice::ReadWrite|QIODevice::Append) )
 	{
 		QString line("nameserver "+resolver.toString()+"\n");
-		file.write(line);
+		file.write(line.toAscii());
 		file.close();
-		return resolver;
+		return resolver.toString();
 	}
 	return "";
 }

@@ -8,20 +8,16 @@
  */
 #include "opennicresolvertest.h"
 
-#define inherited QObject
+#define inherited OpenNICDnsClient
 
 OpenNICResolverTest::OpenNICResolverTest(QObject *parent)
 : inherited(parent)
 {
-	mDns = new OpenNICDns(this);
-	QObject::connect(mDns,SIGNAL(reply(dns_cb_data&)),this,SLOT(reply(dns_cb_data&)));
 	setInterval(10);
 }
 
 OpenNICResolverTest::~OpenNICResolverTest()
 {
-	delete mDns;
-	mDns = NULL;
 	killTimer(mSecondTimer);
 	for(int n=0; n < mQueries.count(); n++)
 	{
@@ -108,9 +104,12 @@ void OpenNICResolverTest::resolve(QHostAddress addr,QString name,quint16 port)
 	q->latency		= 0;
 	q->error		= 0;
 	append(q);
-	dns()->lookup(addr,name,OpenNICDns::DNS_A_RECORD,q,port);
+	lookup(addr,name,OpenNICDnsClient::DNS_A_RECORD,q,port);
 }
 
+/**
+  * get here on reply data or timeotu
+  */
 void OpenNICResolverTest::reply(dns_cb_data& rdata)
 {
 	query* q = find(rdata.context);
@@ -120,7 +119,6 @@ void OpenNICResolverTest::reply(dns_cb_data& rdata)
 		q->addr		= rdata.addr;
 		q->error	= rdata.error;
 		q->mxName	= rdata.mxName;
-		emit queryResult(q);
 	}
 }
 

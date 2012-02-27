@@ -20,7 +20,6 @@ OpenNICResolverPool::OpenNICResolverPool(QObject *parent)
   */
 OpenNICResolverPool::~OpenNICResolverPool()
 {
-	suspend();
 }
 
 OpenNICResolverPool& OpenNICResolverPool::copy(OpenNICResolverPool& other)
@@ -141,7 +140,7 @@ int OpenNICResolverPool::indexOf(QHostAddress hostAddress)
 	for(int n=0; n < mItems.count(); n++)
 	{
 		OpenNICResolverPoolItem other = mItems.at(n);
-		if ( item == other.hostAddress() )
+		if ( hostAddress == other.hostAddress() )
 		{
 			return n;
 		}

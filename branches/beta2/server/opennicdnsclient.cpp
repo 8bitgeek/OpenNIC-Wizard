@@ -6,7 +6,7 @@
  * can do whatever you want with this stuff. If we meet some day, and you think
  * this stuff is worth it, you can buy me a beer in return.
  */
-#include "opennicdns.h"
+#include "opennicdnsclient.h"
 
 #if defined(Q_OS_WIN32) || defined(Q_WS_WIN32)
 	#include <winsock.h>
@@ -16,7 +16,7 @@
 	#error "Platform not defined."
 #endif
 
-OpenNICDns::OpenNICDns(QObject *parent)
+OpenNICDnsClient::OpenNICDnsClient(QObject *parent)
 : QObject(parent)
 , m_tid(0)
 , mClientSocket(NULL)
@@ -27,7 +27,7 @@ OpenNICDns::OpenNICDns(QObject *parent)
 /**
   * @brief Close a UDP socket.
   */
-OpenNICDns::~OpenNICDns()
+OpenNICDnsClient::~OpenNICDnsClient()
 {
 	close();
 }
@@ -35,7 +35,7 @@ OpenNICDns::~OpenNICDns()
 /**
   * @brief assemble a reply packet and emit it through the reply() sinal
   */
-void OpenNICDns::doReply(query* q, dns_error error)
+void OpenNICDnsClient::doReply(query* q, dns_error error)
 {
 	dns_cb_data	cbd;
 
@@ -44,12 +44,11 @@ void OpenNICDns::doReply(query* q, dns_error error)
 	cbd.error		= error;
 	cbd.name		= q->name;
 	cbd.addr		= q->addr;
-
-	emit reply(cbd);
+	reply(cbd);
 }
 
 
-void OpenNICDns::close()
+void OpenNICDnsClient::close()
 {
 	if (mClientSocket !=NULL )
 	{
@@ -62,7 +61,7 @@ void OpenNICDns::close()
 /**
   * @brief Open a UDP socket.
   */
-bool OpenNICDns::open()
+bool OpenNICDnsClient::open()
 {
 	close();
 	mClientSocket = new QUdpSocket();
@@ -71,12 +70,12 @@ bool OpenNICDns::open()
 	return true;
 }
 
-void OpenNICDns::setResolver(QHostAddress &resolverAddress)
+void OpenNICDnsClient::setResolver(QHostAddress &resolverAddress)
 {
 	mResolverAddress=resolverAddress;
 }
 
-QHostAddress& OpenNICDns::resolverAddress()
+QHostAddress& OpenNICDnsClient::resolverAddress()
 {
 	return mResolverAddress;
 }
@@ -84,7 +83,7 @@ QHostAddress& OpenNICDns::resolverAddress()
 /**
   * @brief Read out all pending datagrams call processDatagram() for each one.
   */
-void OpenNICDns::readPendingDatagrams()
+void OpenNICDnsClient::readPendingDatagrams()
 {
 	while (mClientSocket->hasPendingDatagrams())
 	{
@@ -100,7 +99,7 @@ void OpenNICDns::readPendingDatagrams()
 /**
   * @brief get here once in a while to purge expired queries from the queue.
   */
-void OpenNICDns::purgeExpiredQueries()
+void OpenNICDnsClient::purgeExpiredQueries()
 {
 	QDateTime now = QDateTime::currentDateTime();
 	for(int n=0; n < mQueries.count(); n++ )
@@ -118,7 +117,7 @@ void OpenNICDns::purgeExpiredQueries()
 /**
   * @brief Append an active query to the list of active queries.
   */
-void OpenNICDns::appendActiveQuery(query* q)
+void OpenNICDnsClient::appendActiveQuery(query* q)
 {
 	mQueries.append(q);
 }
@@ -126,7 +125,7 @@ void OpenNICDns::appendActiveQuery(query* q)
 /**
   * @brief Dispose a query.
   */
-void OpenNICDns::disposeQuery(query *q)
+void OpenNICDnsClient::disposeQuery(query *q)
 {
 	int n = mQueries.indexOf(q);
 	if ( n >= 0 )
@@ -138,7 +137,7 @@ void OpenNICDns::disposeQuery(query *q)
 /**
   * @brief Caller wants to cancel querie(s).
   */
-void OpenNICDns::cancel(void* context)
+void OpenNICDnsClient::cancel(void* context)
 {
 	for(int n=0; n < mQueries.count(); n++)
 	{
@@ -154,7 +153,7 @@ void OpenNICDns::cancel(void* context)
   * @brief Match a tid to a pending query.
   * @return the query or NULL.
   */
-OpenNICDns::query* OpenNICDns::findActiveQuery(quint16 tid)
+OpenNICDnsClient::query* OpenNICDnsClient::findActiveQuery(quint16 tid)
 {
 	for(int n=0; n < mQueries.count(); n++)
 	{
@@ -170,7 +169,7 @@ OpenNICDns::query* OpenNICDns::findActiveQuery(quint16 tid)
 /*
  * Fetch name from DNS packet
  */
-void OpenNICDns::fetch(const quint8 *pkt, const quint8 *s, int pktsiz, char *dst, int dstlen)
+void OpenNICDnsClient::fetch(const quint8 *pkt, const quint8 *s, int pktsiz, char *dst, int dstlen)
 {
 	const uint8_t	*e = pkt + pktsiz;
 	int		j, i = 0, n = 0;
@@ -202,7 +201,7 @@ void OpenNICDns::fetch(const quint8 *pkt, const quint8 *s, int pktsiz, char *dst
   * @brief Process the datagram
   * @param datagram The raw datagram octets
   */
-void OpenNICDns::processDatagram(QByteArray datagram)
+void OpenNICDnsClient::processDatagram(QByteArray datagram)
 {
 	quint8*			pkt = (quint8*)datagram.data();
 	int				len = datagram.length();
@@ -317,7 +316,7 @@ void OpenNICDns::processDatagram(QByteArray datagram)
   * @param port the port address at the resolver
   * @return Resultes are emitted by the reply() signal.
   */
-void OpenNICDns::lookup(QHostAddress resolverAddress, QString name, dns_query_type type, void* context, quint16 port)
+void OpenNICDnsClient::lookup(QHostAddress resolverAddress, QString name, dns_query_type type, void* context, quint16 port)
 {
 	setResolver(resolverAddress);
 	lookup(name,type,context,port);
@@ -330,7 +329,7 @@ void OpenNICDns::lookup(QHostAddress resolverAddress, QString name, dns_query_ty
   * @param port the port address at the resolver
   * @return Results are emitted by the reply() signal.
   */
-void OpenNICDns::lookup(QString name, dns_query_type qtype, void* context, quint16 port)
+void OpenNICDnsClient::lookup(QString name, dns_query_type qtype, void* context, quint16 port)
 {
 	query* q;
 	dns_cb_data cbd;
@@ -399,7 +398,7 @@ void OpenNICDns::lookup(QString name, dns_query_type qtype, void* context, quint
 		if ( !(p < pkt + sizeof(pkt)) )
 		{
 			cbd.error = DNS_ERROR;
-			emit reply(cbd);
+			reply(cbd);
 			return;
 		}
 		n = p - pkt;					/* Total packet length */
@@ -408,7 +407,7 @@ void OpenNICDns::lookup(QString name, dns_query_type qtype, void* context, quint
 		if ( mClientSocket->writeDatagram(datagram,resolverAddress(),port) < 0 )
 		{
 			cbd.error = DNS_ERROR;
-			emit reply(cbd);
+			reply(cbd);
 			disposeQuery(q);
 		}
 		appendActiveQuery(q);
@@ -416,15 +415,24 @@ void OpenNICDns::lookup(QString name, dns_query_type qtype, void* context, quint
 	else
 	{
 		cbd.error = DNS_ERROR;
-		emit reply(cbd);
+		reply(cbd);
 		return;
 	}
 }
 
 /**
+  * @brief get here on dns callback data
+  */
+void OpenNICDnsClient::reply(dns_cb_data& data)
+{
+	/* NOP */
+}
+
+
+/**
   * @brief Get here on timer events
   */
-void OpenNICDns::timerEvent(QTimerEvent* e)
+void OpenNICDnsClient::timerEvent(QTimerEvent* e)
 {
 	if ( e->timerId() == mSecondTimer )
 	{

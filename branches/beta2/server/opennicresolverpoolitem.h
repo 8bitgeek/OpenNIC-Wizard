@@ -52,7 +52,8 @@ class OpenNICResolverPoolItem : public OpenNICResolverTest
 
 		QString						toString();
 
-		void						result(QHostAddress hostAddress, int latency, int faultCode, QString fault);
+	protected:
+		virtual void				reply(dns_cb_data& data);
 
 	public slots:
 		void						clear();
