@@ -92,6 +92,7 @@ QMap<QString,QVariant> OpenNICServer::mapServerStatus()
 	map.insert("resolver_refresh_rate",		mResolverRefreshRate);
 	map.insert("resolver_cache_size",		mResolverCacheSize);
 	map.insert("bootstrap_t1_list",			OpenNICSystem::getBootstrapT1List());
+	map.insert("setting_log",				OpenNICSystem::getSystemResolverList());
 	return map;
 }
 

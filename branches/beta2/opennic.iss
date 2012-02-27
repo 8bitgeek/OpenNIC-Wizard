@@ -3,7 +3,7 @@
 
 #define MyAppName "OpenNIC Wizard"
 #define MyAppServiceName "OpenNIC Service"
-#define MyAppVersion "0.1.1"
+#define MyAppVersion "0.2.0"
 #define MyAppPublisher "The OpenNIC Project"
 #define MyAppURL "http://www.opennicproject.org"
 #define MyAppExeName "OpenNIC.exe"
@@ -14,14 +14,14 @@
 #if 0
 ; My Windows 7 64-bit configuration
 #define MyOutputDir       "C:\Users\mike\Documents"
-#define MyOpenNICSource   "C:\Users\mike\Documents\OpenNIC\branches\beta1"
+#define MyOpenNICSource   "C:\Users\mike\Documents\OpenNIC\branches\beta2"
 #define MyOpenNICBuild    "C:\Users\mike\Documents\OpenNIC\branches\OpenNIC-build-desktop_Debug\"
 #define MyQtLib           "C:\QtSDK\Desktop\Qt\4.7.4\mingw\lib"
 #define MyMingwBin        "C:\QtSDK\mingw\bin"
 #else
 ; My Windows XP 32-bit configuration
 #define MyOutputDir       "C:\Documents and Settings\Mike\My Documents"
-#define MyOpenNICSource   "C:\Documents and Settings\Mike\My Documents\OpenNIC\branches\beta1"
+#define MyOpenNICSource   "C:\Documents and Settings\Mike\My Documents\OpenNIC\branches\beta2"
 #define MyOpenNICBuild    "C:\Documents and Settings\Mike\My Documents\OpenNIC\branches\OpenNIC-build-desktop_Debug"
 #define MyQtLib           "C:\QtSDK\Desktop\Qt\4.7.4\mingw\lib"
 #define MyMingwBin        "C:\QtSDK\mingw\bin"

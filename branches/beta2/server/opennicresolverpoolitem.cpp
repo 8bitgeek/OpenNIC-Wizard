@@ -154,10 +154,10 @@ void OpenNICResolverPoolItem::clear()
 	mHostAddress.clear();
 	mTestCount=0;
 	mReplyCount=0;
-	mLatencySamples;
+	mLatencySamples.clear();
 	mLastReply.fromTime_t(0);
 	mLastTimeout.fromTime_t(0);
-	mLastFault;
+	mLastFault.clear();
 	mKind.clear();
 }
 
