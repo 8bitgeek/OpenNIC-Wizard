@@ -168,7 +168,7 @@ QString OpenNICSystem::insertSystemResolver(QHostAddress resolver,int index)
 	{
 		arguments << "interface" << "ip" << "add" << "dns" << "Local Area Connection" << resolver.toString() << "index="+QString::number(index);
 	}
-	QProcess* process = new QProcess(this);
+	QProcess* process = new QProcess();
 	process->start(program, arguments);
 	while (process->waitForFinished(3000))
 	{
@@ -189,7 +189,7 @@ QString OpenNICSystem::getSystemResolverList()
 	QString program = "netsh";
 	QStringList arguments;
 	arguments << "interface" << "ip" << "show" << "config" << "Local Area Connection";
-	QProcess* process = new QProcess(this);
+	QProcess* process = new QProcess();
 	process->start(program, arguments);
 	while (process->waitForFinished(10000))
 	{

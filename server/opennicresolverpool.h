@@ -27,7 +27,7 @@ class OpenNICResolverPool : public QObject
 		bool							contains(OpenNICResolverPoolItem item);
 		bool							contains(QHostAddress item);
 		QList<OpenNICResolverPoolItem>&	items()			{return mItems;}
-		int								count()			{mItems.count();}
+		int								count()			{return mItems.count();}
 		OpenNICResolverPoolItem			at(int pos)		{return items().at(pos);}
 		void							append(OpenNICResolverPoolItem item);
 		void							insort(OpenNICResolverPoolItem item);
