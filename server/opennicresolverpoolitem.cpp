@@ -13,12 +13,14 @@
 
 OpenNICResolverPoolItem::OpenNICResolverPoolItem(QObject* parent)
 : inherited(parent)
+, mTests(0)
 {
 	clear();
 }
 
 OpenNICResolverPoolItem::OpenNICResolverPoolItem(QHostAddress hostAddress, QString kind, QObject* parent)
 : inherited(parent)
+, mTests(0)
 {
 	clear();
 	mHostAddress = hostAddress;
@@ -26,6 +28,8 @@ OpenNICResolverPoolItem::OpenNICResolverPoolItem(QHostAddress hostAddress, QStri
 }
 
 OpenNICResolverPoolItem::OpenNICResolverPoolItem(const OpenNICResolverPoolItem& other)
+: inherited(NULL)
+, mTests(0)
 {
 	copy(other);
 }
@@ -109,17 +113,19 @@ OpenNICResolverPoolItem& OpenNICResolverPoolItem::operator=(const OpenNICResolve
 
 /**
   * @brief convert to a formatted string
-  * @brief <hostAddress>;<testCount>;<replyCount>;<lastReply>;<lastTimeout>;<lastFault>;<kind>;
+  * @brief <hostAddress>;<avgLatency>;<testCount>;<replyCount>;<lastReply>;<lastTimeout>;<lastFault>;<kind>;
   */
 QString OpenNICResolverPoolItem::toString()
 {
 	QString rc;
 	rc += hostAddress().toString() + ";";
+	rc += QString::number((int)averageLatency()) + ";";
 	rc += QString::number(testCount()) + ";";
 	rc += QString::number(replyCount()) + ";";
 	rc += lastReply().toString() + ";";
 	rc += lastTimeout().toString() + ";";
 	rc += lastFault() + ";";
+	rc += kind() + ";";
 	return rc;
 }
 
@@ -177,6 +183,36 @@ double OpenNICResolverPoolItem::averageLatency()
   */
 void OpenNICResolverPoolItem::reply(dns_cb_data& data)
 {
+	if (mTests > 0)
+	{
+		QDateTime now = QDateTime::currentDateTime();
+		if (data.error == OpenNICDnsClient::DNS_OK)
+		{
+			mLastReply = now;
+			mLatencySamples.append(mTestBegin.msecsTo(now));
+			mLastFault="DNS_OK " + data.addr.toString() + " " + data.name;
+		}
+		else if (data.error == OpenNICDnsClient::DNS_DOES_NOT_EXIST)
+		{
+			mLastReply = now;
+			mLatencySamples.append(mTestBegin.msecsTo(now));
+			mLastFault="DNS_DOES_NOT_EXIST " + data.name;
+		}
+		else if (data.error == OpenNICDnsClient::DNS_TIMEOUT)
+		{
+			mLastTimeout = now;
+			mLastFault="DNS_TIMEOUT " + data.name;
+		}
+		else if (data.error == OpenNICDnsClient::DNS_ERROR)
+		{
+			mLastFault="DNS_ERROR " + data.name;
+		}
+		--mTests;
+	}
+	while(mLatencySamples.count() > 10)
+	{
+		mLatencySamples.takeAt(0);
+	}
 }
 
 /**
@@ -184,7 +220,13 @@ void OpenNICResolverPoolItem::reply(dns_cb_data& data)
   */
 void OpenNICResolverPoolItem::test()
 {
-	resolve(hostAddress(), OpenNICSystem::randomDomain());
+	if (mTests==0)
+	{
+		++mTests;
+		++mTestCount;
+		mTestBegin = QDateTime::currentDateTime();
+		resolve(hostAddress(), OpenNICSystem::randomDomain());
+	}
 }
 
 
