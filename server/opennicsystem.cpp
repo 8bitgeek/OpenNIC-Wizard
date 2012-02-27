@@ -20,98 +20,15 @@
 #include <QSpinBox>
 #include <QFile>
 
-OpenNICSystem::OpenNICSystem(QObject *parent)
-: QObject(parent)
-{
-	QObject::connect(&mTest,SIGNAL(queryResult(OpenNICTest::query*)),this,SLOT(insertResult(OpenNICTest::query*)));
-	mTimer = startTimer(1000*1);
-}
+#define OPENNIC_T1_BOOTSTRAP		"bootstrap.t1"
+#define	OPENNIC_DOMAINS_BOOTSTRAP	"bootstrap.domains"
 
-OpenNICSystem::~OpenNICSystem()
-{
-	killTimer(mTimer);
-}
-
-/**
-  * @brief Return the resolver pool as a formatted string list <ip addr>;<latency>
-  */
-QStringList OpenNICSystem::getResolverPoolStringList()
-{
-	QStringList rc;
-	QMutableMapIterator<quint64,QString>i(mResolvers);
-	while (i.hasNext())
-	{
-		i.next();
-		QString item = i.value()+";"+QString::number(i.key());
-		rc.append(item);
-	}
-	return rc;
-}
-
-/**
-  * @brief Get here on a test result reply.
-  * @brief If the reply contains a latency value, insert it into the resolver list.
-  * @param result The result of the DNS query including a latency in msecs.
-  */
-void OpenNICSystem::insertResult(OpenNICTest::query *result)
-{
-	if ( result != NULL )
-	{
-		QString ip = result->addr.toString();
-		quint64 latency = result->latency;
-		QMutableMapIterator<quint64,QString>i(mResolvers);
-		while (i.hasNext())
-		{
-			i.next();
-			if ( i.value() == ip )
-			{
-				/** only insert if it's not an error */
-				if ( latency > 0 && result->error == 0 )
-				{
-					i.remove();
-					mResolvers.insert(latency,ip);
-					emit resolverResult(ip,latency,0);
-					break;
-				}
-				else
-				{
-					emit resolverResult(ip,latency,result->error);
-				}
-			}
-		}
-	}
-}
-
-/**
-  * @brief Evaluate the peformance of resolver.
-  */
-void OpenNICSystem::evaluateResolver()
-{
-	QStringList domains = getDomains();
-	if ( !domains.empty() && !mResolvers.empty() )
-	{
-		QString domain = domains.at(randInt(0,domains.count()-1));
-		int resolverIdx = randInt(0,mResolvers.count()-1);
-		QMutableMapIterator<quint64,QString>i(mResolvers);
-		while (i.hasNext())
-		{
-			i.next();
-			if ( --resolverIdx < 0 )
-			{
-				QString ip = i.value();
-				QHostAddress addr(ip);
-				mTest.resolve(addr,domain);
-				break;
-			}
-		}
-	}
-}
 
 /**
   * @brief Get a default T1 list from the bootstrap file.
   * @return A string list of IP numbers representing potential T1s.
   */
-QStringList OpenNICSystem::defaultT1List()
+QStringList OpenNICSystem::getBootstrapT1List()
 {
 	QStringList rc;
 	QFile file(OPENNIC_T1_BOOTSTRAP);
@@ -143,10 +60,48 @@ QStringList OpenNICSystem::defaultT1List()
 }
 
 /**
-  * @brief Get a default domains list from the bootstrap file.
+  * @brief Fetch the raw list of DNS resolvers and return them as strings.
+  */
+QStringList OpenNICSystem::getBootstrapT2List()
+{
+	QStringList outputList;
+	QStringList ips;
+	QEventLoop loop;
+	QString program = "dig";
+	QStringList arguments;
+	QString output;
+	arguments << "dns.opennic.glue" << "+short";
+	QProcess *process = new QProcess(this);
+	process->start(program, arguments);
+	while (process->waitForFinished(10000))
+	{
+		loop.processEvents();
+	}
+	output = process->readAllStandardOutput();
+	if (output.isEmpty())
+	{
+		output = process->readAllStandardError();
+	}
+	outputList = output.trimmed().split('\n');
+	for(int n=0; n < outputList.count(); n++)
+	{
+		QString ip = outputList.at(n).trimmed();
+		if ( ip.length() )
+		{
+			if (ip.at(0) >= '0' && ip.at(0) <= '9')
+			{
+				ips.append(ip);
+			}
+		}
+	}
+	return ips;
+}
+
+/**
+  * @brief Get a domains list from the bootstrap file.
   * @return A string list of domains to test.
   */
-QStringList OpenNICSystem::getDomains()
+QStringList OpenNICSystem::getTestDomains()
 {
 	if ( mDomains.empty() )
 	{
@@ -209,10 +164,13 @@ QStringList OpenNICSystem::getResolvers()
 	return ips;
 }
 
+#if defined(Q_OS_WIN32)
 /**
   * @brief Add a dns entry to the system's list of DNS resolvers.
+  * @param resolver The IP address of teh resolver to add to the system
+  * @param index resolver sequence (1..n)
   */
-QString OpenNICSystem::addResolver(QString dns,int index)
+QString OpenNICSystem::insertSystemResolver(QString resolver,int index)
 {
 	QString rc;
 	QEventLoop loop;
@@ -240,7 +198,7 @@ QString OpenNICSystem::addResolver(QString dns,int index)
 /**
   * @brief Get the text which will show the current DNS resolver settings.
   */
-QString OpenNICSystem::getSettingsText()
+QString OpenNICSystem::getSystemResolverList()
 {
 	QByteArray output;
 	QEventLoop loop;
@@ -258,73 +216,44 @@ QString OpenNICSystem::getSettingsText()
 	return output;
 }
 
-/**
-  * @brief Fetch the raw list of DNS resolvers and return them as strings.
-  */
-QStringList OpenNICSystem::getBootstrapResolverList()
-{
-	QStringList outputList;
-	QStringList ips;
-	QEventLoop loop;
-	QString program = "dig";
-	QStringList arguments;
-	QString output;
-	arguments << "dns.opennic.glue" << "+short";
-	QProcess *process = new QProcess(this);
-	process->start(program, arguments);
-	while (process->waitForFinished(10000))
-	{
-		loop.processEvents();
-	}
-	output = process->readAllStandardOutput();
-	if (output.isEmpty())
-	{
-		output = process->readAllStandardError();
-	}
-	outputList = output.trimmed().split('\n');
-	for(int n=0; n < outputList.count(); n++)
-	{
-		QString ip = outputList.at(n).trimmed();
-		if ( ip.length() )
-		{
-			if (ip.at(0) >= '0' && ip.at(0) <= '9')
-			{
-				ips.append(ip);
-			}
-		}
-	}
-	return ips;
-}
+#elif defined(Q_OS_UNIX)
 
 /**
-  * @brief Fetch the raw list of resolvers and insert into the map table.
+  * @brief Add a dns entry to the system's list of DNS resolvers.
+  * @param resolver The IP address of teh resolver to add to the system
+  * @param index resolver sequence (1..n)
   */
-void OpenNICSystem::initializeResolvers()
+QString OpenNICSystem::insertSystemResolver(QString resolver,int index)
 {
-	QStringList ips = getBootstrapResolverList();
-	for(int n=0; n < ips.count(); n++)
+	QFile file("/etc/resolv.conf");
+	if ( (index==1) ? file.open(QIODevice::ReadWrite|QIODevice::Truncate) : file.open(QIODevice::ReadWrite|QIODevice::Append) )
 	{
-		QString ip = ips.at(n);
-		mResolvers.insert((quint64)10000+n,ip);	/* simulate latency for the initial bootstrap */
+		QString line("nameserver "+resolver+"\n");
+		file.write(line);
+		file.close();
+		return resolver;
 	}
+	return "";
 }
 
-/**
-  * @brief Generate a randome number.between low and high
-  */
-int OpenNICSystem::randInt(int low, int high)
-{
-	return qrand()%((high+1)-low)+low;
-}
 
 /**
-  * @brief Get here on timer events
+  * @brief Get the text which will show the current DNS resolver settings.
   */
-void OpenNICSystem::timerEvent(QTimerEvent* e)
+QString OpenNICSystem::getSystemResolverList()
 {
-	if ( e->timerId() == mTimer )
+	QFile file("/etc/resolv.conf");
+	if ( file.open(QIODevice::ReadOnly) )
 	{
-		evaluateResolver();
+		QString text(file.readAll());
+		file.close();
+		return text;
 	}
+	return "Could not obtain system resolver list.";
 }
+
+#endif
+
+
+
 

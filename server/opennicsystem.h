@@ -16,41 +16,15 @@
 #include <QMultiMap>
 #include <QTimerEvent>
 
-#define OPENNIC_T1_BOOTSTRAP		"bootstrap.t1"
-#define	OPENNIC_DOMAINS_BOOTSTRAP	"bootstrap.domains"
-
-class OpenNICSystem : public QObject
+class OpenNICSystem
 {
-	Q_OBJECT
 	public:
-		explicit OpenNICSystem(QObject *parent=0);
-		virtual ~OpenNICSystem();
 
-		QStringList					defaultT1List();
-		QString						addResolver(QString dns,int index);
-		QStringList					getResolvers();
-		QString						getSettingsText();
-		QMultiMap<quint64,QString>&	getResolverPool() {return mResolvers;}
-		QStringList					getResolverPoolStringList();
-
-	signals:
-		void						resolverResult(QString ip, quint64 latency, int error);
-
-	protected slots:
-		void						insertResult(OpenNICTest::query* result);
-
-	protected:
-		virtual void				timerEvent(QTimerEvent *e);
-
-	private:
-		QStringList					getDomains();
-		int							randInt(int low, int high);
-		void						evaluateResolver();
-		QStringList					getBootstrapResolverList();
-		void						initializeResolvers();
-		QMultiMap<quint64,QString>	mResolvers;					/* latency (msecs) mapped to ip address */
-		int							mTimer;						/*  resolution */
-		QStringList					mDomains;					/* domains to test with */
+		static QStringList			getBootstrapT1List();
+		static QStringList			getBootstrapT2List();
+		static QStringList			getTestDomains();
+		static QString				getSystemResolverList();
+		static QString				insertSystemResolver(QString dns,int index);
 };
 
 #endif // OPENNICSYSTEM_H

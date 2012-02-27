@@ -6,11 +6,11 @@
  * can do whatever you want with this stuff. If we meet some day, and you think
  * this stuff is worth it, you can buy me a beer in return.
  */
-#include "opennictest.h"
+#include "opennicresolvertest.h"
 
 #define inherited QObject
 
-OpenNICTest::OpenNICTest(QObject *parent)
+OpenNICResolverTest::OpenNICResolverTest(QObject *parent)
 : inherited(parent)
 {
 	mDns = new OpenNICDns(this);
@@ -18,7 +18,7 @@ OpenNICTest::OpenNICTest(QObject *parent)
 	mSecondTimer = startTimer(1000*10);
 }
 
-OpenNICTest::~OpenNICTest()
+OpenNICResolverTest::~OpenNICResolverTest()
 {
 	delete mDns;
 	mDns = NULL;
@@ -33,7 +33,7 @@ OpenNICTest::~OpenNICTest()
 /**
   * @brief Dispose the query.
   */
-void OpenNICTest::dispose(query* q)
+void OpenNICResolverTest::dispose(query* q)
 {
 	int n = mQueries.indexOf(q);
 	if ( n >= 0 )
@@ -45,7 +45,7 @@ void OpenNICTest::dispose(query* q)
 /**
   * @param Append the query
   */
-void OpenNICTest::append(query* q)
+void OpenNICResolverTest::append(query* q)
 {
 	mQueries.append(q);
 }
@@ -53,7 +53,7 @@ void OpenNICTest::append(query* q)
 /**
   * @brief Find a query based on a context from a reply.
   */
-OpenNICTest::query* OpenNICTest::find(void* context)
+OpenNICResolverTest::query* OpenNICResolverTest::find(void* context)
 {
 	int n = mQueries.indexOf((query*)context);
 	if ( n >= 0 )
@@ -66,7 +66,7 @@ OpenNICTest::query* OpenNICTest::find(void* context)
 /**
   * @brief Purge old queries
   */
-void OpenNICTest::purge()
+void OpenNICResolverTest::purge()
 {
 	QDateTime now = QDateTime::currentDateTime();
 	for(int n=0; n < mQueries.count(); n++ )
@@ -82,7 +82,7 @@ void OpenNICTest::purge()
 /**
   * @brief Test a resolver.
   */
-void OpenNICTest::resolve(QHostAddress addr,QString name,quint16 port)
+void OpenNICResolverTest::resolve(QHostAddress addr,QString name,quint16 port)
 {
 	query* q = new query;
 	q->addr			= addr;
@@ -94,7 +94,7 @@ void OpenNICTest::resolve(QHostAddress addr,QString name,quint16 port)
 	dns()->lookup(addr,name,OpenNICDns::DNS_A_RECORD,q,port);
 }
 
-void OpenNICTest::reply(dns_cb_data& rdata)
+void OpenNICResolverTest::reply(dns_cb_data& rdata)
 {
 	query* q = find(rdata.context);
 	if ( q != NULL )
@@ -107,7 +107,7 @@ void OpenNICTest::reply(dns_cb_data& rdata)
 	}
 }
 
-void OpenNICTest::timerEvent(QTimerEvent *e)
+void OpenNICResolverTest::timerEvent(QTimerEvent *e)
 {
 	inherited::timerEvent(e);
 	if ( mSecondTimer == e->timerId() )

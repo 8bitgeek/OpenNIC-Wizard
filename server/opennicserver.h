@@ -17,7 +17,7 @@
 #include <QTcpSocket>
 #include <QMap>
 #include <QVariant>
-#include "opennicresolver.h"
+#include "opennicresolverpool.h"
 
 #define	VERSION_STRING				"0.2.0"
 
@@ -32,11 +32,11 @@ class OpenNICServer : public QObject
 		QString					copyright();
 		QString					license();
 
+		/** service layer interface */
 		void					pause()			{mEnabled = false;}
 		void					resume()		{mEnabled = true;}
 		bool					isListening()	{return mServer.isListening();}
 		quint16					serverPort()	{return mServer.serverPort();}
-
 	signals:
 		void					quit();
 
@@ -44,12 +44,9 @@ class OpenNICServer : public QObject
 		QMap<QString,QVariant>	mapServerStatus();
 		void					mapClientRequest(QMap<QString,QVariant>& map);
 		void					process(QTcpSocket* client);
-		OpenNICResolver&		resolver() {return mResolver;}
 		int						initializeServer();
 		int						initializeDNS();
 		int						updateDNS(int resolver_count);
-		QStringList				textToStringList(QString text);
-		QString					stringListToText(QStringList list);
 		virtual void			timerEvent(QTimerEvent* e);
 
 	protected slots:
@@ -61,18 +58,15 @@ class OpenNICServer : public QObject
 		bool					mEnabled;					/** service status */
 		int						mStartTimer;
 		int						mRefreshTimer;
-		OpenNICResolver			mResolver;
 		/** TCP service */
 		QTcpServer				mServer;					/** the localhost TCP server */
 		/** settings **/
 		int						mTcpListenPort;				/** the TCP listen port */
 		QString					mLogFile;					/** the log file */
-		QStringList				mBootstrapT1List;			/** list of bootstrap T1's */
-		int						mBootstrapCacheSize;		/** number of T1s to select for boostrap */
-		bool					mBootstrapRandomSelect;		/** select bootstrap resolvers randomly */
 		QStringList				mResolverCache;				/** most recently selected resolver cache */
 		int						mResolverCacheSize;			/** the number of resolvers to keep in the cache (and apply to the O/S) */
 		int						mResolverRefreshRate;		/** the resolver refresh rate (apply cache to O/S) */
+		OpenNICResolverPool		mResolverPool;				/** the active resolver pool */
 };
 
 #endif // OPENNICSERVER_H

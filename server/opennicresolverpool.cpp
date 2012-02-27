@@ -8,6 +8,8 @@
  */
 #include "opennicresolverpool.h"
 
+#define rand_int(low,high) (qrand()%((high+1)-low)+low)
+
 OpenNICResolverPool::OpenNICResolverPool(QObject *parent)
 : QObject(parent)
 {
@@ -18,6 +20,7 @@ OpenNICResolverPool::OpenNICResolverPool(QObject *parent)
   */
 OpenNICResolverPool::~OpenNICResolverPool()
 {
+	suspend();
 }
 
 OpenNICResolverPool& OpenNICResolverPool::copy(OpenNICResolverPool& other)
@@ -47,7 +50,10 @@ QStringList OpenNICResolverPool::toStringList()
   */
 void OpenNICResolverPool::append(OpenNICResolverPoolItem item)
 {
-	mItems.append(item);
+	if ( !contains(item) )
+	{
+		mItems.append(item);
+	}
 }
 
 /**
@@ -55,8 +61,11 @@ void OpenNICResolverPool::append(OpenNICResolverPoolItem item)
   */
 void OpenNICResolverPool::insort(OpenNICResolverPoolItem item)
 {
-	mItems.append(item);
-	sort();
+	if ( !contains(item) )
+	{
+		mItems.append(item);
+		sort();
+	}
 }
 
 /**
@@ -113,15 +122,31 @@ bool OpenNICResolverPool::contains(OpenNICResolverPoolItem item)
   */
 bool OpenNICResolverPool::contains(QHostAddress item)
 {
+	return indexOf(item) >= 0;
+}
+
+/**
+  * @return the index of the item or -1
+  */
+int OpenNICResolverPool::indexOf(OpenNICResolverPoolItem item)
+{
+	return indexOf(item.hostAddress());
+}
+
+/**
+  * @return the index of the item or -1
+  */
+int OpenNICResolverPool::indexOf(QHostAddress hostAddress)
+{
 	for(int n=0; n < mItems.count(); n++)
 	{
 		OpenNICResolverPoolItem other = mItems.at(n);
 		if ( item == other.hostAddress() )
 		{
-			return true;
+			return n;
 		}
 	}
-	return false;
+	return -1;
 }
 
 /**
@@ -137,6 +162,7 @@ OpenNICResolverPool OpenNICResolverPool::fastest(int num)
 	}
 	return pool;
 }
+
 
 
 
