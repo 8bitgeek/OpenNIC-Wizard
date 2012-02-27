@@ -150,7 +150,7 @@ p, li { white-space: pre-wrap; }
           <x>280</x>
           <y>10</y>
           <width>201</width>
-          <height>101</height>
+          <height>171</height>
          </rect>
         </property>
         <property name="plainText">
@@ -187,55 +187,6 @@ p, li { white-space: pre-wrap; }
 &lt;p align=&quot;right&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;Cache:&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
        </widget>
-       <widget class="QSpinBox" name="t1Count">
-        <property name="geometry">
-         <rect>
-          <x>310</x>
-          <y>120</y>
-          <width>71</width>
-          <height>22</height>
-         </rect>
-        </property>
-        <property name="minimum">
-         <number>1</number>
-        </property>
-        <property name="maximum">
-         <number>10</number>
-        </property>
-        <property name="value">
-         <number>3</number>
-        </property>
-       </widget>
-       <widget class="QLabel" name="label_6">
-        <property name="geometry">
-         <rect>
-          <x>230</x>
-          <y>120</y>
-          <width>81</width>
-          <height>20</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p align=&quot;right&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;# T1's:&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-        </property>
-       </widget>
-       <widget class="QRadioButton" name="t1Random">
-        <property name="geometry">
-         <rect>
-          <x>310</x>
-          <y>150</y>
-          <width>82</width>
-          <height>17</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Random</string>
-        </property>
-       </widget>
       </widget>
      </widget>
      <widget class="QWidget" name="resolverPool">
@@ -247,12 +198,42 @@ p, li { white-space: pre-wrap; }
         <widget class="QTableWidget" name="resolverPoolTable">
          <column>
           <property name="text">
-           <string>Latency (msecs)</string>
+           <string>Kind</string>
           </property>
          </column>
          <column>
           <property name="text">
            <string>IP Address</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Latency (msecs)</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Status</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string># Tests</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string># Replies</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string># Last Reply</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string># Last Timeout</string>
           </property>
          </column>
         </widget>

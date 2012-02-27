@@ -91,6 +91,7 @@ QMap<QString,QVariant> OpenNICServer::mapServerStatus()
 	map.insert("resolver_cache",			mResolverCache);
 	map.insert("resolver_refresh_rate",		mResolverRefreshRate);
 	map.insert("resolver_cache_size",		mResolverCacheSize);
+	map.insert("bootstrap_t1_list",			OpenNICSystem::getBootstrapT1List());
 	return map;
 }
 
@@ -249,6 +250,7 @@ int OpenNICServer::updateDNS(int resolverCount)
 	{
 		OpenNICResolverPoolItem item = mResolverPool.at(n);
 		OpenNICSystem::insertSystemResolver(item.hostAddress(),n+1);
+		mResolverCache.append(item.hostAddress().toString());
 	}
 	return n;
 }

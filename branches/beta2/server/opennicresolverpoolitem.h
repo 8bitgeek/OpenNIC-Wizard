@@ -39,6 +39,7 @@ class OpenNICResolverPoolItem : public OpenNICResolverTest
 		QDateTime					lastTimeout()		{return mLastTimeout;}
 		QString						lastFault()			{return mLastFault;}
 		bool						alive()				{return lastReply() > lastTimeout();}
+		int							tests()				{return mTests;}
 
 		QString						kind()				{return mKind;}
 		void						setKind(QString kind) {mKind=kind;}
@@ -68,6 +69,8 @@ class OpenNICResolverPoolItem : public OpenNICResolverTest
 		QDateTime					mLastTimeout;		/* the time of the last timeout */
 		QString						mLastFault;			/* the last fault message */
 		QString						mKind;				/* the kind of resolver */
+		int							mTests;				/* number of tests running */
+		QDateTime					mTestBegin;			/* start of test */
 };
 
 

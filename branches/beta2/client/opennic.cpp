@@ -48,7 +48,7 @@ OpenNIC::OpenNIC(QWidget *parent)
 	createActions();
 	createTrayIcon();
 	QObject::connect(this,SIGNAL(accepted()),this,SLOT(writeSettings()));
-#if 0 /* DEBUG */
+#if defined Q_OS_UNIX
 	show();
 #endif
 	mRefreshTimer = startTimer(1000*5);
@@ -144,16 +144,29 @@ void OpenNIC::settings()
   */
 void OpenNIC::updateResolverPool(QStringList resolverPool)
 {
+	/* server string  <hostAddress>;<avgLatency>;<testCount>;<replyCount>;<lastReply>;<lastTimeout>;<lastFault>;<kind>; */
+
 	QTableWidget* table = uiSettings->resolverPoolTable;
 	table->setRowCount(resolverPool.count());
 	for(int row=0; row < resolverPool.count(); row++ )
 	{
 		QStringList resolverData = resolverPool.at(row).split(";");
-		QString resolver = resolverData.at(0);
+		QString ip = resolverData.at(0);
 		QString latency = resolverData.at(1);
-		table->setItem(row,0,new QTableWidgetItem(latency));
-		table->setItem(row,1,new QTableWidgetItem(resolver));
-
+		QString testCount = resolverData.at(2);
+		QString replyCount = resolverData.at(3);
+		QString lastReply = resolverData.at(4);
+		QString lastTimeout = resolverData.at(5);
+		QString status = resolverData.at(6);
+		QString kind = resolverData.at(7);
+		table->setItem(row,0,new QTableWidgetItem(kind));
+		table->setItem(row,1,new QTableWidgetItem(ip));
+		table->setItem(row,2,new QTableWidgetItem(latency));
+		table->setItem(row,3,new QTableWidgetItem(status));
+		table->setItem(row,4,new QTableWidgetItem(testCount));
+		table->setItem(row,5,new QTableWidgetItem(replyCount));
+		table->setItem(row,6,new QTableWidgetItem(lastReply));
+		table->setItem(row,7,new QTableWidgetItem(lastTimeout));
 	}
 	table->resizeColumnsToContents();
 	table->resizeRowsToContents();
