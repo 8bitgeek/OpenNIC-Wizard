@@ -129,8 +129,8 @@ QMap<QString,QVariant> OpenNICServer::makeServerPacket()
 	map.insert("refresh_timer_period",		mRefreshTimerPeriod);
 	map.insert("resolver_cache_size",		mResolverCacheSize);
 	map.insert("bootstrap_t1_list",			OpenNICSystem::getBootstrapT1List());
-	map.insert("settings_log",				OpenNICSystem::getSystemResolverList());
-	map.insert("debug_log",					mLog);
+	map.insert("system_text",				OpenNICSystem::getSystemResolverList());
+	map.insert("journal_text",				mLog);
 	return map;
 }
 
