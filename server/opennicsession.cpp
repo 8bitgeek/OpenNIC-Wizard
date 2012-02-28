@@ -18,11 +18,12 @@ OpenNICSession::OpenNICSession(QTcpSocket* socket, OpenNICServer *server)
 {
     QObject::connect(mSocket,SIGNAL(readyRead()),this,SLOT(readyRead()));
     QObject::connect(mSocket,SIGNAL(disconnected()),this,SLOT(disconnected()));
-	mTimer = startTimer(3000);
+    mTimer = startTimer(1000);
 }
 
 OpenNICSession::~OpenNICSession()
 {
+    mSocket->close();
     delete mSocket;
     mSocket=NULL;
 }
@@ -37,9 +38,11 @@ void OpenNICSession::run()
   */
 void OpenNICSession::readyRead()
 {
-    server()->processMutex().lock();
-    server()->process(mSocket);
-    server()->processMutex().unlock();
+    if ( server()->processMutex().tryLock() )
+    {
+        server()->process(mSocket);
+        server()->processMutex().unlock();
+    }
 }
 
 /**
@@ -55,8 +58,15 @@ void OpenNICSession::timerEvent(QTimerEvent *e)
 {
 	if ( e->timerId() == mTimer )
 	{
-		if ( !mSocket->isValid() )
-		{
+        if ( mSocket->isValid() )
+        {
+            if ( mSocket->bytesAvailable())
+            {
+                readyRead();
+            }
+        }
+        else
+        {
 			quit();
 		}
 	}
