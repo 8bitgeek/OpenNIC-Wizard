@@ -181,6 +181,7 @@ void OpenNIC::updateResolverPool(QStringList resolverPool)
 	}
 	table->resizeColumnsToContents();
 	table->resizeRowsToContents();
+	table->setSortingEnabled(true);
 }
 
 void OpenNIC::mapServerReply(QMap<QString,QVariant>& map)
