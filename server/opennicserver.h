@@ -21,7 +21,7 @@
 #include <QList>
 #include "opennicresolverpool.h"
 
-#define	VERSION_STRING				"0.2.3"
+#define	VERSION_STRING				"0.2.4"
 
 class OpenNICSession;
 class OpenNICServer : public QObject
@@ -40,34 +40,39 @@ class OpenNICServer : public QObject
 		void					resume()		{mEnabled = true;}
 		bool					isListening()	{return mServer.isListening();}
 		quint16					serverPort()	{return mServer.serverPort();}
-        bool					process(QTcpSocket* client);
+
+	public slots:
+		void					log(QString msg);
+		void					logPurge();
 
 	signals:
 		void					packet(QMap<QString,QVariant> packet);
 		void					quit();
 
 	protected:
+		void					pruneLog();
 		void					setRefreshTimerPeriod(int refreshTimerPeriod);
 		int						refreshTimerPeriod() {return mRefreshTimerPeriod;}
 		bool					testResolverCache();
 		void					coldBoot();
+		int						bootstrapResolvers();
 		void					refreshResolvers(bool force=false);
 		void					announcePackets();
 		void					purgeDeadSesssions();
-		QMap<QString,QVariant>	mapServerStatus();
-		void					mapClientRequest(QMap<QString,QVariant>& map);
+		QMap<QString,QVariant>	makeServerPacket();
 		int						initializeServer();
-		int						initializeResolvers();
 		int						updateDNS(int resolver_count);
 		virtual void			timerEvent(QTimerEvent* e);
 
 	protected slots:
+		void					sessionPacket(OpenNICSession* session, QMap<QString,QVariant> packet);
 		void					newConnection();
 		void					readSettings();
 		void					writeSettings();
 
 	private:
 		QStringList				mLog;						/** log history */
+		QMutex					mLogMutex;
 		bool					mEnabled;					/** service status */
 		int						mRefreshTimer;
 		int						mFastTimer;
@@ -78,7 +83,6 @@ class OpenNICServer : public QObject
 		/** settings **/
 		int						mRefreshTimerPeriod;		/** the refresh timer period in minutes */
 		int						mTcpListenPort;				/** the TCP listen port */
-		QString					mLogFile;					/** the log file */
 		int						mResolverCacheSize;			/** the number of resolvers to keep in the cache (and apply to the O/S) */
 		OpenNICResolverPool		mResolverPool;				/** the comlpete resolver pool */
 		OpenNICResolverPool		mResolverCache;				/** the active resolver pool */

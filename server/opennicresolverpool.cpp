@@ -42,7 +42,7 @@ QStringList OpenNICResolverPool::toStringList()
 	return rc;
 }
 
-OpenNICResolverPoolItem& OpenNICResolverPool::operator<<(const QStringList& strings)
+OpenNICResolverPool& OpenNICResolverPool::operator<<(const QStringList& strings)
 {
 	return fromStringList(strings);
 }
@@ -51,7 +51,7 @@ OpenNICResolverPoolItem& OpenNICResolverPool::operator<<(const QStringList& stri
 /**
   * @brief from a string list
   */
-OpenNICResolverPool& OpenNICResolverPool::fromStringList(const QStringList& items)
+OpenNICResolverPool& OpenNICResolverPool::fromStringList(const QStringList items)
 {
 	for(int n=0; n < items.count(); n++)
 	{
