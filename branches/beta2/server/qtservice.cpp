@@ -421,7 +421,7 @@ private:
 QtServiceBase *QtServiceBasePrivate::instance = 0;
 
 QtServiceBasePrivate::QtServiceBasePrivate(const QString &name)
-    : startupType(QtServiceController::ManualStartup), serviceFlags(0), controller(name)
+	: startupType(QtServiceController::AutoStartup), serviceFlags(0), controller(name)
 {
 
 }

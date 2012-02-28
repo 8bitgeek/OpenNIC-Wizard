@@ -74,15 +74,11 @@ QStringList OpenNICSystem::getBootstrapT2List()
 	arguments << "dns.opennic.glue" << "+short";
 	QProcess* process = new QProcess();
 	process->start(program, arguments);
-	while (process->waitForFinished(10000))
+	while (process->waitForFinished(15000))
 	{
 		loop.processEvents();
 	}
 	output = process->readAllStandardOutput();
-	if (output.isEmpty())
-	{
-		output = process->readAllStandardError();
-	}
 	outputList = output.trimmed().split('\n');
 	for(int n=0; n < outputList.count(); n++)
 	{
@@ -170,7 +166,7 @@ QString OpenNICSystem::insertSystemResolver(QHostAddress resolver,int index)
 	}
 	QProcess* process = new QProcess();
 	process->start(program, arguments);
-	while (process->waitForFinished(3000))
+	while (process->waitForFinished(10000))
 	{
 		loop.processEvents();
 	}

@@ -239,7 +239,7 @@ QString QtServiceController::serviceDescription() const
 QtServiceController::StartupType QtServiceController::startupType() const
 {
     Q_D(const QtServiceController);
-    StartupType result = ManualStartup;
+	StartupType result = ManualStartup;
     if (!winServiceInit())
         return result;
 

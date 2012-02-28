@@ -18,6 +18,7 @@ OpenNICSession::OpenNICSession(QTcpSocket* socket, OpenNICServer *server)
 {
     QObject::connect(mSocket,SIGNAL(readyRead()),this,SLOT(readyRead()));
     QObject::connect(mSocket,SIGNAL(disconnected()),this,SLOT(disconnected()));
+	mTimer = startTimer(3000);
 }
 
 OpenNICSession::~OpenNICSession()
@@ -49,3 +50,14 @@ void OpenNICSession::disconnected()
     quit();
 }
 
+
+void OpenNICSession::timerEvent(QTimerEvent *e)
+{
+	if ( e->timerId() == mTimer )
+	{
+		if ( !mSocket->isValid() )
+		{
+			quit();
+		}
+	}
+}

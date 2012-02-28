@@ -35,7 +35,7 @@
 #define DEFAULT_RESOLVERS					3
 #define DEFAULT_T1_RESOLVERS				3
 #define DEFAULT_T1_RANDOM					true
-#define DEFAULT_SERVER_TIMEOUT				3 /* seconds */
+#define DEFAULT_SERVER_TIMEOUT				2 /* seconds */
 
 #define inherited QDialog
 
@@ -238,7 +238,6 @@ void OpenNIC::connectToService()
   */
 void OpenNIC::update()
 {
-	QDateTime start;
 	QDateTime timeout;
 	QEventLoop loop;
     QDataStream stream(&mTcpSocket);
@@ -254,19 +253,17 @@ void OpenNIC::update()
     }
     stream << clientPacket;
     mTcpSocket.flush();
-	start = QDateTime::currentDateTime();
-	timeout = start.addSecs(DEFAULT_SERVER_TIMEOUT);
+	timeout = QDateTime::currentDateTime().addSecs(DEFAULT_SERVER_TIMEOUT);
 	while(mTcpSocket.isValid() && mTcpSocket.bytesToWrite()>0 && QDateTime::currentDateTime() < timeout)
     {
         loop.processEvents();
     }
-	start = QDateTime::currentDateTime();
-	timeout = start.addSecs(DEFAULT_SERVER_TIMEOUT);
+	timeout = QDateTime::currentDateTime().addSecs(DEFAULT_SERVER_TIMEOUT);
 	while(mTcpSocket.isValid() && !mTcpSocket.bytesAvailable() && QDateTime::currentDateTime() < timeout)
 	{
 		loop.processEvents();
 	}
-    while ( mTcpSocket.bytesAvailable() )
+	if ( mTcpSocket.bytesAvailable() )
     {
         serverPacket.clear();
         mTcpSocket.flush();
@@ -279,9 +276,20 @@ void OpenNIC::update()
         }
         else
         {
-            mBalloonStatus="OpenNIC Service failed to reply";
+			mBalloonStatus=tr("OpenNIC Service failed to reply");
         }
     }
+	else
+	{
+		if ( mTcpSocket.isValid() )
+		{
+			mBalloonStatus=tr("OpenNIC Service is connected but failed to reply");
+		}
+		else
+		{
+			mBalloonStatus=tr("OpenNIC Service unexpectedly closed");
+		}
+	}
 }
 
 void OpenNIC::tcpConnected()
