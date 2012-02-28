@@ -197,8 +197,6 @@ void OpenNIC::mapServerReply(QMap<QString,QVariant>& map)
 		else if ( key == "resolver_refresh_rate" )		mResolverRefreshRate	=	value.toInt();
 		else if ( key == "resolver_cache_size" )		mResolverCacheSize		=	value.toInt();
 		else if ( key == "bootstrap_t1_list" )			mBootstrapT1List		=	value.toStringList();
-		else if ( key == "bootstrap_cache_size" )		mBootstrapCacheSize		=	value.toInt();
-		else if ( key == "bootstrap_random_select" )	mBootstrapRandomSelect	=	value.toBool();
 		else if ( key == "resolver_pool" )				updateResolverPool(value.toStringList());
 		else if ( key == "settings_log" )				uiSettings->logText->setPlainText(value.toString());
 	}
@@ -215,8 +213,6 @@ QMap<QString,QVariant> OpenNIC::mapClientStatus()
 	QMap<QString,QVariant> map;
 	map.insert("resolver_refresh_rate",		mResolverRefreshRate);
 	map.insert("resolver_cache_size",		mResolverCacheSize);
-	map.insert("bootstrap_cache_size",		mBootstrapCacheSize);
-	map.insert("bootstrap_random_select",	mBootstrapRandomSelect);
 	return map;
 }
 
