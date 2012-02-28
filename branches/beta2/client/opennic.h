@@ -86,7 +86,7 @@ class OpenNIC : public QDialog
 		bool					mBootstrapRandomSelect;		/** select bootstrap resolvers randomly */
 		QStringList				mResolverCache;				/** most recently selected resolver cache */
 		int						mResolverCacheSize;			/** the number of resolvers to keep in the cache (and apply to the O/S) */
-		int						mResolverRefreshRate;		/** the resolver refresh rate (apply cache to O/S) */
+		int						mRefreshTimerPeriod;		/** the resolver refresh rate (apply cache to O/S) */
 };
 
 #endif // OPENNIC_H

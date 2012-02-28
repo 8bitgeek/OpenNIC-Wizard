@@ -16,7 +16,6 @@ CONFIG += warn_on \
 
 SOURCES += main.cpp\
 		opennicserver.cpp \
-		openniclog.cpp \
 		qtservice.cpp \
     opennicresolverpoolitem.cpp \
     opennicresolverpool.cpp \
@@ -33,7 +32,6 @@ unix::SOURCES += qtservice_unix.cpp \
 		qtunixsocket.cpp
 
 HEADERS  += opennicserver.h \
-		openniclog.h \
 		qtservice.h \
 		qtservice_p.h \
 		qtunixserversocket.h \
@@ -49,3 +47,5 @@ RESOURCES += \
 		opennicserver.qrc
 
 win32:LIBS += C:/QtSDK/mingw/lib/libwsock32.a
+
+

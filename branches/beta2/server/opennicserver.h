@@ -47,6 +47,13 @@ class OpenNICServer : public QObject
 		void					quit();
 
 	protected:
+		void					setRefreshTimerPeriod(int refreshTimerPeriod);
+		int						refreshTimerPeriod() {return mRefreshTimerPeriod;}
+		bool					testResolverCache();
+		void					coldBoot();
+		void					refreshResolvers(bool force=false);
+		void					announcePackets();
+		void					purgeDeadSesssions();
 		QMap<QString,QVariant>	mapServerStatus();
 		void					mapClientRequest(QMap<QString,QVariant>& map);
 		int						initializeServer();
@@ -60,20 +67,21 @@ class OpenNICServer : public QObject
 		void					writeSettings();
 
 	private:
+		QStringList				mLog;						/** log history */
 		bool					mEnabled;					/** service status */
 		int						mRefreshTimer;
 		int						mFastTimer;
-        bool                    mResolversInitialized;      /** resolvers have been initialized */
+		bool					mResolversInitialized;      /** resolvers have been initialized */
 		/** TCP service */
 		QTcpServer				mServer;					/** the localhost TCP server */
         QList<OpenNICSession*>  mSessions;                  /** active sessions */
 		/** settings **/
+		int						mRefreshTimerPeriod;		/** the refresh timer period in minutes */
 		int						mTcpListenPort;				/** the TCP listen port */
 		QString					mLogFile;					/** the log file */
-		QStringList				mResolverCache;				/** most recently selected resolver cache */
 		int						mResolverCacheSize;			/** the number of resolvers to keep in the cache (and apply to the O/S) */
-		int						mResolverRefreshRate;		/** the resolver refresh rate (apply cache to O/S) */
-		OpenNICResolverPool		mResolverPool;				/** the active resolver pool */
+		OpenNICResolverPool		mResolverPool;				/** the comlpete resolver pool */
+		OpenNICResolverPool		mResolverCache;				/** the active resolver pool */
 };
 
 #endif // OPENNICSERVER_H

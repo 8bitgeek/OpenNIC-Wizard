@@ -42,6 +42,36 @@ QStringList OpenNICResolverPool::toStringList()
 	return rc;
 }
 
+OpenNICResolverPoolItem& OpenNICResolverPool::operator<<(const QStringList& strings)
+{
+	return fromStringList(strings);
+}
+
+
+/**
+  * @brief from a string list
+  */
+OpenNICResolverPool& OpenNICResolverPool::fromStringList(const QStringList& items)
+{
+	for(int n=0; n < items.count(); n++)
+	{
+		if (!items.at(n).trimmed().isEmpty())
+		{
+			QHostAddress item(items.at(n).trimmed());
+			insort(item);
+		}
+	}
+	return *this;
+}
+
+/**
+  * @brief clear the pool
+  */
+void OpenNICResolverPool::clear()
+{
+	mItems.clear();
+}
+
 /**
   * @brief append an item
   */

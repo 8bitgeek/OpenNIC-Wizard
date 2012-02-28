@@ -34,8 +34,11 @@ class OpenNICResolverPool : public QObject
 		int								indexOf(OpenNICResolverPoolItem item);
 		int								indexOf(QHostAddress hostAddress);
 		QStringList						toStringList();
+		OpenNICResolverPool&			fromStringList(const QStringList strings);
+		OpenNICResolverPoolItem&		operator<<(const QStringList& strings);
 	public slots:
 		void							sort();
+		void							clear();
 	private:
 		void							swap(int a,int b);
 		QList<OpenNICResolverPoolItem>	mItems;

@@ -30,7 +30,8 @@
 #else
 #define DEFAULT_LOG_FILE									"opennic.log"
 #endif
-#define DEFAULT_RESOLVER_REFRESH_RATE			15			/* minutes */
+#define DEFAULT_FAST_TIMER						5			/* seconds */
+#define DEFAULT_refresh_timer_period			15			/* minutes */
 #define DEFAULT_RESOLVER_CACHE_SIZE				3
 #define DEFAULT_BOOTSTRAP_CACHE_SIZE			3
 #define DEFAULT_CLIENT_TIMEOUT					3			/* seconds */
@@ -40,17 +41,39 @@
 
 OpenNICServer::OpenNICServer(QObject *parent)
 : inherited(parent)
+, mRefreshTimerPeriod(-1)
+, mRefreshTimer(-1)
 , mEnabled(true)
 , mResolversInitialized(false)
 {
+	setRefreshTimerPeriod(DEFAULT_refresh_timer_period);
 	readSettings();
 	initializeServer();
-    mRefreshTimer = startTimer(1000);
-	mFastTimer = startTimer(1000*5);
+	mFastTimer = startTimer(1000*DEFAULT_FAST_TIMER);
 }
 
 OpenNICServer::~OpenNICServer()
 {
+}
+
+/**
+  * @brief set or re-set the timer refresh period (in minutes)
+  */
+void OpenNICServer::setRefreshTimerPeriod(int refreshTimerPeriod)
+{
+	if (mRefreshTimerPeriod != refreshTimerPeriod)
+	{
+		mRefreshTimerPeriod = refreshTimerPeriod;
+		if ( mRefreshTimer >= 0 )
+		{
+			killTimer(mRefreshTimer);
+			mRefreshTimer=-1;
+		}
+		if ( mRefreshTimerPeriod >= 0 )
+		{
+			mRefreshTimer = startTimer((60*mRefreshTimerPeriod)*1000);
+		}
+	}
 }
 
 /**
@@ -62,8 +85,10 @@ void OpenNICServer::readSettings()
 	mTcpListenPort			= settings.value("tcp_listen_port",			DEFAULT_TCP_LISTEN_PORT).toInt();
 	mLogFile				= settings.value("log_file",				DEFAULT_LOG_FILE).toString();
 	mResolverCache			= settings.value("resolver_cache").toStringList();
-	mResolverRefreshRate	= settings.value("resolver_refresh_rate",	DEFAULT_RESOLVER_REFRESH_RATE).toInt();
+	mRefreshTimerPeriod		= settings.value("refresh_timer_period",	DEFAULT_refresh_timer_period).toInt();
 	mResolverCacheSize		= settings.value("resolver_cache_size",		DEFAULT_RESOLVER_CACHE_SIZE).toInt();
+
+	setRefreshTimerPeriod(mRefreshTimerPeriod);
 }
 
 /**
@@ -75,11 +100,10 @@ void OpenNICServer::writeSettings()
 	settings.setValue("tcp_listen_port",			mTcpListenPort);
 	settings.setValue("log_file",					mLogFile);
 	settings.setValue("resolver_cache",				mResolverCache);
-	settings.setValue("resolver_refresh_rate",		mResolverRefreshRate);
+	settings.setValue("refresh_timer_period",		mRefreshTimerPeriod);
 	settings.setValue("resolver_cache_size",		mResolverCacheSize);
 
-	killTimer(mRefreshTimer);
-	mRefreshTimer = startTimer((mResolverRefreshRate*60)*1000);
+	setRefreshTimerPeriod(mRefreshTimerPeriod);
 }
 
 /**
@@ -92,7 +116,7 @@ QMap<QString,QVariant> OpenNICServer::mapServerStatus()
 	map.insert("tcp_listen_port",			mTcpListenPort);
 	map.insert("resolver_pool",				mResolverPool.toStringList());
 	map.insert("resolver_cache",			mResolverCache);
-	map.insert("resolver_refresh_rate",		mResolverRefreshRate);
+	map.insert("refresh_timer_period",		mRefreshTimerPeriod);
 	map.insert("resolver_cache_size",		mResolverCacheSize);
 	map.insert("bootstrap_t1_list",			OpenNICSystem::getBootstrapT1List());
 	map.insert("settings_log",				OpenNICSystem::getSystemResolverList());
@@ -113,14 +137,14 @@ void OpenNICServer::mapClientRequest(QMap<QString,QVariant>& map)
         if ( key == "tcp_listen_port" )					mTcpListenPort			=	value.toInt();
         else if ( key == "log_file" )					mLogFile				=	value.toString();
         else if ( key == "resolver_cache" )				mResolverCache			=	value.toStringList();
-        else if ( key == "resolver_refresh_rate" )
+		else if ( key == "refresh_timer_period" )
         {
-            if ( value.toInt() != mResolverRefreshRate )
+			if ( value.toInt() != mRefreshTimerPeriod )
             {
                 killTimer(mRefreshTimer);
                 mRefreshTimer = startTimer((value.toInt()*60)*1000);
             }
-            mResolverRefreshRate	=	value.toInt();
+			mRefreshTimerPeriod	=	value.toInt();
         }
         else if ( key == "resolver_cache_size" )
         {
@@ -292,17 +316,92 @@ int OpenNICServer::updateDNS(int resolverCount)
 
 QString OpenNICServer::copyright()
 {
-	return "OpenNICServer V"+QString(VERSION_STRING)+ " (c) 2012 Mike Sharkey <michael_sharkey@firstclass.com>";
+	return "OpenNICServer V"+QString(VERSION_STRING)+ tr( " (c) 2012 Mike Sharkey <michael_sharkey@firstclass.com>" );
 }
 
 QString OpenNICServer::license()
 {
 	return QString( copyright() +
-						"\"THE BEER-WARE LICENSE\" (Revision 42):\n"
+						tr( "\"THE BEER-WARE LICENSE\" (Revision 42):\n"
 						"Mike Sharkey wrote this thing. As long as you retain this notice you\n"
 						"can do whatever you want with this stuff. If we meet some day, and you think\n"
-						"this stuff is worth it, you can buy me a beer in return.\n"
+						"this stuff is worth it, you can buy me a beer in return.\n" )
 					   );
+}
+
+/**
+  * @brief purge dead (closed) sessions.
+  */
+void OpenNICServer::purgeDeadSesssions()
+{
+	/* get here regularly, purge dead sessions... */
+	for(int n=0; n < mSessions.count(); n++)
+	{
+		OpenNICSession* session = mSessions.at(n);
+		if ( session->isFinished() )
+		{
+			fprintf(stderr,"session disposed\n");
+			mSessions.takeAt(n);
+			delete session;
+		}
+	}
+}
+
+/**
+  * @brief announce packets to sessions
+  */
+void OpenNICServer::announcePackets()
+{
+	if ( mSessions.count() )
+	{
+		emit packet(mapServerStatus());
+	}
+}
+
+/**
+  * @brief get here to initiate cold bootstrap
+  */
+void OpenNICServer::coldBoot()
+{
+	/* get here just once just after startup */
+	readSettings();
+	initializeResolvers();
+	if ( mResolversInitialized )
+	{
+		initializeServer();
+	}
+}
+
+/**
+  * @brief test the integrity of the resolver cache. look for dead resolvers.
+  */
+bool OpenNICServer::testResolverCache()
+{
+	for(int n=0; n < mResolverCache.count(); n++ )
+	{
+		OpenNICResolverPoolItem item = mResolverCache.at(n);
+		if ( !item.alive() )
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
+/**
+  * @brief get here once in a while to see if we need to refresh any resolvers.
+  */
+void OpenNICServer::refreshResolvers(bool force)
+{
+	readSettings();
+	if (force || mResolverCache.size()==0 || mResolverCache.size() < mResolverCacheSize )
+	{
+		updateDNS(mResolverCacheSize);
+	}
+	if (mResolverCache.count() && !testResolverCache());	/* how are our currently active resolvers doing?.. */
+	{
+		updateDNS(mResolverCacheSize);						/* ...not so good, get new ones. */
+	}
 }
 
 /**
@@ -312,42 +411,19 @@ void OpenNICServer::timerEvent(QTimerEvent* e)
 {
 	if ( e->timerId() == mFastTimer )
 	{
-		/* get here regularly, purge dead sessions... */
-		for(int n=0; n < mSessions.count(); n++)
-		{
-			OpenNICSession* session = mSessions.at(n);
-			if ( session->isFinished() )
-			{
-				fprintf(stderr,"session disposed\n");
-				mSessions.takeAt(n);
-				delete session;
-			}
-		}
-		if ( mSessions.count() )
-		{
-			emit packet(mapServerStatus());
-		}
+		purgeDeadSessions();									/* free up closed gui sessions */
+		refreshResolvers();										/* try to be smart */
+		announcePackets();										/* tell gui sessions what they need to know */
 	}
-	else if ( e->timerId() == mRefreshTimer )
+	else if ( e->timerId() == mRefreshTimer )					/* get here once in a while, a slow timer... */
 	{
-        /* do some regular stuff... */
-		if ( !mResolversInitialized )
+		if ( !mResolversInitialized )							/* have we started any resolvers yet? */
 		{
-			/* get here just once just after startup */
-			readSettings();
-			initializeResolvers();
-			if ( mResolversInitialized )
-			{
-				initializeServer();
-			}
+			coldBoot();											/* start from scratch */
 		}
 		else
 		{
-			readSettings();
-			updateDNS(mResolverCacheSize);
-			/* in case we got here on the short timer, extend it to the settings value... */
-			killTimer(mRefreshTimer);
-			mRefreshTimer = startTimer((mResolverRefreshRate*60)*1000);
+			refreshResolvers(true);								/* force a resolver cache refresh */
 		}
 	}
 	else

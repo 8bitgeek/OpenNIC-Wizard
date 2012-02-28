@@ -21,6 +21,8 @@ class OpenNICSession : public QThread
         virtual ~OpenNICSession();
 		OpenNICServer*			server()    {return mServer;}
 		QTcpSocket*				socket()    {return mSocket;}
+	signals:
+		void					sessionPacket(OpenNICSession* session, QMap<QString,QVariant> packet);
 	public slots:
 		virtual void			packet(QMap<QString,QVariant> packet);
     protected slots:
