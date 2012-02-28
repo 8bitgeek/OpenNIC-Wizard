@@ -255,13 +255,13 @@ void OpenNIC::update()
     stream << clientPacket;
     mTcpSocket.flush();
 	start = QDateTime::currentDateTime();
-	timeout = QDateTime::start.addSecs(DEFAULT_SERVER_TIMEOUT);
+	timeout = start.addSecs(DEFAULT_SERVER_TIMEOUT);
 	while(mTcpSocket.isValid() && mTcpSocket.bytesToWrite()>0 && QDateTime::currentDateTime() < timeout)
     {
         loop.processEvents();
     }
 	start = QDateTime::currentDateTime();
-	timeout = QDateTime::start.addSecs(DEFAULT_SERVER_TIMEOUT);
+	timeout = start.addSecs(DEFAULT_SERVER_TIMEOUT);
 	while(mTcpSocket.isValid() && !mTcpSocket.bytesAvailable() && QDateTime::currentDateTime() < timeout)
 	{
 		loop.processEvents();
