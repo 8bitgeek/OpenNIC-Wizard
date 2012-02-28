@@ -21,7 +21,7 @@
 #include <QList>
 #include "opennicresolverpool.h"
 
-#define	VERSION_STRING				"0.2.2"
+#define	VERSION_STRING				"0.2.3"
 
 class OpenNICSession;
 class OpenNICServer : public QObject
@@ -40,10 +40,10 @@ class OpenNICServer : public QObject
 		void					resume()		{mEnabled = true;}
 		bool					isListening()	{return mServer.isListening();}
 		quint16					serverPort()	{return mServer.serverPort();}
-        QMutex&                 processMutex()  {return mProcessMutex;}
         bool					process(QTcpSocket* client);
 
 	signals:
+		void					packet(QMap<QString,QVariant> packet);
 		void					quit();
 
 	protected:
@@ -66,7 +66,6 @@ class OpenNICServer : public QObject
         bool                    mResolversInitialized;      /** resolvers have been initialized */
 		/** TCP service */
 		QTcpServer				mServer;					/** the localhost TCP server */
-        QMutex                  mProcessMutex;              /** protects the data */
         QList<OpenNICSession*>  mSessions;                  /** active sessions */
 		/** settings **/
 		int						mTcpListenPort;				/** the TCP listen port */

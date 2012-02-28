@@ -9,7 +9,8 @@
 #include "opennicsession.h"
 #include "opennicserver.h"
 
-
+#include <QEventLoop>
+#define DEFAULT_CLIENT_TIMEOUT 2
 
 OpenNICSession::OpenNICSession(QTcpSocket* socket, OpenNICServer *server)
 : QThread(server)
@@ -34,15 +35,42 @@ void OpenNICSession::run()
 }
 
 /**
+  * @brief receive a packet
+  */
+void OpenNICSession::packet(QMap<QString,QVariant> packet)
+{
+	mPacket = packet;
+}
+
+/**
   * @brief data is available, process it...
   */
 void OpenNICSession::readyRead()
 {
-    if ( server()->processMutex().tryLock() )
-    {
-        server()->process(mSocket);
-        server()->processMutex().unlock();
-    }
+	QEventLoop loop;
+	QDateTime timeout;
+	QMap<QString,QVariant> clientPacket;
+	QDataStream stream(mSocket);
+	timeout = QDateTime::currentDateTime().addSecs(DEFAULT_CLIENT_TIMEOUT);
+	while(mSocket->isValid() && !mSocket->bytesAvailable() && QDateTime::currentDateTime() < timeout)
+	{
+		loop.processEvents();
+	}
+	while ( mSocket->bytesAvailable() )
+	{
+		clientPacket.clear();
+		stream >> clientPacket;
+		if ( !clientPacket.empty() )
+		{
+			stream << mPacket;
+			mSocket->flush();
+			timeout = QDateTime::currentDateTime().addSecs(DEFAULT_CLIENT_TIMEOUT);
+			while(mSocket->isValid() && mSocket->bytesToWrite()>0 && QDateTime::currentDateTime() < timeout )
+			{
+				loop.processEvents();
+			}
+		}
+	}
 }
 
 /**
