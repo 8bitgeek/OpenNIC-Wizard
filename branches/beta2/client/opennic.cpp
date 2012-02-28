@@ -30,6 +30,8 @@
 #include <QHostAddress>
 #include <QDataStream>
 #include <QDateTime>
+#include <QListWidget>
+#include <QListWidgetItem>
 
 #define DEFAULT_REFRESH						15
 #define DEFAULT_RESOLVERS					3
@@ -199,7 +201,21 @@ void OpenNIC::mapServerReply(QMap<QString,QVariant>& map)
 		else if ( key == "resolver_cache_size" )		mResolverCacheSize		=	value.toInt();
 		else if ( key == "bootstrap_t1_list" )			mBootstrapT1List		=	value.toStringList();
 		else if ( key == "resolver_pool" )				updateResolverPool(value.toStringList());
-		else if ( key == "settings_log" )				uiSettings->logText->setPlainText(value.toString());
+		else if ( key == "system_text" )				uiSettings->systemText->setPlainText(value.toString());
+		else if ( key == "journal_text" )
+		{
+			QStringList journalText = value.toStringList();
+			QListWidget* journal = uiSettings->journalList;
+			while(journal->count()>300)
+			{
+				QListWidgetItem* item = journal->takeItem(0);
+				if ( item != NULL )
+				{
+					delete item;
+				}
+			}
+			journal->addItems(journalText);
+		}
 	}
 	uiSettings->cache->setPlainText(mResolverCache.join("\n"));
 	uiSettings->t1List->setPlainText(mBootstrapT1List.join("\n"));
