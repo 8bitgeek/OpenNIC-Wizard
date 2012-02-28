@@ -136,11 +136,16 @@ void OpenNICServer::mapClientRequest(QMap<QString,QVariant>& map)
 bool OpenNICServer::process(QTcpSocket *client)
 {
     bool rc = false;
+	QEventLoop loop;
+	QDateTime now;
 	OpenNICLog::log(OpenNICLog::Debug,"process");
 	QMap<QString,QVariant> clientPacket;
 	QMap<QString,QVariant> serverPacket;
 	QDataStream stream(client);
-	client->waitForReadyRead(DEFAULT_CLIENT_TIMEOUT_MSEC);
+	for( now = QDateTime::currentDateTime(); !client->bytesAvailable() && QDateTime::currentDateTime() < now.addSecs(DEFAULT_CLIENT_TIMEOUT_MSEC); )
+	{
+		loop.processEvents();
+	}
     while ( client->bytesAvailable() )
 	{
         clientPacket.clear();
