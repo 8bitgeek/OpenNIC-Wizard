@@ -195,7 +195,7 @@ void OpenNIC::mapServerReply(QMap<QString,QVariant>& map)
 		if ( key == "tcp_listen_port" )					mTcpListenPort			=	value.toInt();
 		else if ( key == "log_file" )					mLogFile				=	value.toString();
 		else if ( key == "resolver_cache" )				mResolverCache			=	value.toStringList();
-		else if ( key == "resolver_refresh_rate" )		mResolverRefreshRate	=	value.toInt();
+		else if ( key == "refresh_timer_period" )		mRefreshTimerPeriod		=	value.toInt();
 		else if ( key == "resolver_cache_size" )		mResolverCacheSize		=	value.toInt();
 		else if ( key == "bootstrap_t1_list" )			mBootstrapT1List		=	value.toStringList();
 		else if ( key == "resolver_pool" )				updateResolverPool(value.toStringList());
@@ -212,7 +212,7 @@ void OpenNIC::mapServerReply(QMap<QString,QVariant>& map)
 QMap<QString,QVariant> OpenNIC::mapClientStatus()
 {
 	QMap<QString,QVariant> map;
-	map.insert("resolver_refresh_rate",		mResolverRefreshRate);
+	map.insert("refresh_timer_period",		mRefreshTimerPeriod);
 	map.insert("resolver_cache_size",		mResolverCacheSize);
 	return map;
 }

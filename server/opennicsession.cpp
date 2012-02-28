@@ -56,12 +56,13 @@ void OpenNICSession::readyRead()
 	{
 		loop.processEvents();
 	}
-	while ( mSocket->bytesAvailable() )
+	if ( mSocket->bytesAvailable() )
 	{
 		clientPacket.clear();
 		stream >> clientPacket;
 		if ( !clientPacket.empty() )
 		{
+			emit sessionPacket(session,clientPacket);
 			stream << mPacket;
 			mSocket->flush();
 			timeout = QDateTime::currentDateTime().addSecs(DEFAULT_CLIENT_TIMEOUT);
