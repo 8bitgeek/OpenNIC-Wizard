@@ -131,13 +131,24 @@ void OpenNICServer::mapClientRequest(QMap<QString,QVariant>& map)
     }
 }
 
+#if 1
 /**
   * @brief Process a client request.
   * @return true if client data was received and processed else false.
   */
 bool OpenNICServer::process(QTcpSocket *client)
 {
-    bool rc = false;
+	bool rc = false;
+	return rc;
+}
+#else
+/**
+  * @brief Process a client request.
+  * @return true if client data was received and processed else false.
+  */
+bool OpenNICServer::process(QTcpSocket *client)
+{
+	bool rc = false;
 	QEventLoop loop;
 	QDateTime start;
 	QDateTime timeout;
@@ -151,33 +162,34 @@ bool OpenNICServer::process(QTcpSocket *client)
 	{
 		loop.processEvents();
 	}
-    while ( client->bytesAvailable() )
+	while ( client->bytesAvailable() )
 	{
-        clientPacket.clear();
-        stream >> clientPacket;
-        if ( !clientPacket.empty() )
-        {
-            QEventLoop loop;
-            mapClientRequest(clientPacket);
-            serverPacket = mapServerStatus();
-            stream << serverPacket;
-            client->flush();
+		clientPacket.clear();
+		stream >> clientPacket;
+		if ( !clientPacket.empty() )
+		{
+			QEventLoop loop;
+			mapClientRequest(clientPacket);
+			serverPacket = mapServerStatus();
+			stream << serverPacket;
+			client->flush();
 			start = QDateTime::currentDateTime();;
 			timeout = start.addSecs(DEFAULT_CLIENT_TIMEOUT);
 			while(client->isValid() && client->bytesToWrite()>0 && QDateTime::currentDateTime() < timeout )
-            {
-                loop.processEvents();
-            }
-            writeSettings();					/* write changes from client */
-            rc = true;
-        }
-        else
-        {
-            rc=false;
-        }
-    }
-    return rc;
+			{
+				loop.processEvents();
+			}
+			writeSettings();					/* write changes from client */
+			rc = true;
+		}
+		else
+		{
+			rc=false;
+		}
+	}
+	return rc;
 }
+#endif
 
 /**
   * @brief Get here when a task tray applet has connected.
@@ -188,6 +200,7 @@ void OpenNICServer::newConnection()
     while ( (client = mServer.nextPendingConnection()) != NULL )
     {
         OpenNICSession* session = new OpenNICSession(client,this);
+		QObject::connect(this,SIGNAL(packet(QMap<QString,QVariant>)),session,SLOT(packet(QMap<QString,QVariant>)));
 		mSessions.append(session);
         session->start();
 		fprintf(stderr,"session started\n");
@@ -300,51 +313,42 @@ void OpenNICServer::timerEvent(QTimerEvent* e)
 	if ( e->timerId() == mFastTimer )
 	{
 		/* get here regularly, purge dead sessions... */
-		if ( mProcessMutex.tryLock() )
+		for(int n=0; n < mSessions.count(); n++)
 		{
-			for(int n=0; n < mSessions.count(); n++)
+			OpenNICSession* session = mSessions.at(n);
+			if ( session->isFinished() )
 			{
-				OpenNICSession* session = mSessions.at(n);
-				if ( session->isFinished() )
-				{
-					fprintf(stderr,"session disposed\n");
-					mSessions.takeAt(n);
-					delete session;
-				}
+				fprintf(stderr,"session disposed\n");
+				mSessions.takeAt(n);
+				delete session;
 			}
-			mProcessMutex.unlock();
+		}
+		if ( mSessions.count() )
+		{
+			emit packet(mapServerStatus());
 		}
 	}
 	else if ( e->timerId() == mRefreshTimer )
 	{
         /* do some regular stuff... */
-        if ( mProcessMutex.tryLock() )
-        {
-            if ( !mResolversInitialized )
-            {
-                /* get here just once just after startup */
-                readSettings();
-                initializeResolvers();
-                if ( mResolversInitialized )
-                {
-                    initializeServer();
-                }
-            }
-            else
-            {
-                readSettings();
-                updateDNS(mResolverCacheSize);
-                /* in case we got here on the short timer, extend it to the settings value... */
-                killTimer(mRefreshTimer);
-                mRefreshTimer = startTimer((mResolverRefreshRate*60)*1000);
-            }
-            mProcessMutex.unlock();
-        }
-        else
-        {
-            killTimer(mRefreshTimer);
-            mRefreshTimer = startTimer(1000); /* try back in one second */
-        }
+		if ( !mResolversInitialized )
+		{
+			/* get here just once just after startup */
+			readSettings();
+			initializeResolvers();
+			if ( mResolversInitialized )
+			{
+				initializeServer();
+			}
+		}
+		else
+		{
+			readSettings();
+			updateDNS(mResolverCacheSize);
+			/* in case we got here on the short timer, extend it to the settings value... */
+			killTimer(mRefreshTimer);
+			mRefreshTimer = startTimer((mResolverRefreshRate*60)*1000);
+		}
 	}
 	else
 	{
