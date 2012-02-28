@@ -61,9 +61,9 @@ class OpenNICServer : public QObject
 
 	private:
 		bool					mEnabled;					/** service status */
-		int						mStartTimer;
 		int						mRefreshTimer;
 		int						mFastTimer;
+        bool                    mResolversInitialized;      /** resolvers have been initialized */
 		/** TCP service */
 		QTcpServer				mServer;					/** the localhost TCP server */
         QMutex                  mProcessMutex;              /** protects the data */
