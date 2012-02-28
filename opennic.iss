@@ -98,9 +98,11 @@ Name: "{commonstartup}\OpenNIC Wizard"; Filename: "{app}\{#MyAppExeName}"
 
 [Run]
 Filename: "{app}\{#MyAppServiceName}"; Parameters: "-install"; WorkingDir: "{app}"; Flags: nowait runascurrentuser skipifsilent; Description: "{cm:LaunchProgram,{#StringChange(MyAppServiceName, "&", "&&")}}"; StatusMsg: "Installing OpenNIC Service...";
+Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"; Flags: nowait runasoriginaluser skipifsilent; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, "&", "&&")}}"; StatusMsg: "Starting OpenNIC Task Tray Applet...";
+FileName: "{sys}\sc.exe"; Parameters: "config OpenNIC start= auto"; StatusMsg: "Configuring OpenNIC Service...";
 FileName: "{sys}\sc.exe"; Parameters: "config OpenNIC start= auto"; StatusMsg: "Configuring OpenNIC Service...";
 Filename: "{sys}\sc.exe"; Parameters: "start OpenNIC"; StatusMsg: "Starting OpenNIC Service...";
-Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"; Flags: nowait runasoriginaluser skipifsilent; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, "&", "&&")}}"; StatusMsg: "Starting OpenNIC Task Tray Applet...";
+Filename: "{sys}\sc.exe"; Parameters: "start OpenNIC"; StatusMsg: "Starting OpenNIC Service...";
 
 [UninstallRun]
 Filename: "{app}\{#MyAppServiceName}"; WorkingDir: "{app}"; Parameters: "-terminate";

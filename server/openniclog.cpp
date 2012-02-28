@@ -20,6 +20,7 @@ QString OpenNICLog::mLogFile;
 
 void OpenNICLog::log(LogLevel level, QString msg)
 {
+#if 0
 	if ( !msg.trimmed().isEmpty() )
 	{
 		QFileInfo fi(mLogFile);
@@ -31,5 +32,8 @@ void OpenNICLog::log(LogLevel level, QString msg)
 		}
 		file.close();
 	}
+#else
+    fprintf(stderr,"%s\n",msg.toAscii().data());
+#endif
 }
 

@@ -17,10 +17,13 @@
 #include <QTcpSocket>
 #include <QMap>
 #include <QVariant>
+#include <QMutex>
+#include <QList>
 #include "opennicresolverpool.h"
 
 #define	VERSION_STRING				"0.2.1"
 
+class OpenNICSession;
 class OpenNICServer : public QObject
 {
 	Q_OBJECT
@@ -37,13 +40,15 @@ class OpenNICServer : public QObject
 		void					resume()		{mEnabled = true;}
 		bool					isListening()	{return mServer.isListening();}
 		quint16					serverPort()	{return mServer.serverPort();}
+        QMutex&                 processMutex()  {return mProcessMutex;}
+        bool					process(QTcpSocket* client);
+
 	signals:
 		void					quit();
 
 	protected:
 		QMap<QString,QVariant>	mapServerStatus();
 		void					mapClientRequest(QMap<QString,QVariant>& map);
-		void					process(QTcpSocket* client);
 		int						initializeServer();
 		int						initializeResolvers();
 		int						updateDNS(int resolver_count);
@@ -60,6 +65,8 @@ class OpenNICServer : public QObject
 		int						mRefreshTimer;
 		/** TCP service */
 		QTcpServer				mServer;					/** the localhost TCP server */
+        QMutex                  mProcessMutex;              /** protects the data */
+        QList<OpenNICSession*>  mSessions;                  /** active sessions */
 		/** settings **/
 		int						mTcpListenPort;				/** the TCP listen port */
 		QString					mLogFile;					/** the log file */

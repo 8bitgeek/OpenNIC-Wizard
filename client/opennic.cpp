@@ -63,15 +63,24 @@ void OpenNIC::iconActivated(QSystemTrayIcon::ActivationReason reason)
 {
    switch (reason)
    {
-	   case QSystemTrayIcon::MiddleClick:
-	   case QSystemTrayIcon::Trigger:
-	   showBalloonMessage( tr( "OpenNIC Resolvers" ), uiSettings->cache->toPlainText() );
-		   break;
-	   case QSystemTrayIcon::DoubleClick:
-		   setVisible(true);
-		   break;
-		   default:
-		   break;
+    case QSystemTrayIcon::MiddleClick:
+    case QSystemTrayIcon::Trigger:
+    {
+       if ( mBalloonStatus.isEmpty() )
+       {
+           showBalloonMessage( tr( "OpenNIC Resolvers" ), uiSettings->cache->toPlainText() );
+       }
+       else
+       {
+           showBalloonMessage( tr( "Status" ), mBalloonStatus );
+       }
+    }
+    break;
+    case QSystemTrayIcon::DoubleClick:
+        setVisible(true);
+    break;
+    default:
+    break;
    }
 }
 
@@ -214,45 +223,58 @@ QMap<QString,QVariant> OpenNIC::mapClientStatus()
 /**
   * @brief Contact the service and perform a bi-directional update.
   */
-void OpenNIC::updateService()
+void OpenNIC::connectToService()
 {
-	QHostAddress localhost(QHostAddress::LocalHost);
-	mTcpSocket.connectToHost(localhost,19803,QIODevice::ReadWrite);
+    if ( !mTcpSocket.isValid() )
+    {
+        mTcpSocket.close();
+        QHostAddress localhost(QHostAddress::LocalHost);
+        mTcpSocket.connectToHost(localhost,19803,QIODevice::ReadWrite);
+    }
+}
+
+/**
+  * @brief Update the service
+  */
+void OpenNIC::update()
+{
+    QDateTime now;
+    QDataStream stream(&mTcpSocket);
+    QMap<QString,QVariant> clientPacket;
+    QMap<QString,QVariant> serverPacket;
+    if ( !mInitialized )
+    {
+        clientPacket.insert("initialize",VERSION_STRING); /* something to get a reply */
+    }
+    else
+    {
+        clientPacket = mapClientStatus();
+    }
+    stream << clientPacket;
+    mTcpSocket.flush();
+    mTcpSocket.waitForBytesWritten(DEFAULT_SERVER_TIMEOUT_MSEC);
+    mTcpSocket.waitForReadyRead(DEFAULT_SERVER_TIMEOUT_MSEC);
+    while ( mTcpSocket.bytesAvailable() )
+    {
+        serverPacket.clear();
+        mTcpSocket.flush();
+        stream >> serverPacket;
+        if (!serverPacket.isEmpty() )
+        {
+            mBalloonStatus="";
+            mapServerReply(serverPacket);
+            mInitialized=true;
+        }
+        else
+        {
+            mBalloonStatus="OpenNIC Service failed to reply";
+        }
+    }
 }
 
 void OpenNIC::tcpConnected()
 {
-	QDateTime now;
-	QDataStream stream(&mTcpSocket);
-	QMap<QString,QVariant> clientPacket;
-	QMap<QString,QVariant> serverPacket;
-	if ( !mInitialized )
-	{
-		clientPacket.insert("initialize",VERSION_STRING); /* something to get a reply */
-	}
-	else
-	{
-		clientPacket = mapClientStatus();
-	}
-	stream << clientPacket;
-	mTcpSocket.flush();
-	now = QDateTime::currentDateTime();
-	mTcpSocket.waitForReadyRead(DEFAULT_SERVER_TIMEOUT_MSEC);
-	if ( mTcpSocket.bytesAvailable() )
-	{
-		mTcpSocket.flush();
-		stream >> serverPacket;
-	}
-	if (!serverPacket.isEmpty() )
-	{
-        mBalloonStatus="";
-		mapServerReply(serverPacket);
-		mInitialized=true;
-	}
-    else
-    {
-        mBalloonStatus="OpenNIC Service failed to reply";
-    }
+    update();
 }
 
 void OpenNIC::tcpDisconnected()
@@ -261,7 +283,11 @@ void OpenNIC::tcpDisconnected()
 
 void OpenNIC::tcpError(QAbstractSocket::SocketError socketError)
 {
-    mBalloonStatus = tr( "Failed to connect to OpenNIC service. [" ) + QString::number((int)socketError) + "]";
+    if ( socketError != QAbstractSocket::RemoteHostClosedError )
+    {
+        mBalloonStatus = tr( "Failed to connect to OpenNIC service. [" ) + QString::number((int)socketError) + "]";
+        mTcpSocket.close();
+    }
 }
 
 void OpenNIC::tcpHostFound()
@@ -292,7 +318,7 @@ void OpenNIC::timerEvent(QTimerEvent* e)
 {
 	if ( e->timerId() == mRefreshTimer )
 	{
-		updateService();
+        connectToService();
 		mTrayIcon->show();
 	}
 	else
