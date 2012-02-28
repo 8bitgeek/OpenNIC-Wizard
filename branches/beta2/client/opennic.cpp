@@ -253,8 +253,11 @@ void OpenNIC::update()
     }
     stream << clientPacket;
     mTcpSocket.flush();
-    mTcpSocket.waitForBytesWritten(DEFAULT_SERVER_TIMEOUT_MSEC);
-	for( now = QDateTime::currentDateTime(); !mTcpSocket.bytesAvailable() && QDateTime::currentDateTime() < now.addSecs(DEFAULT_SERVER_TIMEOUT_MSEC); )
+    for(now=QDateTime::currentDateTime();mTcpSocket.isValid() && mTcpSocket.bytesToWrite()>0 && QDateTime::currentDateTime() < now.addSecs(DEFAULT_SERVER_TIMEOUT_MSEC); )
+    {
+        loop.processEvents();
+    }
+    for( now = QDateTime::currentDateTime(); mTcpSocket.isValid() && !mTcpSocket.bytesAvailable() && QDateTime::currentDateTime() < now.addSecs(DEFAULT_SERVER_TIMEOUT_MSEC); )
 	{
 		loop.processEvents();
 	}

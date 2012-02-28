@@ -41,10 +41,11 @@
 OpenNICServer::OpenNICServer(QObject *parent)
 : inherited(parent)
 , mEnabled(true)
+, mResolversInitialized(false)
 {
 	readSettings();
 	initializeServer();
-	mStartTimer = startTimer(1000);
+    mRefreshTimer = startTimer(1000);
 	mFastTimer = startTimer(1000*5);
 }
 
@@ -143,7 +144,7 @@ bool OpenNICServer::process(QTcpSocket *client)
 	QMap<QString,QVariant> clientPacket;
 	QMap<QString,QVariant> serverPacket;
 	QDataStream stream(client);
-	for( now = QDateTime::currentDateTime(); !client->bytesAvailable() && QDateTime::currentDateTime() < now.addSecs(DEFAULT_CLIENT_TIMEOUT_MSEC); )
+    for( now = QDateTime::currentDateTime(); client->isValid() && !client->bytesAvailable() && QDateTime::currentDateTime() < now.addSecs(DEFAULT_CLIENT_TIMEOUT_MSEC); )
 	{
 		loop.processEvents();
 	}
@@ -158,11 +159,10 @@ bool OpenNICServer::process(QTcpSocket *client)
             serverPacket = mapServerStatus();
             stream << serverPacket;
             client->flush();
-            while (client->bytesToWrite() > 0 )
+            for(now=QDateTime::currentDateTime(); client->isValid() && client->bytesToWrite()>0 && QDateTime::currentDateTime() < now.addSecs(DEFAULT_CLIENT_TIMEOUT_MSEC); )
             {
                 loop.processEvents();
             }
-            client->waitForBytesWritten(DEFAULT_CLIENT_TIMEOUT_MSEC);
             writeSettings();					/* write changes from client */
             rc = true;
         }
@@ -219,6 +219,7 @@ int OpenNICServer::initializeServer()
 int OpenNICServer::initializeResolvers()
 {
 	int n, rc;
+    mResolversInitialized=false;
 	/** get the bootstrap resolvers... */
 	QStringList bootstrapList = OpenNICSystem::getBootstrapT1List();
 	for(n=0; n < bootstrapList.count(); n++)
@@ -247,6 +248,7 @@ int OpenNICServer::initializeResolvers()
 		{
 			OpenNICResolverPoolItem item(QHostAddress(resolver),"T2");
 			mResolverPool.insort(item);
+            mResolversInitialized=true;
 		}
 	}
 	return rc;
@@ -308,31 +310,30 @@ void OpenNICServer::timerEvent(QTimerEvent* e)
 			mProcessMutex.unlock();
 		}
 	}
-	else if ( e->timerId() == mStartTimer)
-	{
-		/* get here just once just after startup */
-        mProcessMutex.lock();
-		readSettings();
-		if ( initializeResolvers() )
-		{
-			initializeServer();
-		}
-        mProcessMutex.unlock();
-		killTimer(mStartTimer);									/* don't need start timer any more */
-		mStartTimer=-1;
-		mRefreshTimer = startTimer(1000);						/* run the update function soon */
-	}
 	else if ( e->timerId() == mRefreshTimer )
 	{
         /* do some regular stuff... */
         if ( mProcessMutex.tryLock() )
         {
-            readSettings();
-            updateDNS(mResolverCacheSize);
+            if ( !mResolversInitialized )
+            {
+                /* get here just once just after startup */
+                readSettings();
+                initializeResolvers();
+                if ( mResolversInitialized )
+                {
+                    initializeServer();
+                }
+            }
+            else
+            {
+                readSettings();
+                updateDNS(mResolverCacheSize);
+                /* in case we got here on the short timer, extend it to the settings value... */
+                killTimer(mRefreshTimer);
+                mRefreshTimer = startTimer((mResolverRefreshRate*60)*1000);
+            }
             mProcessMutex.unlock();
-            /* in case we got here on the short timer, extend it to the settings value... */
-            killTimer(mRefreshTimer);
-            mRefreshTimer = startTimer((mResolverRefreshRate*60)*1000);
         }
         else
         {
