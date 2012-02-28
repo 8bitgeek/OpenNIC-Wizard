@@ -238,7 +238,8 @@ void OpenNIC::connectToService()
   */
 void OpenNIC::update()
 {
-    QDateTime now;
+	QDateTime now;
+	QEventLoop loop;
     QDataStream stream(&mTcpSocket);
     QMap<QString,QVariant> clientPacket;
     QMap<QString,QVariant> serverPacket;
@@ -253,7 +254,10 @@ void OpenNIC::update()
     stream << clientPacket;
     mTcpSocket.flush();
     mTcpSocket.waitForBytesWritten(DEFAULT_SERVER_TIMEOUT_MSEC);
-    mTcpSocket.waitForReadyRead(DEFAULT_SERVER_TIMEOUT_MSEC);
+	for( now = QDateTime::currentDateTime(); !mTcpSocket.bytesAvailable() && QDateTime::currentDateTime() < now.addSecs(DEFAULT_SERVER_TIMEOUT_MSEC); )
+	{
+		loop.processEvents();
+	}
     while ( mTcpSocket.bytesAvailable() )
     {
         serverPacket.clear();
