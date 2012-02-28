@@ -139,12 +139,15 @@ bool OpenNICServer::process(QTcpSocket *client)
 {
     bool rc = false;
 	QEventLoop loop;
-	QDateTime now;
+	QDateTime start;
+	QDateTime timeout;
 	OpenNICLog::log(OpenNICLog::Debug,"process");
 	QMap<QString,QVariant> clientPacket;
 	QMap<QString,QVariant> serverPacket;
 	QDataStream stream(client);
-	for( now = QDateTime::currentDateTime(); client->isValid() && !client->bytesAvailable() && QDateTime::currentDateTime() < now.addSecs(DEFAULT_CLIENT_TIMEOUT); )
+	start = QDateTime::currentDateTime();;
+	timeout = start.addSecs(DEFAULT_CLIENT_TIMEOUT);
+	while(client->isValid() && !client->bytesAvailable() && QDateTime::currentDateTime() < timeout)
 	{
 		loop.processEvents();
 	}
@@ -159,7 +162,9 @@ bool OpenNICServer::process(QTcpSocket *client)
             serverPacket = mapServerStatus();
             stream << serverPacket;
             client->flush();
-			for(now=QDateTime::currentDateTime(); client->isValid() && client->bytesToWrite()>0 && QDateTime::currentDateTime() < now.addSecs(DEFAULT_CLIENT_TIMEOUT); )
+			start = QDateTime::currentDateTime();;
+			timeout = start.addSecs(DEFAULT_CLIENT_TIMEOUT);
+			while(client->isValid() && client->bytesToWrite()>0 && QDateTime::currentDateTime() < timeout )
             {
                 loop.processEvents();
             }
