@@ -231,6 +231,10 @@ void OpenNIC::connectToService()
         QHostAddress localhost(QHostAddress::LocalHost);
         mTcpSocket.connectToHost(localhost,19803,QIODevice::ReadWrite);
     }
+	else
+	{
+		update();
+	}
 }
 
 /**

@@ -45,6 +45,7 @@ OpenNICServer::OpenNICServer(QObject *parent)
 	readSettings();
 	initializeServer();
 	mStartTimer = startTimer(1000);
+	mFastTimer = startTimer(1000*5);
 }
 
 OpenNICServer::~OpenNICServer()
@@ -182,7 +183,9 @@ void OpenNICServer::newConnection()
     while ( (client = mServer.nextPendingConnection()) != NULL )
     {
         OpenNICSession* session = new OpenNICSession(client,this);
+		mSessions.append(session);
         session->start();
+		fprintf(stderr,"session started\n");
     }
 }
 
@@ -287,7 +290,25 @@ QString OpenNICServer::license()
   */
 void OpenNICServer::timerEvent(QTimerEvent* e)
 {
-	if ( e->timerId() == mStartTimer)
+	if ( e->timerId() == mFastTimer )
+	{
+		/* get here regularly, purge dead sessions... */
+		if ( mProcessMutex.tryLock() )
+		{
+			for(int n=0; n < mSessions.count(); n++)
+			{
+				OpenNICSession* session = mSessions.at(n);
+				if ( session->isFinished() )
+				{
+					fprintf(stderr,"session disposed\n");
+					mSessions.takeAt(n);
+					delete session;
+				}
+			}
+			mProcessMutex.unlock();
+		}
+	}
+	else if ( e->timerId() == mStartTimer)
 	{
 		/* get here just once just after startup */
         mProcessMutex.lock();
@@ -303,20 +324,6 @@ void OpenNICServer::timerEvent(QTimerEvent* e)
 	}
 	else if ( e->timerId() == mRefreshTimer )
 	{
-        /* get here regularly, purge dead sessions... */
-        if ( mProcessMutex.tryLock() )
-        {
-            for(int n=0; n < mSessions.count(); n++)
-            {
-                OpenNICSession* session = mSessions.at(n);
-                if ( session->isFinished() )
-                {
-                    mSessions.takeAt(n);
-                    delete session;
-                }
-            }
-            mProcessMutex.unlock();
-        }
         /* do some regular stuff... */
         if ( mProcessMutex.tryLock() )
         {
