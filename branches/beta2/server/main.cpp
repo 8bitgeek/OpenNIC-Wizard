@@ -18,7 +18,6 @@
 #include <QtCore/QSettings>
 #include "qtservice.h"
 #include "opennicserver.h"
-#include "openniclog.h"
 
 class OpenNICService : public QtService<QCoreApplication>
 {
@@ -63,14 +62,14 @@ int main(int argc, char **argv)
 	int rc=0;
 	qsrand(QDateTime::currentDateTime().toTime_t()); /* seed random numbers */
 	Q_INIT_RESOURCE(opennicserver);
-#if !defined(Q_WS_WIN)
+#if 0 // !defined(Q_WS_WIN)
 	// QtService stores service settings in SystemScope, which normally require root privileges.
 	// To allow testing this example as non-root, we change the directory of the SystemScope settings file.
 	QSettings::setPath(QSettings::NativeFormat, QSettings::SystemScope, QDir::tempPath());
 	qWarning("(Example uses dummy settings file: %s/QtSoftware.conf)", QDir::tempPath().toLatin1().constData());
 #endif
 	OpenNICService service(argc, argv);
-	OpenNICLog::log(OpenNICLog::Information,service.server()->copyright());
+	service.server()->log(service.server()->copyright());
 	return service.exec();
 }
 

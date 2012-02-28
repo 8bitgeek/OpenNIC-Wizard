@@ -62,7 +62,7 @@ void OpenNICSession::readyRead()
 		stream >> clientPacket;
 		if ( !clientPacket.empty() )
 		{
-			emit sessionPacket(session,clientPacket);
+			emit sessionPacket(this,clientPacket);
 			stream << mPacket;
 			mSocket->flush();
 			timeout = QDateTime::currentDateTime().addSecs(DEFAULT_CLIENT_TIMEOUT);
