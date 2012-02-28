@@ -33,7 +33,7 @@
 #define DEFAULT_RESOLVER_REFRESH_RATE			15			/* minutes */
 #define DEFAULT_RESOLVER_CACHE_SIZE				3
 #define DEFAULT_BOOTSTRAP_CACHE_SIZE			3
-#define DEFAULT_CLIENT_TIMEOUT_MSEC				3000		/* msecs */
+#define DEFAULT_CLIENT_TIMEOUT					3			/* seconds */
 #define DEFAULT_TCP_LISTEN_PORT				    19803		/* localhost port for communication with GUI */
 
 #define inherited QObject
@@ -144,7 +144,7 @@ bool OpenNICServer::process(QTcpSocket *client)
 	QMap<QString,QVariant> clientPacket;
 	QMap<QString,QVariant> serverPacket;
 	QDataStream stream(client);
-    for( now = QDateTime::currentDateTime(); client->isValid() && !client->bytesAvailable() && QDateTime::currentDateTime() < now.addSecs(DEFAULT_CLIENT_TIMEOUT_MSEC); )
+	for( now = QDateTime::currentDateTime(); client->isValid() && !client->bytesAvailable() && QDateTime::currentDateTime() < now.addSecs(DEFAULT_CLIENT_TIMEOUT); )
 	{
 		loop.processEvents();
 	}
@@ -159,7 +159,7 @@ bool OpenNICServer::process(QTcpSocket *client)
             serverPacket = mapServerStatus();
             stream << serverPacket;
             client->flush();
-            for(now=QDateTime::currentDateTime(); client->isValid() && client->bytesToWrite()>0 && QDateTime::currentDateTime() < now.addSecs(DEFAULT_CLIENT_TIMEOUT_MSEC); )
+			for(now=QDateTime::currentDateTime(); client->isValid() && client->bytesToWrite()>0 && QDateTime::currentDateTime() < now.addSecs(DEFAULT_CLIENT_TIMEOUT); )
             {
                 loop.processEvents();
             }

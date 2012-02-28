@@ -35,7 +35,7 @@
 #define DEFAULT_RESOLVERS					3
 #define DEFAULT_T1_RESOLVERS				3
 #define DEFAULT_T1_RANDOM					true
-#define DEFAULT_SERVER_TIMEOUT_MSEC			3000
+#define DEFAULT_SERVER_TIMEOUT				3 /* seconds */
 
 #define inherited QDialog
 
@@ -238,7 +238,8 @@ void OpenNIC::connectToService()
   */
 void OpenNIC::update()
 {
-	QDateTime now;
+	QDateTime start;
+	QDateTime timeout;
 	QEventLoop loop;
     QDataStream stream(&mTcpSocket);
     QMap<QString,QVariant> clientPacket;
@@ -253,11 +254,15 @@ void OpenNIC::update()
     }
     stream << clientPacket;
     mTcpSocket.flush();
-    for(now=QDateTime::currentDateTime();mTcpSocket.isValid() && mTcpSocket.bytesToWrite()>0 && QDateTime::currentDateTime() < now.addSecs(DEFAULT_SERVER_TIMEOUT_MSEC); )
+	start = QDateTime::currentDateTime();
+	timeout = QDateTime::start.addSecs(DEFAULT_SERVER_TIMEOUT);
+	while(mTcpSocket.isValid() && mTcpSocket.bytesToWrite()>0 && QDateTime::currentDateTime() < timeout)
     {
         loop.processEvents();
     }
-    for( now = QDateTime::currentDateTime(); mTcpSocket.isValid() && !mTcpSocket.bytesAvailable() && QDateTime::currentDateTime() < now.addSecs(DEFAULT_SERVER_TIMEOUT_MSEC); )
+	start = QDateTime::currentDateTime();
+	timeout = QDateTime::start.addSecs(DEFAULT_SERVER_TIMEOUT);
+	while(mTcpSocket.isValid() && !mTcpSocket.bytesAvailable() && QDateTime::currentDateTime() < timeout)
 	{
 		loop.processEvents();
 	}
