@@ -23,6 +23,7 @@
 
 #include "opennicsystem.h"
 #include "opennicresolverpoolitem.h"
+#include "opennicsession.h"
 
 #if defined Q_OS_UNIX
 #define DEFAULT_LOG_FILE									"/dev/tty"
@@ -130,32 +131,41 @@ void OpenNICServer::mapClientRequest(QMap<QString,QVariant>& map)
 
 /**
   * @brief Process a client request.
+  * @return true if client data was received and processed else false.
   */
-void OpenNICServer::process(QTcpSocket *client)
+bool OpenNICServer::process(QTcpSocket *client)
 {
+    bool rc = false;
 	OpenNICLog::log(OpenNICLog::Debug,"process");
 	QMap<QString,QVariant> clientPacket;
 	QMap<QString,QVariant> serverPacket;
 	QDataStream stream(client);
-	QDateTime now = QDateTime::currentDateTime();
 	client->waitForReadyRead(DEFAULT_CLIENT_TIMEOUT_MSEC);
-	client->flush();
-	if ( client->bytesAvailable() )
+    while ( client->bytesAvailable() )
 	{
-		OpenNICLog::log(OpenNICLog::Debug,"bytes recved "+QString::number(client->bytesAvailable()));
-		client->flush();
-		stream >> clientPacket;
-	}
-	if ( !clientPacket.empty() )
-	{
-		OpenNICLog::log(OpenNICLog::Debug,"got client data");
-		mapClientRequest(clientPacket);
-		serverPacket = mapServerStatus();
-		stream << serverPacket;
-		client->flush();
-		writeSettings();					/* write changes from client */
-	}
-	OpenNICLog::log(OpenNICLog::Debug,"done");
+        clientPacket.clear();
+        stream >> clientPacket;
+        if ( !clientPacket.empty() )
+        {
+            QEventLoop loop;
+            mapClientRequest(clientPacket);
+            serverPacket = mapServerStatus();
+            stream << serverPacket;
+            client->flush();
+            while (client->bytesToWrite() > 0 )
+            {
+                loop.processEvents();
+            }
+            client->waitForBytesWritten(DEFAULT_CLIENT_TIMEOUT_MSEC);
+            writeSettings();					/* write changes from client */
+            rc = true;
+        }
+        else
+        {
+            rc=false;
+        }
+    }
+    return rc;
 }
 
 /**
@@ -164,15 +174,11 @@ void OpenNICServer::process(QTcpSocket *client)
 void OpenNICServer::newConnection()
 {
 	QTcpSocket* client;
-	while ( (client = mServer.nextPendingConnection()) != NULL )
-	{
-		if ( mEnabled )
-		{
-			OpenNICLog::log(OpenNICLog::Debug,"connect");
-			process(client);
-		}
-		client->deleteLater();
-	}
+    while ( (client = mServer.nextPendingConnection()) != NULL )
+    {
+        OpenNICSession* session = new OpenNICSession(client,this);
+        session->start();
+    }
 }
 
 /**
@@ -279,23 +285,48 @@ void OpenNICServer::timerEvent(QTimerEvent* e)
 	if ( e->timerId() == mStartTimer)
 	{
 		/* get here just once just after startup */
+        mProcessMutex.lock();
 		readSettings();
 		if ( initializeResolvers() )
 		{
 			initializeServer();
 		}
+        mProcessMutex.unlock();
 		killTimer(mStartTimer);									/* don't need start timer any more */
 		mStartTimer=-1;
 		mRefreshTimer = startTimer(1000);						/* run the update function soon */
 	}
 	else if ( e->timerId() == mRefreshTimer )
 	{
-		/* get here regularly... */
-		readSettings();
-		updateDNS(mResolverCacheSize);
-		/* in case we got here on the short timer, extend it to the settings value... */
-		killTimer(mRefreshTimer);
-		mRefreshTimer = startTimer((mResolverRefreshRate*60)*1000);
+        /* get here regularly, purge dead sessions... */
+        if ( mProcessMutex.tryLock() )
+        {
+            for(int n=0; n < mSessions.count(); n++)
+            {
+                OpenNICSession* session = mSessions.at(n);
+                if ( session->isFinished() )
+                {
+                    mSessions.takeAt(n);
+                    delete session;
+                }
+            }
+            mProcessMutex.unlock();
+        }
+        /* do some regular stuff... */
+        if ( mProcessMutex.tryLock() )
+        {
+            readSettings();
+            updateDNS(mResolverCacheSize);
+            mProcessMutex.unlock();
+            /* in case we got here on the short timer, extend it to the settings value... */
+            killTimer(mRefreshTimer);
+            mRefreshTimer = startTimer((mResolverRefreshRate*60)*1000);
+        }
+        else
+        {
+            killTimer(mRefreshTimer);
+            mRefreshTimer = startTimer(1000); /* try back in one second */
+        }
 	}
 	else
 	{

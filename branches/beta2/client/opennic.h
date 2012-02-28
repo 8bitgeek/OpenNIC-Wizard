@@ -55,6 +55,7 @@ class OpenNIC : public QDialog
 		void					about();
 
 	private slots:
+        void                    update();
 		void					tcpConnected();
 		void					tcpDisconnected();
 		void					tcpError(QAbstractSocket::SocketError socketError);
@@ -62,7 +63,7 @@ class OpenNIC : public QDialog
 		void					tcpStateChanged(QAbstractSocket::SocketState socketState);
 
 		void					updateResolverPool(QStringList resolverPool);
-		void					updateService();
+        void					connectToService();
 		void					iconActivated(QSystemTrayIcon::ActivationReason reason);
 		void					showBalloonMessage(QString title, QString body);
 

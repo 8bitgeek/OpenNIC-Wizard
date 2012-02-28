@@ -22,7 +22,8 @@ SOURCES += main.cpp\
     opennicresolverpool.cpp \
     opennicsystem.cpp \
     opennicresolvertest.cpp \
-    opennicdnsclient.cpp
+    opennicdnsclient.cpp \
+    opennicsession.cpp
 
 
 win32::SOURCES += qtservice_win.cpp
@@ -41,7 +42,8 @@ HEADERS  += opennicserver.h \
     opennicresolverpool.h \
     opennicsystem.h \
     opennicresolvertest.h \
-    opennicdnsclient.h
+    opennicdnsclient.h \
+    opennicsession.h
 
 RESOURCES += \
 		opennicserver.qrc
