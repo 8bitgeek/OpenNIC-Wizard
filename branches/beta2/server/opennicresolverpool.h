@@ -37,6 +37,7 @@ class OpenNICResolverPool : public QObject
 		OpenNICResolverPool&			fromStringList(const QStringList strings);
 		OpenNICResolverPool&			operator<<(const QStringList& strings);
 	public slots:
+		void							randomize();
 		void							sort();
 		void							clear();
 	private:

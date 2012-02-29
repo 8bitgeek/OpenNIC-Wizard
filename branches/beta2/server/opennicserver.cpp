@@ -23,8 +23,8 @@
 #include <QHostAddress>
 #include <QTcpSocket>
 
-#define DEFAULT_FAST_TIMER						5			/* seconds */
-#define DEFAULT_refresh_timer_period			15			/* minutes */
+#define DEFAULT_FAST_TIMER						30			/* seconds */
+#define DEFAULT_REFRESH_TIMER_PERIOD			15			/* minutes */
 #define DEFAULT_RESOLVER_CACHE_SIZE				3
 #define DEFAULT_BOOTSTRAP_CACHE_SIZE			3
 #define DEFAULT_CLIENT_TIMEOUT					3			/* seconds */
@@ -40,7 +40,7 @@ OpenNICServer::OpenNICServer(QObject *parent)
 , mEnabled(true)
 , mResolversInitialized(false)
 {
-	setRefreshTimerPeriod(DEFAULT_refresh_timer_period);
+	setRefreshTimerPeriod(DEFAULT_REFRESH_TIMER_PERIOD);
 	readSettings();
 	initializeServer();
 	mFastTimer = startTimer(1000*DEFAULT_FAST_TIMER);
@@ -55,9 +55,7 @@ OpenNICServer::~OpenNICServer()
   */
 void OpenNICServer::log(QString msg)
 {
-	mLogMutex.lock();
-	mLog << msg;
-	mLogMutex.unlock();
+	mLog << QDateTime::currentDateTime().toString("yyMMddhhmmss")+"|"+msg;
 }
 
 /**
@@ -65,9 +63,7 @@ void OpenNICServer::log(QString msg)
   */
 void OpenNICServer::logPurge()
 {
-	mLogMutex.lock();
 	mLog.clear();
-	mLogMutex.unlock();
 }
 
 /**
@@ -97,7 +93,7 @@ void OpenNICServer::readSettings()
 {
 	QSettings settings("OpenNIC", "OpenNICService");
 	mTcpListenPort			= settings.value("tcp_listen_port",			DEFAULT_TCP_LISTEN_PORT).toInt();
-	mRefreshTimerPeriod		= settings.value("refresh_timer_period",	DEFAULT_refresh_timer_period).toInt();
+	mRefreshTimerPeriod		= settings.value("refresh_timer_period",	DEFAULT_REFRESH_TIMER_PERIOD).toInt();
 	mResolverCacheSize		= settings.value("resolver_cache_size",		DEFAULT_RESOLVER_CACHE_SIZE).toInt();
 
 	setRefreshTimerPeriod(mRefreshTimerPeriod);
@@ -159,6 +155,10 @@ void OpenNICServer::sessionPacket(OpenNICSession* session, QMap<QString,QVariant
 		{
 			if ( value.toInt() != mResolverCacheSize ) updateDNS(value.toInt());
 			mResolverCacheSize = value.toInt();
+		}
+		else if ( key == "initialize" )
+		{
+			log("client version "+value.toString());
 		}
 		else log("unhandled key from client '"+key+"'");
 	}
@@ -245,8 +245,8 @@ void OpenNICServer::announcePackets()
 	if ( mSessions.count() )
 	{
 		emit packet(makeServerPacket());
+		logPurge();
 	}
-	logPurge();
 }
 
 /**
@@ -255,6 +255,7 @@ void OpenNICServer::announcePackets()
 void OpenNICServer::coldBoot()
 {
 	log("** COLD BOOT **");
+	log(copyright());
 	readSettings();
 	bootstrapResolvers();
 	if ( mResolversInitialized )
@@ -274,7 +275,7 @@ int OpenNICServer::bootstrapResolvers()
 	/** get the bootstrap resolvers... */
 	mResolverPool.clear();
 	QStringList bootstrapList = OpenNICSystem::getBootstrapT1List();
-	log(tr("got ")+QString::number(bootstrapList.count())+tr(" T1 resolvers"));
+	log(tr("Found ")+QString::number(bootstrapList.count())+tr(" T1 resolvers"));
 	for(n=0; n < bootstrapList.count(); n++)
 	{
 		QString resolver = bootstrapList.at(n).trimmed();
@@ -286,18 +287,19 @@ int OpenNICServer::bootstrapResolvers()
 		}
 	}
 	/** apply the bootstrap resolvers */
-	mResolverPool.sort();
+	log(tr("Randomizing T1 list..."));
+	mResolverPool.randomize();
 	int nBootstrapResolvers = mResolverCacheSize <= mResolverPool.count() ? mResolverCacheSize : mResolverPool.count();
-	log(tr("applying ")+QString::number(nBootstrapResolvers)+tr("bootstrap resolvers..."));
+	log(tr("Applying ")+QString::number(nBootstrapResolvers)+tr(" T1 resolvers..."));
 	for(n=0; n < nBootstrapResolvers; n++)
 	{
 		OpenNICResolverPoolItem item = mResolverPool.at(n);
 		OpenNICSystem::insertSystemResolver(item.hostAddress(),n+1);
-		log(item.toString());
+		log(" > "+item.toString());
 	}
 	rc=n;
 	/** get the T2 resolvers */
-	log(tr("getting T2 resolvers..."));
+	log(tr("Fetching T2 resolvers..."));
 	QStringList t2List = OpenNICSystem::getBootstrapT2List();
 	for(n=0; n < t2List.count(); n++)
 	{
@@ -309,8 +311,8 @@ int OpenNICServer::bootstrapResolvers()
 			mResolversInitialized=true;
 		}
 	}
-	log(tr("got ")+QString::number(t2List.count())+tr(" T2 resolvers"));
-	log("mResolversInitialized="+mResolversInitialized?"TRUE":"FALSE");
+	log(tr("Found ")+QString::number(t2List.count())+tr(" T2 resolvers"));
+	log("mResolversInitialized="+QString(mResolversInitialized?"TRUE":"FALSE"));
 	return rc;
 }
 
@@ -320,19 +322,39 @@ int OpenNICServer::bootstrapResolvers()
   */
 int OpenNICServer::updateDNS(int resolverCount)
 {
-	int n;
-	mResolverCache.clear();
-	mResolverPool.sort();
-	log("applying new resolver cache...");
-	for(n=0; n < mResolverPool.count() && n < resolverCount; n++)
+	bool replaceWithProposed = false;
+	OpenNICResolverPool proposed;
+	for(int n=0; n < mResolverPool.count() && n < resolverCount; n++)
 	{
 		OpenNICResolverPoolItem item = mResolverPool.at(n);
-		OpenNICSystem::insertSystemResolver(item.hostAddress(),n+1);
-		mResolverCache.append(item);
-		log(item.toString());
+		proposed.append(item);
 	}
-	log(tr("applied ")+QString::number(n)+tr(" T2 resolvers"));
-	return n;
+	/** see if what we are proposing is different than what we have cach'ed already... */
+	for(int n=0; n < proposed.count(); n++)
+	{
+		OpenNICResolverPoolItem item = proposed.at(n);
+		if (!mResolverCache.contains(item))
+		{
+			replaceWithProposed = true;
+		}
+	}
+	if ( replaceWithProposed )
+	{
+		int n;
+		mResolverCache.clear();
+		proposed.sort();
+		log("applying new resolver cache ("+QString::number(proposed.count())+") items...");
+		for(n=0; n < proposed.count(); n++)
+		{
+			OpenNICResolverPoolItem item = proposed.at(n);
+			OpenNICSystem::insertSystemResolver(item.hostAddress(),n+1);
+			mResolverCache.append(item);
+			log(" > "+item.toString());
+		}
+		log(tr("applied ")+QString::number(n)+tr(" T2 resolvers"));
+		return n;
+	}
+	return 0;
 }
 
 /**
@@ -384,18 +406,26 @@ void OpenNICServer::pruneLog()
 }
 
 /**
+  * run regular functions
+  */
+void OpenNICServer::runOnce()
+{
+	purgeDeadSesssions();									/* free up closed gui sessions */
+	refreshResolvers();										/* try to be smart */
+	announcePackets();										/* tell gui sessions what they need to know */
+	pruneLog();												/* don't let the log get out of hand */
+}
+
+/**
   * @brief get here on timed events.
   */
 void OpenNICServer::timerEvent(QTimerEvent* e)
 {
 	if ( e->timerId() == mFastTimer )
 	{
-		purgeDeadSesssions();									/* free up closed gui sessions */
-		refreshResolvers();										/* try to be smart */
-		announcePackets();										/* tell gui sessions what they need to know */
-		pruneLog();												/* don't let the log get out of hand */
+		runOnce();											/* don't let the log get out of hand */
 	}
-	else if ( e->timerId() == mRefreshTimer )					/* get here once in a while, a slow timer... */
+	else if ( e->timerId() == mRefreshTimer )				/* get here once in a while, a slow timer... */
 	{
 		refreshResolvers(true);								/* force a resolver cache refresh */
 	}

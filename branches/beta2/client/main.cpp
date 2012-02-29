@@ -29,6 +29,7 @@ int main(int argc, char *argv[])
 	{
 		OpenNIC on;
 		QObject::connect(&on,SIGNAL(quit()),&a,SLOT(quit()));
+		on.connectToService();
 		rc = a.exec();
 	}
 	Q_CLEANUP_RESOURCE(opennic);

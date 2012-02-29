@@ -11,6 +11,7 @@
 
 #include <QThread>
 #include <QTcpSocket>
+#include <QMutex>
 
 class OpenNICServer;
 class OpenNICSession : public QThread
@@ -32,6 +33,7 @@ class OpenNICSession : public QThread
 		virtual void			run();
 		virtual void			timerEvent(QTimerEvent* e);
     private:
+		QMutex				mPacketMutex;
 		QMap<QString,QVariant>	mPacket;
 		int					mTimer;
 		QTcpSocket*			mSocket;
