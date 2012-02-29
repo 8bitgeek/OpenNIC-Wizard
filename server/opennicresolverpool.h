@@ -24,19 +24,20 @@ class OpenNICResolverPool : public QObject
 		virtual ~OpenNICResolverPool();
 
 		OpenNICResolverPool&			copy(OpenNICResolverPool& other);
-		bool							contains(OpenNICResolverPoolItem item);
+		bool							contains(OpenNICResolverPoolItem& item);
 		bool							contains(QHostAddress item);
 		QList<OpenNICResolverPoolItem>&	items()			{return mItems;}
 		int								count()			{return mItems.count();}
-		OpenNICResolverPoolItem			at(int pos)		{return items().at(pos);}
+		OpenNICResolverPoolItem&		at(int pos)		{return mItems[pos];}
 		void							append(OpenNICResolverPoolItem item);
 		void							insort(OpenNICResolverPoolItem item);
-		int								indexOf(OpenNICResolverPoolItem item);
+		int								indexOf(OpenNICResolverPoolItem& item);
 		int								indexOf(QHostAddress hostAddress);
 		QStringList						toStringList();
 		OpenNICResolverPool&			fromStringList(const QStringList strings);
 		OpenNICResolverPool&			operator<<(const QStringList& strings);
 	public slots:
+		void							setActive(bool active);
 		void							randomize();
 		void							sort();
 		void							clear();

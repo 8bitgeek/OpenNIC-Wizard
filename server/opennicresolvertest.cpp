@@ -137,8 +137,8 @@ void OpenNICResolverTest::timerEvent(QTimerEvent *e)
 			{
 				test();
 			}
-			//setInterval(OpenNICSystem::random(10,60*15)); /* beween 10 seconds to 15 minutes */
-			setInterval(OpenNICSystem::random(10,60*5)); /* beween 10 seconds to 15 minutes */
+			setInterval(OpenNICSystem::random(10,60*10)); /* beween 10 seconds to 10 minutes */
+			//setInterval(OpenNICSystem::random(10,60*5)); /* beween 10 seconds to 15 minutes */
 			mTimerCount=0;
 		}
 	}

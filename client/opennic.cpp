@@ -32,6 +32,8 @@
 #include <QDateTime>
 #include <QListWidget>
 #include <QListWidgetItem>
+#include <QTcpSocket>
+#include <QIODevice>
 
 #define DEFAULT_REFRESH						15
 #define DEFAULT_RESOLVERS					3
@@ -137,7 +139,7 @@ void OpenNIC::createTrayIcon()
 
 	mTrayIcon->setIcon(QIcon( ":/images/opennic.png" ));
 	setWindowIcon( QIcon( ":/images/opennic.png" ) );
-	setWindowTitle( "OpenNIC Setup" );
+	setWindowTitle( tr("OpenNIC Wizard") );
 	QObject::connect(mTrayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), this, SLOT(iconActivated(QSystemTrayIcon::ActivationReason)));
 	QObject::connect(&mTcpSocket,SIGNAL(connected()),this,SLOT(tcpConnected()));
 	QObject::connect(&mTcpSocket,SIGNAL(disconnected()),this,SLOT(tcpDisconnected()));
@@ -339,6 +341,10 @@ void OpenNIC::update()
 		}
 		slowRefresh();
 	}
+}
+
+void OpenNIC::readyRead()
+{
 }
 
 void OpenNIC::tcpConnected()
