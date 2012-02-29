@@ -15,10 +15,11 @@ OpenNICResolverPool::OpenNICResolverPool(QObject *parent)
 }
 
 /**
-  * @brief Close a UDP socket.
+  * @brief Clean up the pool.
   */
 OpenNICResolverPool::~OpenNICResolverPool()
 {
+	mItems.clear();
 }
 
 OpenNICResolverPool& OpenNICResolverPool::copy(OpenNICResolverPool& other)

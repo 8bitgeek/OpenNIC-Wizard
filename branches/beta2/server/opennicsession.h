@@ -31,11 +31,7 @@ class OpenNICSession : public QThread
 		virtual void			disconnected();
     protected:
 		virtual void			run();
-		virtual void			timerEvent(QTimerEvent* e);
     private:
-		QMutex				mPacketMutex;
-		QMap<QString,QVariant>	mPacket;
-		int					mTimer;
 		QTcpSocket*			mSocket;
 		OpenNICServer*		mServer;
 };
