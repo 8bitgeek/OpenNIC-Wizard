@@ -63,6 +63,7 @@ bool OpenNICResolverPoolItem::operator==(OpenNICResolverPoolItem &other)
 bool OpenNICResolverPoolItem::operator>(OpenNICResolverPoolItem &other)
 {
 	/* if one is alive and the other is not, then they are un-equal */
+#if 0
 	if ( alive() != other.alive() )
 	{
 		return alive();
@@ -71,6 +72,7 @@ bool OpenNICResolverPoolItem::operator>(OpenNICResolverPoolItem &other)
 	{
 		return kind() > other.kind();
 	}
+#endif
 	return averageLatency() < other.averageLatency();  /* less is more */
 }
 
@@ -79,6 +81,7 @@ bool OpenNICResolverPoolItem::operator>(OpenNICResolverPoolItem &other)
   */
 bool OpenNICResolverPoolItem::operator<(OpenNICResolverPoolItem &other)
 {
+#if 0
 	/* if one is alive and the other is not, then they are un-equal */
 	if ( alive() != other.alive() )
 	{
@@ -88,6 +91,7 @@ bool OpenNICResolverPoolItem::operator<(OpenNICResolverPoolItem &other)
 	{
 		return kind() < other.kind();
 	}
+#endif
 	return averageLatency() > other.averageLatency();  /* less is more */
 }
 
@@ -97,6 +101,7 @@ bool OpenNICResolverPoolItem::operator<(OpenNICResolverPoolItem &other)
 bool OpenNICResolverPoolItem::operator>=(OpenNICResolverPoolItem &other)
 {
 	/* if one is alive and the other is not, then they are un-equal */
+#if 0
 	if ( alive() != other.alive() )
 	{
 		return alive();
@@ -105,6 +110,7 @@ bool OpenNICResolverPoolItem::operator>=(OpenNICResolverPoolItem &other)
 	{
 		return kind() > other.kind();
 	}
+#endif
 	return averageLatency() <= other.averageLatency();  /* less is more */
 }
 
@@ -113,6 +119,7 @@ bool OpenNICResolverPoolItem::operator>=(OpenNICResolverPoolItem &other)
   */
 bool OpenNICResolverPoolItem::operator<=(OpenNICResolverPoolItem &other)
 {
+#if 0
 	/* if one is alive and the other is not, then they are un-equal */
 	if ( alive() != other.alive() )
 	{
@@ -122,6 +129,7 @@ bool OpenNICResolverPoolItem::operator<=(OpenNICResolverPoolItem &other)
 	{
 		return kind() < other.kind();
 	}
+#endif
 	return averageLatency() >= other.averageLatency();  /* less is more */
 }
 

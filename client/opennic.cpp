@@ -54,6 +54,7 @@ OpenNIC::OpenNIC(QWidget *parent)
 	createActions();
 	createTrayIcon();
 	QObject::connect(this,SIGNAL(accepted()),this,SLOT(writeSettings()));
+
 #if defined Q_OS_UNIX
 	show();
 #endif
@@ -146,6 +147,7 @@ void OpenNIC::createTrayIcon()
 	QObject::connect(&mTcpSocket,SIGNAL(error(QAbstractSocket::SocketError)),this,SLOT(tcpError(QAbstractSocket::SocketError)));
 	QObject::connect(&mTcpSocket,SIGNAL(stateChanged(QAbstractSocket::SocketState)),this,SLOT(tcpStateChanged(QAbstractSocket::SocketState)));
 	QObject::connect(&mTcpSocket,SIGNAL(hostFound()),this,SLOT(tcpHostFound()));
+	QObject::connect(&mTcpSocket,SIGNAL(readyRead()),this,SLOT(readyRead()));
 	mTrayIcon->show();
 }
 
@@ -277,8 +279,7 @@ QMap<QString,QVariant> OpenNIC::mapClientStatus()
   */
 void OpenNIC::connectToService()
 {
-	mTcpSocket.flush();
-    if ( !mTcpSocket.isValid() )
+	if ( !mTcpSocket.isValid() || !mTcpSocket.isOpen() )
     {
         mTcpSocket.close();
         QHostAddress localhost(QHostAddress::LocalHost);
@@ -295,14 +296,12 @@ void OpenNIC::connectToService()
   */
 void OpenNIC::update()
 {
-	QDateTime timeout;
-	QEventLoop loop;
 	QDataStream stream(&mTcpSocket);
 	QMap<QString,QVariant> clientPacket;
-	QMap<QString,QVariant> serverPacket;
 	if ( !mInitialized )
 	{
 		clientPacket.insert("initialize",VERSION_STRING); /* something to get a reply */
+		mInitialized=true;
 	}
 	else
 	{
@@ -310,41 +309,28 @@ void OpenNIC::update()
 	}
 	stream << clientPacket;
 	mTcpSocket.flush();
-	timeout = QDateTime::currentDateTime().addSecs(DEFAULT_SERVER_TIMEOUT);
-	while(mTcpSocket.isValid() && mTcpSocket.bytesToWrite()>0 && QDateTime::currentDateTime() < timeout)
+}
+
+/**
+  * @brief get here when data is available from the server.
+  */
+void OpenNIC::readyRead()
+{
+	QDataStream stream(&mTcpSocket);
+	QMap<QString,QVariant> serverPacket;
+	while ( mTcpSocket.bytesAvailable() )
 	{
-		loop.processEvents();
-	}
-	timeout = QDateTime::currentDateTime().addSecs(DEFAULT_SERVER_TIMEOUT);
-	while(mTcpSocket.isValid() && !mTcpSocket.bytesAvailable() && QDateTime::currentDateTime() < timeout)
-	{
-		loop.processEvents();
-	}
-	if ( mTcpSocket.bytesAvailable() )
-	{
-		serverPacket.clear();
-		mTcpSocket.flush();
 		stream >> serverPacket;
 		if (!serverPacket.isEmpty() )
 		{
 			mBalloonStatus="";
 			mapServerReply(serverPacket);
-			mInitialized=true;
 		}
 	}
-	else
+	if ( !mTcpSocket.isValid() || !mTcpSocket.isOpen() )
 	{
-		mTcpSocket.flush();
-		if ( !mTcpSocket.isValid() )
-		{
-			mBalloonStatus=tr("OpenNIC Service unexpectedly closed");
-		}
-		slowRefresh();
+		mBalloonStatus=tr("OpenNIC Service unexpectedly closed");
 	}
-}
-
-void OpenNIC::readyRead()
-{
 }
 
 void OpenNIC::tcpConnected()
@@ -354,6 +340,7 @@ void OpenNIC::tcpConnected()
 
 void OpenNIC::tcpDisconnected()
 {
+	mBalloonStatus=tr("OpenNIC Service closed the connection");
 }
 
 void OpenNIC::tcpError(QAbstractSocket::SocketError socketError)
