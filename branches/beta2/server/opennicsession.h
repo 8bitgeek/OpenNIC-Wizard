@@ -18,22 +18,20 @@ class OpenNICSession : public QThread
 {
     Q_OBJECT
     public:
-        OpenNICSession(QTcpSocket* socket, OpenNICServer* server);
+		OpenNICSession(QTcpSocket* socke);
         virtual ~OpenNICSession();
-		OpenNICServer*			server()    {return mServer;}
 		QTcpSocket*				socket()    {return mSocket;}
-	signals:
-		void					sessionPacket(OpenNICSession* session, QMap<QString,QVariant> packet);
 	public slots:
-		virtual void			packet(QMap<QString,QVariant> packet);
+		virtual void			sendPacket();
     protected slots:
 		virtual void			readyRead();
 		virtual void			disconnected();
     protected:
+		virtual void			timerEvent(QTimerEvent* e);
 		virtual void			run();
     private:
 		QTcpSocket*			mSocket;
-		OpenNICServer*		mServer;
+		int					mTimer;
 };
 
 #endif // OPENNICSESSION_H

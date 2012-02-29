@@ -39,7 +39,7 @@
 #define DEFAULT_T1_RESOLVERS				3
 #define DEFAULT_T1_RANDOM					true
 #define DEFAULT_SERVER_TIMEOUT				2 /* seconds */
-#define DEFAULT_REFRESH						(30*1000)
+#define DEFAULT_REFRESH						(15*1000)
 #define	FAST_REFRESH						(5*1000)
 
 #define inherited QDialog
@@ -53,7 +53,7 @@ OpenNIC::OpenNIC(QWidget *parent)
 	createActions();
 	createTrayIcon();
 	QObject::connect(this,SIGNAL(accepted()),this,SLOT(writeSettings()));
-
+	mTcpSocket.close();
 #if defined Q_OS_UNIX
 	show();
 #endif
@@ -317,8 +317,10 @@ void OpenNIC::readyRead()
 {
 	QDataStream stream(&mTcpSocket);
 	QMap<QString,QVariant> serverPacket;
+	mTcpSocket.flush();
 	while ( mTcpSocket.bytesAvailable() )
 	{
+		serverPacket.clear();
 		stream >> serverPacket;
 		if (!serverPacket.isEmpty() )
 		{
