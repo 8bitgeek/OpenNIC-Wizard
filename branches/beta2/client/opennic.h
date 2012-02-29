@@ -53,6 +53,7 @@ class OpenNIC : public QDialog
 		virtual void			closeEvent(QCloseEvent* e);
 
 	protected slots:
+		void					readyRead();
 		void					readSettings();
 		void					writeSettings();
 		void					settings();

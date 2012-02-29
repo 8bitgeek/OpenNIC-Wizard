@@ -170,15 +170,15 @@ void OpenNICServer::sessionPacket(OpenNICSession* session, QMap<QString,QVariant
 void OpenNICServer::newConnection()
 {
 	QTcpSocket* client;
-    while ( (client = mServer.nextPendingConnection()) != NULL )
-    {
-        OpenNICSession* session = new OpenNICSession(client,this);
+	while ( (client = mServer.nextPendingConnection()) != NULL )
+	{
+		OpenNICSession* session = new OpenNICSession(client,this);
 		QObject::connect(this,SIGNAL(packet(QMap<QString,QVariant>)),session,SLOT(packet(QMap<QString,QVariant>)));
 		QObject::connect(session,SIGNAL(sessionPacket(OpenNICSession*,QMap<QString,QVariant>)),this,SLOT(sessionPacket(OpenNICSession*,QMap<QString,QVariant>)));
 		mSessions.append(session);
-        session->start();
+		session->start();
 		log(tr("** client session created **"));
-    }
+	}
 }
 
 /**

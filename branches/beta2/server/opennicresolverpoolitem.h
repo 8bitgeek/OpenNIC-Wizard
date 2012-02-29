@@ -30,19 +30,19 @@ class OpenNICResolverPoolItem : public OpenNICResolverTest
 		virtual ~OpenNICResolverPoolItem();
 
 		OpenNICResolverPoolItem&	copy(const OpenNICResolverPoolItem& other);
-		QHostAddress				hostAddress()		{return mHostAddress;}
+		QHostAddress&				hostAddress()		{return mHostAddress;}
 		int							testCount()			{return mTestCount;}
 		int							replyCount()		{return mReplyCount;}
 		int							timeoutCount()		{return mTimeoutCount;}
 		int							lastLatency()		{return mLatencySamples.count() ? mLatencySamples.at(mLatencySamples.count()-1) : 0;}
 		double						averageLatency();
-		QDateTime					lastReply()			{return mLastReply;}
-		QDateTime					lastTimeout()		{return mLastTimeout;}
-		QString						lastFault()			{return mLastFault;}
+		QDateTime&					lastReply()			{return mLastReply;}
+		QDateTime&					lastTimeout()		{return mLastTimeout;}
+		QString&					lastFault()			{return mLastFault;}
 		bool						alive()				{return lastReply() > lastTimeout();}
 		int							tests()				{return mTests;}
 
-		QString						kind()				{return mKind;}
+		QString&					kind()				{return mKind;}
 		void						setKind(QString kind) {mKind=kind;}
 
 		OpenNICResolverPoolItem&	operator=(const OpenNICResolverPoolItem& other);

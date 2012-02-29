@@ -36,7 +36,7 @@ QStringList OpenNICResolverPool::toStringList()
 	sort();
 	for(int n=0; n < count(); n++)
 	{
-		OpenNICResolverPoolItem item = at(n);
+		OpenNICResolverPoolItem& item = mItems[n];
 		QString itemString = item.toString();
 		rc.append(itemString);
 	}
@@ -56,9 +56,9 @@ OpenNICResolverPool& OpenNICResolverPool::fromStringList(const QStringList items
 {
 	for(int n=0; n < items.count(); n++)
 	{
-		if (!items.at(n).trimmed().isEmpty())
+		if (!items[n].trimmed().isEmpty())
 		{
-			QHostAddress item(items.at(n).trimmed());
+			QHostAddress item(items[n].trimmed());
 			insort(item);
 		}
 	}
@@ -71,6 +71,17 @@ OpenNICResolverPool& OpenNICResolverPool::fromStringList(const QStringList items
 void OpenNICResolverPool::clear()
 {
 	mItems.clear();
+}
+
+/**
+  * @brief set active state
+  */
+void OpenNICResolverPool::setActive(bool active)
+{
+	for(int n=0; n < count(); n++)
+	{
+		mItems[n].setActive(active);
+	}
 }
 
 /**
@@ -101,9 +112,9 @@ void OpenNICResolverPool::insort(OpenNICResolverPoolItem item)
   */
 void OpenNICResolverPool::swap(int a,int b)
 {
-	OpenNICResolverPoolItem t = items().at(a);
-	items().replace(a,items().at(b));
-	items().replace(b,t);
+	OpenNICResolverPoolItem t = mItems[a];
+	mItems.replace(a,mItems[b]);
+	mItems.replace(b,t);
 }
 
 /**
@@ -136,16 +147,13 @@ void OpenNICResolverPool::sort()
 	{
 		int a,b;
 		bool sorted;
-		OpenNICResolverPoolItem itemA(false);
-		OpenNICResolverPoolItem itemB(false);
+		int nCount = count()-1;
 		do
 		{
 			sorted=true;
-			for(int n=0; n < (count()-1); n++ )
+			for(int n=0; n < nCount; n++ )
 			{
-				itemA = items().at((a=n));
-				itemB = items().at((b=(n+1)));
-				if ( itemA < itemB )
+				if ( mItems[(a=n)] < mItems[(b=(n+1))] )
 				{
 					sorted=false;
 					swap(a,b);
@@ -158,7 +166,7 @@ void OpenNICResolverPool::sort()
 /**
   * @brief determine if the pool contains this item (by IP address)
   */
-bool OpenNICResolverPool::contains(OpenNICResolverPoolItem item)
+bool OpenNICResolverPool::contains(OpenNICResolverPoolItem& item)
 {
 	return contains(item.hostAddress());
 }
@@ -174,7 +182,7 @@ bool OpenNICResolverPool::contains(QHostAddress item)
 /**
   * @return the index of the item or -1
   */
-int OpenNICResolverPool::indexOf(OpenNICResolverPoolItem item)
+int OpenNICResolverPool::indexOf(OpenNICResolverPoolItem& item)
 {
 	return indexOf(item.hostAddress());
 }
@@ -186,7 +194,7 @@ int OpenNICResolverPool::indexOf(QHostAddress hostAddress)
 {
 	for(int n=0; n < mItems.count(); n++)
 	{
-		OpenNICResolverPoolItem other = mItems.at(n);
+		OpenNICResolverPoolItem& other = mItems[n];
 		if ( hostAddress == other.hostAddress() )
 		{
 			return n;

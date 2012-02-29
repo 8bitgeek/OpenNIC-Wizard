@@ -33,7 +33,7 @@ class OpenNICResolverTest : public OpenNICDnsClient
 			qint64			latency;	/* Latency in mulliseconds */
 			int				error;		/* Error Code */
 		} query;
-		explicit OpenNICResolverTest(bool active=true, QObject *parent=0);
+		OpenNICResolverTest(bool active=true, QObject *parent=0);
 		virtual ~OpenNICResolverTest();
 	protected slots:
 		virtual void		reply(dns_cb_data& rdata);
