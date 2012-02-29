@@ -9,7 +9,6 @@
 #include "opennicserver.h"
 #include "opennicsystem.h"
 #include "opennicresolverpoolitem.h"
-#include "opennicsession.h"
 
 #include <QObject>
 #include <QProcess>
@@ -33,18 +32,12 @@
 
 #define inherited QObject
 
-QMutex					OpenNICServer::mLocker;
-QMutex					OpenNICServer::mPacketLocker;
-int						OpenNICServer::mRefreshTimerPeriod=0;
-int						OpenNICServer::mPreviousRefreshTimerPeriod=0;
-int						OpenNICServer::mResolverCacheSize=0;
-QMap<QString,QVariant>	OpenNICServer::mServerPacket;				/** the next packet to go out to the gui */
-
 OpenNICServer::OpenNICServer(QObject *parent)
 : inherited(parent)
 , mRefreshTimer(-1)
 , mEnabled(true)
 , mResolversInitialized(false)
+, mRefreshTimerPeriod(0)
 {
 	setRefreshPeriod(DEFAULT_REFRESH_TIMER_PERIOD);
 	readSettings();
@@ -59,33 +52,37 @@ OpenNICServer::~OpenNICServer()
 int OpenNICServer::refreshPeriod()
 {
 	int rc;
-	mLocker.lock();
 	rc = mRefreshTimerPeriod;
-	mLocker.unlock();
 	return rc;
+}
+
+/**
+  * @brief Set refresh period ni minutes
+  */
+void OpenNICServer::setRefreshPeriod(int period)
+{
+	if ( mRefreshTimerPeriod != period )
+	{
+		mRefreshTimerPeriod = period;
+		if ( mRefreshTimer >= 0 )
+		{
+			killTimer(mRefreshTimer);
+			mRefreshTimer=-1;
+		}
+		mRefreshTimer = startTimer((mRefreshTimerPeriod*60)*1000);
+	}
 }
 
 int OpenNICServer::resolverCacheSize()
 {
 	int rc;
-	mLocker.lock();
 	rc = mResolverCacheSize;
-	mLocker.unlock();
 	return rc;
-}
-
-void OpenNICServer::setRefreshPeriod(int period)
-{
-	mLocker.lock();
-	mRefreshTimerPeriod = period;
-	mLocker.unlock();
 }
 
 void OpenNICServer::setResolverCacheSize(int size)
 {
-	mLocker.lock();
 	mResolverCacheSize = size;
-	mLocker.unlock();
 }
 
 /**
@@ -164,9 +161,7 @@ void OpenNICServer::newConnection()
 	QTcpSocket* client;
 	while ( (client = mServer.nextPendingConnection()) != NULL )
 	{
-		OpenNICSession* session = new OpenNICSession(client);
-		mSessions.append(session);
-		session->start();
+		mSessions.append(client);
 		log(tr("** client session created **"));
 	}
 }
@@ -217,8 +212,8 @@ void OpenNICServer::purgeDeadSesssions()
 	/* get here regularly, purge dead sessions... */
 	for(int n=0; n < mSessions.count(); n++)
 	{
-		OpenNICSession* session = mSessions.at(n);
-		if ( session->isFinished() )
+		QTcpSocket* session = mSessions.at(n);
+		if ( !session->isOpen() || !session->isValid() )
 		{
 			log("** CLIENT SESSION DISPOSED **");
 			mSessions.takeAt(n);
@@ -228,24 +223,22 @@ void OpenNICServer::purgeDeadSesssions()
 }
 
 /**
-  * @brief from separate thread, call this method to get the server packet
-  */
-void OpenNICServer::getPacket(QMap<QString,QVariant>& packet)
-{
-	mPacketLocker.lock();
-	packet = mServerPacket;
-	mPacketLocker.unlock();
-}
-
-/**
   * @brief announce packets to sessions
   */
 void OpenNICServer::announcePackets()
 {
-	mPacketLocker.lock();
-	makeServerPacket(mServerPacket);
-	mPacketLocker.unlock();
-	logPurge();
+	QMap<QString,QVariant> packet;
+	makeServerPacket(packet);
+	for(int n=0; n < mSessions.count(); n++)
+	{
+		QTcpSocket* session = mSessions[n];
+		if ( session->isOpen() && session->isValid() )
+		{
+			QDataStream stream(session);
+			stream << packet;
+			session->flush();
+		}
+	}
 }
 
 /**
@@ -393,22 +386,6 @@ void OpenNICServer::refreshResolvers(bool force)
 	if (mResolverCache.count() && !testResolverCache())		/* how are our currently active resolvers doing?.. */
 	{
 		updateDNS(resolverCacheSize());						/* ...not so good, get new ones. */
-	}
-}
-
-/**
-  * @brief in the event the refresh perid has changed update the timer
-  */
-void OpenNICServer::updateRefreshTimerPeriod()
-{
-	if ( refreshPeriod() != mPreviousRefreshTimerPeriod )
-	{
-		if (mRefreshTimer >= 0)
-		{
-			killTimer(mRefreshTimer);
-			mRefreshTimer=-1;
-		}
-		mRefreshTimer = startTimer((60*refreshPeriod())*1000);
 	}
 }
 

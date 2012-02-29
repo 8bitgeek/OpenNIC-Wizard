@@ -41,12 +41,10 @@ class OpenNICServer : public QObject
 		bool					isListening()	{return mServer.isListening();}
 		quint16					serverPort()	{return mServer.serverPort();}
 
-		static int				refreshPeriod();
-		static int				resolverCacheSize();
-		static void				setRefreshPeriod(int period);
-		static void				setResolverCacheSize(int size);
-
-		static void				getPacket(QMap<QString,QVariant>& packet);
+		int						refreshPeriod();
+		int						resolverCacheSize();
+		void					setRefreshPeriod(int period);
+		void					setResolverCacheSize(int size);
 
 public slots:
 		void					log(QString msg);
@@ -76,22 +74,18 @@ public slots:
 		void					writeSettings();
 
 	private:
-		static QMutex			mLocker;					/** server data protection */
-		static QMutex			mPacketLocker;
-		static QMap<QString,QVariant>	mServerPacket;				/** the next packet to go out to the gui */
-		static int				mPreviousRefreshTimerPeriod;
-		static int				mRefreshTimerPeriod;		/** the refresh timer period in minutes */
-		static int				mResolverCacheSize;			/** the number of resolvers to keep in the cache (and apply to the O/S) */
+		QList<QTcpSocket*>		mSessions;					/** active sessions */
+		OpenNICResolverPool		mResolverPool;				/** the comlpete resolver pool */
+		OpenNICResolverPool		mResolverCache;				/** the active resolver pool */
 		QStringList				mLog;						/** log history */
+		QTcpServer				mServer;					/** the localhost TCP server */
+		int						mRefreshTimerPeriod;		/** the refresh timer period in minutes */
+		int						mResolverCacheSize;			/** the number of resolvers to keep in the cache (and apply to the O/S) */
 		bool					mEnabled;					/** service status */
 		int						mRefreshTimer;
 		int						mFastTimer;
 		bool					mResolversInitialized;      /** resolvers have been initialized */
-		QTcpServer				mServer;					/** the localhost TCP server */
-		QList<OpenNICSession*>  mSessions;                  /** active sessions */
 		int						mTcpListenPort;				/** the TCP listen port */
-		OpenNICResolverPool		mResolverPool;				/** the comlpete resolver pool */
-		OpenNICResolverPool		mResolverCache;				/** the active resolver pool */
 };
 
 #endif // OPENNICSERVER_H
