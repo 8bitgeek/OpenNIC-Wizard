@@ -21,8 +21,7 @@ SOURCES += main.cpp\
     opennicresolverpool.cpp \
     opennicsystem.cpp \
     opennicresolvertest.cpp \
-    opennicdnsclient.cpp \
-    opennicsession.cpp
+    opennicdnsclient.cpp
 
 
 win32::SOURCES += qtservice_win.cpp
@@ -40,12 +39,9 @@ HEADERS  += opennicserver.h \
     opennicresolverpool.h \
     opennicsystem.h \
     opennicresolvertest.h \
-    opennicdnsclient.h \
-    opennicsession.h
+    opennicdnsclient.h
 
 RESOURCES += \
 		opennicserver.qrc
 
 win32:LIBS += C:/QtSDK/mingw/lib/libwsock32.a
-
-
