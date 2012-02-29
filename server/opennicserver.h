@@ -41,49 +41,55 @@ class OpenNICServer : public QObject
 		bool					isListening()	{return mServer.isListening();}
 		quint16					serverPort()	{return mServer.serverPort();}
 
-	public slots:
+		static int				refreshPeriod();
+		static int				resolverCacheSize();
+		static void				setRefreshPeriod(int period);
+		static void				setResolverCacheSize(int size);
+
+		static void				getPacket(QMap<QString,QVariant>& packet);
+
+public slots:
 		void					log(QString msg);
 		void					logPurge();
 		void					runOnce();
 
 	signals:
-		void					packet(QMap<QString,QVariant> packet);
 		void					quit();
 
 	protected:
+		void					updateRefreshTimerPeriod();
 		void					pruneLog();
-		void					setRefreshTimerPeriod(int refreshTimerPeriod);
-		int						refreshTimerPeriod() {return mRefreshTimerPeriod;}
 		bool					testResolverCache();
 		void					coldBoot();
 		int						bootstrapResolvers();
 		void					refreshResolvers(bool force=false);
 		void					announcePackets();
 		void					purgeDeadSesssions();
-		QMap<QString,QVariant>	makeServerPacket();
+		QMap<QString,QVariant>&	makeServerPacket(QMap<QString,QVariant>& packet);
 		int						initializeServer();
 		int						updateDNS(int resolver_count);
 		virtual void			timerEvent(QTimerEvent* e);
 
 	protected slots:
-		void					sessionPacket(OpenNICSession* session, QMap<QString,QVariant> packet);
 		void					newConnection();
 		void					readSettings();
 		void					writeSettings();
 
 	private:
+		static QMutex			mLocker;					/** server data protection */
+		static QMutex			mPacketLocker;
+		static QMap<QString,QVariant>	mServerPacket;				/** the next packet to go out to the gui */
+		static int				mPreviousRefreshTimerPeriod;
+		static int				mRefreshTimerPeriod;		/** the refresh timer period in minutes */
+		static int				mResolverCacheSize;			/** the number of resolvers to keep in the cache (and apply to the O/S) */
 		QStringList				mLog;						/** log history */
 		bool					mEnabled;					/** service status */
 		int						mRefreshTimer;
 		int						mFastTimer;
 		bool					mResolversInitialized;      /** resolvers have been initialized */
-		/** TCP service */
 		QTcpServer				mServer;					/** the localhost TCP server */
-        QList<OpenNICSession*>  mSessions;                  /** active sessions */
-		/** settings **/
-		int						mRefreshTimerPeriod;		/** the refresh timer period in minutes */
+		QList<OpenNICSession*>  mSessions;                  /** active sessions */
 		int						mTcpListenPort;				/** the TCP listen port */
-		int						mResolverCacheSize;			/** the number of resolvers to keep in the cache (and apply to the O/S) */
 		OpenNICResolverPool		mResolverPool;				/** the comlpete resolver pool */
 		OpenNICResolverPool		mResolverCache;				/** the active resolver pool */
 };

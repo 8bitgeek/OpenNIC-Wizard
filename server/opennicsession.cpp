@@ -13,13 +13,12 @@
 
 #define inherited QThread
 
-OpenNICSession::OpenNICSession(QTcpSocket* socket, OpenNICServer *server)
-: inherited(server)
-, mSocket(socket)
-, mServer(server)
+OpenNICSession::OpenNICSession(QTcpSocket* socket)
+: mSocket(socket)
 {
 	QObject::connect(mSocket,SIGNAL(readyRead()),this,SLOT(readyRead()));
 	QObject::connect(mSocket,SIGNAL(disconnected()),this,SLOT(disconnected()));
+	mTimer = startTimer(1000*5);
 }
 
 OpenNICSession::~OpenNICSession()
@@ -35,12 +34,14 @@ void OpenNICSession::run()
 }
 
 /**
-  * @brief receive a packet
+  * @brief send a packet
   */
-void OpenNICSession::packet(QMap<QString,QVariant> packet)
+void OpenNICSession::sendPacket()
 {
 	if ( mSocket != NULL && mSocket->isValid() && mSocket->isOpen() )
 	{
+		QMap<QString,QVariant> packet;
+		OpenNICServer::getPacket(packet);
 		QDataStream stream(mSocket);
 		stream << packet;						/* pump it out. */
 		mSocket->flush();
@@ -60,7 +61,21 @@ void OpenNICSession::readyRead()
 		stream >> clientPacket;
 		if ( !clientPacket.empty() )
 		{
-			emit sessionPacket(this,clientPacket);
+			QMapIterator<QString, QVariant>i(clientPacket);
+			while (i.hasNext())
+			{
+				i.next();
+				QString key = i.key();
+				QVariant value = i.value();
+				if ( key == "refresh_timer_period" )
+				{
+					OpenNICServer::setRefreshPeriod(value.toInt());
+				}
+				else if ( key == "resolver_cache_size" )
+				{
+					OpenNICServer::setResolverCacheSize(value.toInt());
+				}
+			}
 		}
 	}
 }
@@ -73,3 +88,10 @@ void OpenNICSession::disconnected()
     quit();
 }
 
+void OpenNICSession::timerEvent(QTimerEvent* e)
+{
+	if ( e->timerId() == mTimer )
+	{
+		sendPacket();
+	}
+}
