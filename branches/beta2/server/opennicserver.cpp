@@ -167,6 +167,23 @@ void OpenNICServer::newConnection()
 }
 
 /**
+  * @brief get here on data available from client
+  */
+void OpenNICServer::readyRead()
+{
+	for(int n=0; n < mSessions.count(); n++)
+	{
+		QTcpSocket* session = mSessions[n];
+		if ( session->isOpen() && session->isValid() )
+		{
+			QMap<QString,QVariant> clientPacket;
+			QDataStream stream(session);
+			stream >> clientPacket;
+		}
+	}
+}
+
+/**
   * @brief Set up the local server for the task tray app to attach to.
   * @return the number of resolvers
   */
@@ -239,6 +256,7 @@ void OpenNICServer::announcePackets()
 			session->flush();
 		}
 	}
+	logPurge();
 }
 
 /**
@@ -394,7 +412,6 @@ void OpenNICServer::refreshResolvers(bool force)
   */
 void OpenNICServer::runOnce()
 {
-	updateRefreshTimerPeriod();								/* in case refresh period has changed */
 	purgeDeadSesssions();									/* free up closed gui sessions */
 	refreshResolvers();										/* try to be smart */
 	announcePackets();										/* tell gui sessions what they need to know */

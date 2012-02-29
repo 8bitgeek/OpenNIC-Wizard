@@ -46,7 +46,7 @@ class OpenNICServer : public QObject
 		void					setRefreshPeriod(int period);
 		void					setResolverCacheSize(int size);
 
-public slots:
+	public slots:
 		void					log(QString msg);
 		void					logPurge();
 		void					runOnce();
@@ -69,6 +69,7 @@ public slots:
 		virtual void			timerEvent(QTimerEvent* e);
 
 	protected slots:
+		void					readyRead();
 		void					newConnection();
 		void					readSettings();
 		void					writeSettings();
