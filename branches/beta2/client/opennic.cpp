@@ -35,7 +35,6 @@
 #include <QTcpSocket>
 #include <QIODevice>
 
-#define DEFAULT_REFRESH						15
 #define DEFAULT_RESOLVERS					3
 #define DEFAULT_T1_RESOLVERS				3
 #define DEFAULT_T1_RANDOM					true
@@ -341,6 +340,7 @@ void OpenNIC::tcpConnected()
 void OpenNIC::tcpDisconnected()
 {
 	mBalloonStatus=tr("OpenNIC Service closed the connection");
+	mTcpSocket.close();
 }
 
 void OpenNIC::tcpError(QAbstractSocket::SocketError socketError)

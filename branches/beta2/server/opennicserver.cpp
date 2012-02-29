@@ -23,8 +23,8 @@
 #include <QHostAddress>
 #include <QTcpSocket>
 
-#define DEFAULT_FAST_TIMER						30			/* seconds */
-#define DEFAULT_REFRESH_TIMER_PERIOD			15			/* minutes */
+#define DEFAULT_FAST_TIMER						5			/* seconds */
+#define DEFAULT_REFRESH_TIMER_PERIOD			1			/* minutes */
 #define DEFAULT_RESOLVER_CACHE_SIZE				3
 #define DEFAULT_BOOTSTRAP_CACHE_SIZE			3
 #define DEFAULT_CLIENT_TIMEOUT					3			/* seconds */
@@ -55,7 +55,20 @@ OpenNICServer::~OpenNICServer()
   */
 void OpenNICServer::log(QString msg)
 {
-	mLog << QDateTime::currentDateTime().toString("yyMMddhhmmss")+"|"+msg;
+	QString str = QDateTime::currentDateTime().toString("yyMMddhhmmss")+"|"+msg;
+	mLog << str;
+	fprintf(stderr,"%s\n",str.toAscii().data());
+}
+
+/**
+  * @brief prune the log 'file'
+  */
+void OpenNICServer::pruneLog()
+{
+	while (mLog.count() > MAX_LOG_LINES)
+	{
+		mLog.takeFirst();
+	}
 }
 
 /**
@@ -162,6 +175,7 @@ void OpenNICServer::sessionPacket(OpenNICSession* session, QMap<QString,QVariant
 		}
 		else log("unhandled key from client '"+key+"'");
 	}
+	announcePackets();
 }
 
 /**
@@ -230,7 +244,7 @@ void OpenNICServer::purgeDeadSesssions()
 		OpenNICSession* session = mSessions.at(n);
 		if ( session->isFinished() )
 		{
-			log("** client session disposed **");
+			log("** CLIENT SESSION DISPOSED **");
 			mSessions.takeAt(n);
 			delete session;
 		}
@@ -256,6 +270,7 @@ void OpenNICServer::coldBoot()
 {
 	log("** COLD BOOT **");
 	log(copyright());
+	log(license());
 	readSettings();
 	bootstrapResolvers();
 	if ( mResolversInitialized )
@@ -324,6 +339,7 @@ int OpenNICServer::updateDNS(int resolverCount)
 {
 	bool replaceWithProposed = false;
 	OpenNICResolverPool proposed;
+	log("** UPDATE DNS **");
 	mResolverPool.sort();
 	for(int n=0; n < mResolverPool.count() && n < resolverCount; n++)
 	{
@@ -368,7 +384,7 @@ bool OpenNICServer::testResolverCache()
 		OpenNICResolverPoolItem item = mResolverCache.at(n);
 		if ( !item.alive() )
 		{
-			log( tr("** DETECTED ACTIVE RESOLVER FAILURE '")+item.hostAddress().toString()+"' **");
+			log("** ACTIVE RESOLVER "+item.hostAddress().toString()+"' NOT RESPONDING **");
 			return false;
 		}
 	}
@@ -389,20 +405,9 @@ void OpenNICServer::refreshResolvers(bool force)
 	{
 		updateDNS(mResolverCacheSize);
 	}
-	if (mResolverCache.count() && !testResolverCache());	/* how are our currently active resolvers doing?.. */
+	if (mResolverCache.count() && !testResolverCache())		/* how are our currently active resolvers doing?.. */
 	{
 		updateDNS(mResolverCacheSize);						/* ...not so good, get new ones. */
-	}
-}
-
-/**
-  * @brief prune the log 'file'
-  */
-void OpenNICServer::pruneLog()
-{
-	while (mLog.count() > MAX_LOG_LINES)
-	{
-		mLog.takeFirst();
 	}
 }
 
@@ -428,6 +433,7 @@ void OpenNICServer::timerEvent(QTimerEvent* e)
 	}
 	else if ( e->timerId() == mRefreshTimer )				/* get here once in a while, a slow timer... */
 	{
+		log("** REFRESH TIMER **");
 		refreshResolvers(true);								/* force a resolver cache refresh */
 	}
 	else
