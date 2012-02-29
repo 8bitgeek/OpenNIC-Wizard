@@ -134,27 +134,24 @@ void OpenNICResolverPool::sort()
 {
 	if (count() >= 2)
 	{
-		bool sorted=false;
-		while (!sorted)
+		int a,b;
+		bool sorted;
+		OpenNICResolverPoolItem itemA(false);
+		OpenNICResolverPoolItem itemB(false);
+		do
 		{
-			int swapped=0;
+			sorted=true;
 			for(int n=0; n < (count()-1); n++ )
 			{
-				int a = n;
-				int b = n+1;
-				OpenNICResolverPoolItem itemA = items().at(a);
-				OpenNICResolverPoolItem itemB = items().at(b);
+				itemA = items().at((a=n));
+				itemB = items().at((b=(n+1)));
 				if ( itemA < itemB )
 				{
-					++swapped;
+					sorted=false;
 					swap(a,b);
 				}
 			}
-			if (!swapped)
-			{
-				sorted=true;
-			}
-		}
+		} while (!sorted);
 	}
 }
 

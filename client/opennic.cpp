@@ -64,20 +64,30 @@ OpenNIC::~OpenNIC()
 	delete uiSettings;
 }
 
+void OpenNIC::slowRefresh()
+{
+	killTimer(mRefreshTimer);
+	mRefreshTimer = startTimer(DEFAULT_REFRESH);
+}
+
+void OpenNIC::fastRefresh()
+{
+	killTimer(mRefreshTimer);
+	mRefreshTimer = startTimer(FAST_REFRESH);
+}
+
 void OpenNIC::settings()
 {
 	setVisible(true);
 	showNormal();
-	killTimer(mRefreshTimer);
-	mRefreshTimer = startTimer(FAST_REFRESH);
+	fastRefresh();
 }
 
 void OpenNIC::closeEvent(QCloseEvent *event)
 {
 	hide();
 	event->ignore();
-	killTimer(mRefreshTimer);
-	mRefreshTimer = startTimer(DEFAULT_REFRESH);
+	slowRefresh();
 }
 
 void OpenNIC::iconActivated(QSystemTrayIcon::ActivationReason reason)
@@ -327,6 +337,7 @@ void OpenNIC::update()
 		{
 			mBalloonStatus=tr("OpenNIC Service unexpectedly closed");
 		}
+		slowRefresh();
 	}
 }
 
@@ -341,11 +352,12 @@ void OpenNIC::tcpDisconnected()
 
 void OpenNIC::tcpError(QAbstractSocket::SocketError socketError)
 {
-    if ( socketError != QAbstractSocket::RemoteHostClosedError )
-    {
-        mBalloonStatus = tr( "Failed to connect to OpenNIC service. [" ) + QString::number((int)socketError) + "]";
-        mTcpSocket.close();
-    }
+	if ( socketError != QAbstractSocket::RemoteHostClosedError )
+	{
+		mBalloonStatus = tr( "Failed to connect to OpenNIC service. [" ) + QString::number((int)socketError) + "]";
+		mTcpSocket.close();
+		slowRefresh();
+	}
 }
 
 void OpenNIC::tcpHostFound()

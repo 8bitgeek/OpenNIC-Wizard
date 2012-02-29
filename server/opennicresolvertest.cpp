@@ -13,12 +13,15 @@
 
 #define TIMER_RESOLUTION	5	/* seconds */
 
-OpenNICResolverTest::OpenNICResolverTest(QObject *parent)
-: inherited(parent)
+OpenNICResolverTest::OpenNICResolverTest(bool active, QObject *parent)
+: inherited(active, parent)
 , mTimerInterval(0)
 , mTimerCount(0)
 {
-	mSecondTimer = startTimer(1000*TIMER_RESOLUTION);
+	if ( isActive() )
+	{
+		mSecondTimer = startTimer(1000*TIMER_RESOLUTION);
+	}
 	setInterval(10); /* a small delay for bootstrap */
 }
 
@@ -130,7 +133,10 @@ void OpenNICResolverTest::timerEvent(QTimerEvent *e)
 		mTimerCount += TIMER_RESOLUTION;
 		if (mTimerCount >= mTimerInterval)
 		{
-			test();
+			if ( isActive() )
+			{
+				test();
+			}
 			//setInterval(OpenNICSystem::random(10,60*15)); /* beween 10 seconds to 15 minutes */
 			setInterval(OpenNICSystem::random(10,60*5)); /* beween 10 seconds to 15 minutes */
 			mTimerCount=0;

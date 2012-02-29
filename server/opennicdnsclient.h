@@ -76,11 +76,12 @@ class OpenNICDnsClient : public QObject
 			DNS_ERROR					/* No memory or other error */
 		} dns_error;
 
-		OpenNICDnsClient(QObject *parent = 0);
+		OpenNICDnsClient(bool active=true, QObject *parent = 0);
 		virtual ~OpenNICDnsClient();
-
+		bool						isActive() {return mActive;}
 	public slots:
 		void						cancel(void* context);
+		virtual void				setActive(bool active) {mActive=active;}
 
 	protected:
 		void						purge();
@@ -103,6 +104,7 @@ class OpenNICDnsClient : public QObject
 		void						fetch(const quint8 *pkt, const quint8 *s, int pktsiz, char *dst, int dstlen);
 		void						doReply(query* q, dns_error error);
 		void						processDatagram(QByteArray datagram);
+		bool						mActive;
 		quint16						m_tid;				/* Latest tid used		*/
 		QHostAddress				mResolverAddress;	/* The resolver address */
 		QUdpSocket*					mClientSocket;		/* UDP socket used for queries	*/
@@ -119,8 +121,8 @@ public:
 		{}
 	~dns_cb_data() {}
 	void*								context;	/* Application context */
-	OpenNICDnsClient::dns_error				error;		/* Result code */
-	OpenNICDnsClient::dns_query_type			query_type;	/* Query type */
+	OpenNICDnsClient::dns_error			error;		/* Result code */
+	OpenNICDnsClient::dns_query_type	query_type;	/* Query type */
 	QString								name;		/* Requested host name	*/
 	QHostAddress						addr;		/* Resolved address	*/
 	QString								mxName;		/* MX record host name. */

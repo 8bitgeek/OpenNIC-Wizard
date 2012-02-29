@@ -324,6 +324,7 @@ int OpenNICServer::updateDNS(int resolverCount)
 {
 	bool replaceWithProposed = false;
 	OpenNICResolverPool proposed;
+	mResolverPool.sort();
 	for(int n=0; n < mResolverPool.count() && n < resolverCount; n++)
 	{
 		OpenNICResolverPoolItem item = mResolverPool.at(n);

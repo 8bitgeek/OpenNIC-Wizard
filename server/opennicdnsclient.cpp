@@ -16,19 +16,26 @@
 	#error "Platform not defined."
 #endif
 
-OpenNICDnsClient::OpenNICDnsClient(QObject *parent)
+OpenNICDnsClient::OpenNICDnsClient(bool active, QObject *parent)
 : QObject(parent)
+, mActive(active)
 , m_tid(0)
 , mClientSocket(NULL)
 {
 }
 
 /**
-  * @brief Close a UDP socket.
+  * @brief Close a DNS client.
   */
 OpenNICDnsClient::~OpenNICDnsClient()
 {
 	close();
+	for(int n=0; n < mQueries.count(); n++)
+	{
+		query* q = mQueries.takeAt(0);
+		delete q;
+	}
+	mQueries.clear();
 }
 
 /**
