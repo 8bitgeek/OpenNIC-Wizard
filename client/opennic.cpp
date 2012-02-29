@@ -38,6 +38,8 @@
 #define DEFAULT_T1_RESOLVERS				3
 #define DEFAULT_T1_RANDOM					true
 #define DEFAULT_SERVER_TIMEOUT				2 /* seconds */
+#define DEFAULT_REFRESH						(30*1000)
+#define	FAST_REFRESH						(5*1000)
 
 #define inherited QDialog
 
@@ -53,7 +55,8 @@ OpenNIC::OpenNIC(QWidget *parent)
 #if defined Q_OS_UNIX
 	show();
 #endif
-	mRefreshTimer = startTimer(1000*5);
+	mBalloonStatus = tr("Initializing...");
+	mRefreshTimer = startTimer(DEFAULT_REFRESH);
 }
 
 OpenNIC::~OpenNIC()
@@ -61,29 +64,47 @@ OpenNIC::~OpenNIC()
 	delete uiSettings;
 }
 
+void OpenNIC::settings()
+{
+	setVisible(true);
+	showNormal();
+	killTimer(mRefreshTimer);
+	mRefreshTimer = startTimer(FAST_REFRESH);
+}
+
+void OpenNIC::closeEvent(QCloseEvent *event)
+{
+	hide();
+	event->ignore();
+	killTimer(mRefreshTimer);
+	mRefreshTimer = startTimer(DEFAULT_REFRESH);
+}
+
 void OpenNIC::iconActivated(QSystemTrayIcon::ActivationReason reason)
 {
-   switch (reason)
-   {
-    case QSystemTrayIcon::MiddleClick:
-    case QSystemTrayIcon::Trigger:
-    {
-       if ( mBalloonStatus.isEmpty() )
-       {
-           showBalloonMessage( tr( "OpenNIC Resolvers" ), uiSettings->cache->toPlainText() );
-       }
-       else
-       {
-           showBalloonMessage( tr( "Status" ), mBalloonStatus );
-       }
-    }
-    break;
-    case QSystemTrayIcon::DoubleClick:
-        setVisible(true);
-    break;
-    default:
-    break;
-   }
+	switch (reason)
+	{
+	case QSystemTrayIcon::MiddleClick:
+	case QSystemTrayIcon::Trigger:
+	{
+		if ( mBalloonStatus.isEmpty() )
+		{
+			showBalloonMessage( tr( "OpenNIC Resolvers" ), uiSettings->cache->toPlainText() );
+		}
+		else
+		{
+			showBalloonMessage( tr( "Status" ), mBalloonStatus );
+		}
+	}
+	break;
+	case QSystemTrayIcon::DoubleClick:
+	{
+		settings();
+	}
+	break;
+	default:
+	break;
+	}
 }
 
 void OpenNIC::showBalloonMessage(QString title, QString body)
@@ -145,11 +166,6 @@ void OpenNIC::writeSettings()
 	QSettings settings("OpenNIC", "OpenNICClient");
 }
 
-void OpenNIC::settings()
-{
-	showNormal();
-}
-
 /**
   * @brief Updates the resolver pool display.
   */
@@ -196,7 +212,16 @@ void OpenNIC::mapServerReply(QMap<QString,QVariant>& map)
 		QVariant value = i.value();
 		if ( key == "tcp_listen_port" )					mTcpListenPort			=	value.toInt();
 		else if ( key == "log_file" )					mLogFile				=	value.toString();
-		else if ( key == "resolver_cache" )				mResolverCache			=	value.toStringList();
+		else if ( key == "resolver_cache" )
+		{
+			QStringList serverResolverCache = value.toStringList();
+			mResolverCache.clear();
+			for(int n=0;n < serverResolverCache.count(); n++)
+			{
+				QStringList parts = serverResolverCache.at(n).split(";");
+				mResolverCache.append(parts.at(0));
+			}
+		}
 		else if ( key == "refresh_timer_period" )		mRefreshTimerPeriod		=	value.toInt();
 		else if ( key == "resolver_cache_size" )		mResolverCacheSize		=	value.toInt();
 		else if ( key == "bootstrap_t1_list" )			mBootstrapT1List		=	value.toStringList();
@@ -206,7 +231,7 @@ void OpenNIC::mapServerReply(QMap<QString,QVariant>& map)
 		{
 			QStringList journalText = value.toStringList();
 			QListWidget* journal = uiSettings->journalList;
-			while(journal->count()>300)
+			while(journal->count()>150)
 			{
 				QListWidgetItem* item = journal->takeItem(0);
 				if ( item != NULL )
@@ -219,6 +244,8 @@ void OpenNIC::mapServerReply(QMap<QString,QVariant>& map)
 	}
 	uiSettings->cache->setPlainText(mResolverCache.join("\n"));
 	uiSettings->t1List->setPlainText(mBootstrapT1List.join("\n"));
+	uiSettings->refreshRate->setValue(mRefreshTimerPeriod);
+	uiSettings->resolverCount->setValue(mResolverCacheSize);
 }
 
 /**
@@ -238,6 +265,7 @@ QMap<QString,QVariant> OpenNIC::mapClientStatus()
   */
 void OpenNIC::connectToService()
 {
+	mTcpSocket.flush();
     if ( !mTcpSocket.isValid() )
     {
         mTcpSocket.close();
@@ -257,52 +285,45 @@ void OpenNIC::update()
 {
 	QDateTime timeout;
 	QEventLoop loop;
-    QDataStream stream(&mTcpSocket);
-    QMap<QString,QVariant> clientPacket;
-    QMap<QString,QVariant> serverPacket;
-    if ( !mInitialized )
-    {
-        clientPacket.insert("initialize",VERSION_STRING); /* something to get a reply */
-    }
-    else
-    {
-        clientPacket = mapClientStatus();
-    }
-    stream << clientPacket;
-    mTcpSocket.flush();
+	QDataStream stream(&mTcpSocket);
+	QMap<QString,QVariant> clientPacket;
+	QMap<QString,QVariant> serverPacket;
+	if ( !mInitialized )
+	{
+		clientPacket.insert("initialize",VERSION_STRING); /* something to get a reply */
+	}
+	else
+	{
+		clientPacket = mapClientStatus();
+	}
+	stream << clientPacket;
+	mTcpSocket.flush();
 	timeout = QDateTime::currentDateTime().addSecs(DEFAULT_SERVER_TIMEOUT);
 	while(mTcpSocket.isValid() && mTcpSocket.bytesToWrite()>0 && QDateTime::currentDateTime() < timeout)
-    {
-        loop.processEvents();
-    }
+	{
+		loop.processEvents();
+	}
 	timeout = QDateTime::currentDateTime().addSecs(DEFAULT_SERVER_TIMEOUT);
 	while(mTcpSocket.isValid() && !mTcpSocket.bytesAvailable() && QDateTime::currentDateTime() < timeout)
 	{
 		loop.processEvents();
 	}
 	if ( mTcpSocket.bytesAvailable() )
-    {
-        serverPacket.clear();
-        mTcpSocket.flush();
-        stream >> serverPacket;
-        if (!serverPacket.isEmpty() )
-        {
-            mBalloonStatus="";
-            mapServerReply(serverPacket);
-            mInitialized=true;
-        }
-        else
-        {
-			mBalloonStatus=tr("OpenNIC Service failed to reply");
-        }
-    }
+	{
+		serverPacket.clear();
+		mTcpSocket.flush();
+		stream >> serverPacket;
+		if (!serverPacket.isEmpty() )
+		{
+			mBalloonStatus="";
+			mapServerReply(serverPacket);
+			mInitialized=true;
+		}
+	}
 	else
 	{
-		if ( mTcpSocket.isValid() )
-		{
-			mBalloonStatus=tr("OpenNIC Service is connected but failed to reply");
-		}
-		else
+		mTcpSocket.flush();
+		if ( !mTcpSocket.isValid() )
 		{
 			mBalloonStatus=tr("OpenNIC Service unexpectedly closed");
 		}
@@ -311,7 +332,7 @@ void OpenNIC::update()
 
 void OpenNIC::tcpConnected()
 {
-    update();
+	update();
 }
 
 void OpenNIC::tcpDisconnected()
@@ -364,11 +385,5 @@ void OpenNIC::timerEvent(QTimerEvent* e)
 	}
 }
 
-
-void OpenNIC::closeEvent(QCloseEvent *event)
-{
-	hide();
-	event->ignore();
-}
 
 

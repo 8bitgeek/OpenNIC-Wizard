@@ -37,6 +37,10 @@ class OpenNIC : public QDialog
 		explicit OpenNIC(QWidget *parent = 0);
 		virtual ~OpenNIC();
 
+	public slots:
+		void					connectToService();
+
+
 	signals:
 		void					quit();
 
@@ -63,7 +67,6 @@ class OpenNIC : public QDialog
 		void					tcpStateChanged(QAbstractSocket::SocketState socketState);
 
 		void					updateResolverPool(QStringList resolverPool);
-        void					connectToService();
 		void					iconActivated(QSystemTrayIcon::ActivationReason reason);
 		void					showBalloonMessage(QString title, QString body);
 

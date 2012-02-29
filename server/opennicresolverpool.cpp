@@ -7,6 +7,7 @@
  * this stuff is worth it, you can buy me a beer in return.
  */
 #include "opennicresolverpool.h"
+#include "opennicsystem.h"
 
 OpenNICResolverPool::OpenNICResolverPool(QObject *parent)
 : QObject(parent)
@@ -103,6 +104,27 @@ void OpenNICResolverPool::swap(int a,int b)
 	OpenNICResolverPoolItem t = items().at(a);
 	items().replace(a,items().at(b));
 	items().replace(b,t);
+}
+
+/**
+  * @brief opposite of sort()
+  */
+void OpenNICResolverPool::randomize()
+{
+	if ( count() >= 2 )
+	{
+		for(int n=0; n < count(); n++)
+		{
+			int a, b;
+			// get un-equal a, b....
+			do
+			{
+				a = OpenNICSystem::random(0,count()-1);
+				b = OpenNICSystem::random(0,count()-1);
+			} while (a==b);
+			swap(a,b);
+		}
+	}
 }
 
 /**

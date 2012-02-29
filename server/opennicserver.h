@@ -44,6 +44,7 @@ class OpenNICServer : public QObject
 	public slots:
 		void					log(QString msg);
 		void					logPurge();
+		void					runOnce();
 
 	signals:
 		void					packet(QMap<QString,QVariant> packet);
@@ -72,7 +73,6 @@ class OpenNICServer : public QObject
 
 	private:
 		QStringList				mLog;						/** log history */
-		QMutex					mLogMutex;
 		bool					mEnabled;					/** service status */
 		int						mRefreshTimer;
 		int						mFastTimer;

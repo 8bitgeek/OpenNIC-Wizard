@@ -24,6 +24,7 @@ class OpenNICService : public QtService<QCoreApplication>
 	public:
 		OpenNICService(int argc, char **argv)
 		: QtService<QCoreApplication>(argc, argv, "OpenNIC")
+		, mServer(NULL)
 		{
 			setServiceDescription("An OpenNIC resolver locator and sevice deamon");
 			setServiceFlags(QtServiceBase::CanBeSuspended);
@@ -41,6 +42,7 @@ class OpenNICService : public QtService<QCoreApplication>
 				logMessage(QString("Failed to bind to port %1").arg(mServer->serverPort()), QtServiceBase::Error);
 				app->quit();
 			}
+			mServer->runOnce(); /* initial DNS bootstrap */
 		}
 
 		void pause()
@@ -69,7 +71,6 @@ int main(int argc, char **argv)
 	qWarning("(Example uses dummy settings file: %s/QtSoftware.conf)", QDir::tempPath().toLatin1().constData());
 #endif
 	OpenNICService service(argc, argv);
-	service.server()->log(service.server()->copyright());
 	return service.exec();
 }
 
