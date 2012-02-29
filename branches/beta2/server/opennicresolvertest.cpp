@@ -30,7 +30,7 @@ OpenNICResolverTest::~OpenNICResolverTest()
 	killTimer(mSecondTimer);
 	for(int n=0; n < mQueries.count(); n++)
 	{
-		delete mQueries.at(n);
+		delete mQueries.at(0);
 	}
 	mQueries.clear();
 }
