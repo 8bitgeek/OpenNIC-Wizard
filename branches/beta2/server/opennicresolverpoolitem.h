@@ -24,6 +24,7 @@ class OpenNICResolverPoolItem : public OpenNICResolverTest
 	public:
 
 		OpenNICResolverPoolItem(QObject *parent = 0);
+		OpenNICResolverPoolItem(bool active, QObject *parent = 0);
 		OpenNICResolverPoolItem(QHostAddress hostAddress, QString kind="", QObject* parent=NULL);
 		OpenNICResolverPoolItem(const OpenNICResolverPoolItem& other);
 		virtual ~OpenNICResolverPoolItem();
@@ -52,6 +53,7 @@ class OpenNICResolverPoolItem : public OpenNICResolverTest
 		bool						operator<=(OpenNICResolverPoolItem &other);
 
 		QString						toString();
+
 
 	protected:
 		virtual void				test();

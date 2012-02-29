@@ -22,7 +22,7 @@
 #include <QVariant>
 #include <QTcpSocket>
 
-#define	VERSION_STRING	"0.2.4"
+#define	VERSION_STRING	"0.2.5"
 
 namespace Ui
 {
@@ -59,7 +59,9 @@ class OpenNIC : public QDialog
 		void					about();
 
 	private slots:
-        void                    update();
+		void					fastRefresh();
+		void					slowRefresh();
+		void					update();
 		void					tcpConnected();
 		void					tcpDisconnected();
 		void					tcpError(QAbstractSocket::SocketError socketError);

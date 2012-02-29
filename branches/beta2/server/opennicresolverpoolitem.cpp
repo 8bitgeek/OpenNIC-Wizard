@@ -12,14 +12,21 @@
 #define inherited OpenNICResolverTest
 
 OpenNICResolverPoolItem::OpenNICResolverPoolItem(QObject* parent)
-: inherited(parent)
+: inherited(true, parent)
+, mTests(0)
+{
+	clear();
+}
+
+OpenNICResolverPoolItem::OpenNICResolverPoolItem(bool active, QObject* parent)
+: inherited(active, parent)
 , mTests(0)
 {
 	clear();
 }
 
 OpenNICResolverPoolItem::OpenNICResolverPoolItem(QHostAddress hostAddress, QString kind, QObject* parent)
-: inherited(parent)
+: inherited(true, parent)
 , mTests(0)
 {
 	clear();
@@ -28,7 +35,7 @@ OpenNICResolverPoolItem::OpenNICResolverPoolItem(QHostAddress hostAddress, QStri
 }
 
 OpenNICResolverPoolItem::OpenNICResolverPoolItem(const OpenNICResolverPoolItem& other)
-: inherited(NULL)
+: inherited(true, NULL)
 , mTests(0)
 {
 	copy(other);
@@ -242,12 +249,15 @@ void OpenNICResolverPoolItem::reply(dns_cb_data& data)
   */
 void OpenNICResolverPoolItem::test()
 {
-	if (mTests==0)
+	if ( isActive() )
 	{
-		++mTests;
-		++mTestCount;
-		mTestBegin = QDateTime::currentDateTime();
-		resolve(hostAddress(), OpenNICSystem::randomDomain());
+		if (mTests==0)
+		{
+			++mTests;
+			++mTestCount;
+			mTestBegin = QDateTime::currentDateTime();
+			resolve(hostAddress(), OpenNICSystem::randomDomain());
+		}
 	}
 }
 
