@@ -272,7 +272,7 @@ QString OpenNICSystem::getSystemResolverList()
 
 #elif defined(Q_OS_UNIX)
 
-#define SIMULATE 1
+//#define SIMULATE 1
 
 #ifdef SIMULATE
 QString sResolvConf;
@@ -283,7 +283,7 @@ QString sResolvConf;
   * @param resolver The IP address of teh resolver to add to the system
   * @param index resolver sequence (1..n)
   */
-QString OpenNICSystem::insertSystemResolver(QHostAddress resolver,int index)
+QString OpenNICSystem::insertSystemResolver(QHostAddress& resolver,int index)
 {
 #ifdef SIMULATE
 		if (index == 1) sResolvConf.clear();
