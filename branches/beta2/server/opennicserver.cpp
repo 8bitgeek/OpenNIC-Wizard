@@ -293,6 +293,7 @@ void OpenNICServer::purgeDeadSesssions()
   */
 QByteArray& OpenNICServer::makeServerPacket(QByteArray& bytes)
 {
+
 	QDataStream stream(&bytes,QIODevice::ReadWrite);
 	QMap<QString,QVariant> packet;
 	packet.insert("tcp_listen_port",			mTcpListenPort);
