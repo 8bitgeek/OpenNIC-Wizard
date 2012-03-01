@@ -23,7 +23,7 @@
 #include <QTcpSocket>
 #include <QAbstractButton>
 
-#define	VERSION_STRING	"0.2.5"
+#define	VERSION_STRING	"0.3.rc1"
 
 namespace Ui
 {
@@ -93,6 +93,7 @@ class OpenNIC : public QDialog
 		/** server settings **/
 		int						mTcpListenPort;				/** the TCP listen port */
 		bool					mInitialized;				/** server variables are initialized? */
+
 };
 
 #endif // OPENNIC_H

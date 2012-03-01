@@ -31,17 +31,16 @@ OpenNICResolverPool& OpenNICResolverPool::copy(OpenNICResolverPool& other)
 /**
   * @brief export to a tring list format
   */
-QStringList OpenNICResolverPool::toStringList()
+QStringList& OpenNICResolverPool::toStringList()
 {
-	QStringList rc;
-	sort();
+	mStringList.clear();
 	for(int n=0; n < count(); n++)
 	{
 		OpenNICResolverPoolItem& item = mItems[n];
 		QString itemString = item.toString();
-		rc.append(itemString);
+		mStringList.append(itemString);
 	}
-	return rc;
+	return mStringList;
 }
 
 OpenNICResolverPool& OpenNICResolverPool::operator<<(const QStringList& strings)

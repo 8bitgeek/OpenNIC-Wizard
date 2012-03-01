@@ -138,19 +138,19 @@ OpenNICResolverPoolItem& OpenNICResolverPoolItem::operator=(const OpenNICResolve
   * @brief convert to a formatted string
   * @brief <hostAddress>;<avgLatency>;<testCount>;<replyCount>;<lastReply>;<lastTimeout>;<lastFault>;<kind>;
   */
-QString OpenNICResolverPoolItem::toString()
+QString& OpenNICResolverPoolItem::toString()
 {
-	QString rc;
-	rc += hostAddress().toString() + ";";
-	rc += QString::number((int)averageLatency()) + ";";
-	rc += QString::number(testCount()) + ";";
-	rc += QString::number(replyCount()) + ";";
-	rc += QString::number(timeoutCount()) + ";";
-	rc += lastReply().toString() + ";";
-	rc += lastTimeout().toString() + ";";
-	rc += lastFault() + ";";
-	rc += kind() + ";";
-	return rc;
+	mString.clear();
+	mString += hostAddress().toString() + ";";
+	mString += QString::number((int)averageLatency()) + ";";
+	mString += QString::number(testCount()) + ";";
+	mString += QString::number(replyCount()) + ";";
+	mString += QString::number(timeoutCount()) + ";";
+	mString += lastReply().toString() + ";";
+	mString += lastTimeout().toString() + ";";
+	mString += lastFault() + ";";
+	mString += kind() + ";";
+	return mString;
 }
 
 /**

@@ -52,7 +52,7 @@ class OpenNICResolverPoolItem : public OpenNICResolverTest
 		bool						operator>=(OpenNICResolverPoolItem &other);
 		bool						operator<=(OpenNICResolverPoolItem &other);
 
-		QString						toString();
+		QString&					toString();
 
 
 	protected:
@@ -74,6 +74,7 @@ class OpenNICResolverPoolItem : public OpenNICResolverTest
 		QString						mKind;				/* the kind of resolver */
 		int							mTests;				/* number of tests running */
 		QDateTime					mTestBegin;			/* start of test */
+		QString						mString;
 };
 
 

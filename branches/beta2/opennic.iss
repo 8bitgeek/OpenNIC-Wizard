@@ -3,7 +3,7 @@
 
 #define MyAppName "OpenNIC Wizard"
 #define MyAppServiceName "OpenNIC Service"
-#define MyAppVersion "0.2.5"
+#define MyAppVersion "0.3.rc1"
 #define MyAppPublisher "The OpenNIC Project"
 #define MyAppURL "http://www.opennicproject.org"
 #define MyAppExeName "OpenNIC.exe"
@@ -102,6 +102,7 @@ Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"; Flags: nowait runasorigi
 FileName: "{sys}\sc.exe"; Parameters: "config OpenNIC start= auto"; StatusMsg: "Configuring OpenNIC Service...";
 Filename: "{sys}\sc.exe"; Parameters: "start OpenNIC"; StatusMsg: "Starting OpenNIC Service...";
 Filename: "{sys}\sc.exe"; Parameters: "start OpenNIC"; StatusMsg: "Starting OpenNIC Service...";
+Filename: "http://http://wiki.opennic.glue/HomePage"; Flags: shellexec
 
 [UninstallRun]
 Filename: "{app}\{#MyAppServiceName}"; WorkingDir: "{app}"; Parameters: "-terminate";
