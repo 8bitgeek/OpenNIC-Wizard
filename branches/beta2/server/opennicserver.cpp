@@ -38,7 +38,6 @@ OpenNICServer::OpenNICServer(QObject *parent)
 , mEnabled(true)
 , mResolversInitialized(false)
 , mRefreshTimerPeriod(0)
-, mPacketSeq(0)
 , mUpdatingDNS(false)
 {
 	setRefreshPeriod(DEFAULT_REFRESH_TIMER_PERIOD);
@@ -143,38 +142,6 @@ void OpenNICServer::writeSettings()
 }
 
 /**
-  * @brief Make a server packet
-  * @return a map of key/value pairs
-  */
-QMap<QString,QVariant> OpenNICServer::makeServerPacket()
-{
-	QMap<QString,QVariant> packet;
-	switch (mPacketSeq)
-	{
-	case 0:
-		packet.insert("tcp_listen_port",			mTcpListenPort);
-		packet.insert("refresh_timer_period",		refreshPeriod());
-		packet.insert("resolver_cache_size",		resolverCacheSize());
-		break;
-	case 1:
-		packet.insert("resolver_pool",				mResolverPool.toStringList());
-		break;
-	case 2:
-		packet.insert("resolver_cache",				mResolverCache.toStringList());
-		packet.insert("bootstrap_t1_list",			OpenNICSystem::getBootstrapT1List());
-		packet.insert("system_text",				OpenNICSystem::getSystemResolverList());
-		break;
-	case 3:
-		packet.insert("journal_text",				mLog);
-		logPurge();
-		break;
-	}
-	if (++mPacketSeq > 3)
-		mPacketSeq=0;
-	return packet;
-}
-
-/**
   * @brief Get here when a task tray applet has connected.
   */
 void OpenNICServer::newConnection()
@@ -261,23 +228,49 @@ void OpenNICServer::purgeDeadSesssions()
 }
 
 /**
+  * @brief Make a server packet
+  * @return a map of key/value pairs
+  */
+QByteArray& OpenNICServer::makeServerPacket(QByteArray& bytes)
+{
+	QDataStream stream(&bytes,QIODevice::ReadWrite);
+	QMap<QString,QVariant> packet;
+	packet.insert("tcp_listen_port",			mTcpListenPort);
+	packet.insert("refresh_timer_period",		refreshPeriod());
+	packet.insert("resolver_cache_size",		resolverCacheSize());
+	packet.insert("resolver_pool",				mResolverPool.toStringList());
+	packet.insert("resolver_cache",				mResolverCache.toStringList());
+	packet.insert("bootstrap_t1_list",			OpenNICSystem::getBootstrapT1List());
+	packet.insert("system_text",				OpenNICSystem::getSystemResolverList());
+	packet.insert("journal_text",				mLog);
+	stream << packet;
+	return bytes;
+}
+
+/**
   * @brief announce packets to sessions
   */
 void OpenNICServer::announcePackets()
 {
 	if ( mSessions.count() )
 	{
-		QMap<QString,QVariant> packet = makeServerPacket();
+		QEventLoop loop;
+		QByteArray packet;
+		makeServerPacket(packet);
 		for(int n=0; n < mSessions.count(); n++)
 		{
 			QTcpSocket* session = mSessions[n];
 			if ( session->isOpen() && session->isValid() )
 			{
+				int length = packet.length();
 				QDataStream stream(session);
+				stream << length;
 				stream << packet;
 				session->flush();
+				log("sent "+QString::number(length)+" bytes.");
 			}
 		}
+		logPurge();
 	}
 }
 
