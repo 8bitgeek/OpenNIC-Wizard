@@ -54,11 +54,14 @@ OpenNIC::OpenNIC(QWidget *parent)
 	createTrayIcon();
 	QObject::connect(this,SIGNAL(accepted()),this,SLOT(writeSettings()));
 	mTcpSocket.close();
-#if defined Q_OS_UNIX
-	show();
-#endif
 	mBalloonStatus = tr("Initializing...");
 	mRefreshTimer = startTimer(DEFAULT_REFRESH);
+	QObject::connect(&mTcpSocket,SIGNAL(connected()),this,SLOT(tcpConnected()));
+	QObject::connect(&mTcpSocket,SIGNAL(disconnected()),this,SLOT(tcpDisconnected()));
+	QObject::connect(&mTcpSocket,SIGNAL(error(QAbstractSocket::SocketError)),this,SLOT(tcpError(QAbstractSocket::SocketError)));
+	QObject::connect(&mTcpSocket,SIGNAL(stateChanged(QAbstractSocket::SocketState)),this,SLOT(tcpStateChanged(QAbstractSocket::SocketState)));
+	QObject::connect(&mTcpSocket,SIGNAL(hostFound()),this,SLOT(tcpHostFound()));
+	QObject::connect(&mTcpSocket,SIGNAL(readyRead()),this,SLOT(readyRead()));
 }
 
 OpenNIC::~OpenNIC()
@@ -141,12 +144,6 @@ void OpenNIC::createTrayIcon()
 	setWindowIcon( QIcon( ":/images/opennic.png" ) );
 	setWindowTitle( tr("OpenNIC Wizard") );
 	QObject::connect(mTrayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), this, SLOT(iconActivated(QSystemTrayIcon::ActivationReason)));
-	QObject::connect(&mTcpSocket,SIGNAL(connected()),this,SLOT(tcpConnected()));
-	QObject::connect(&mTcpSocket,SIGNAL(disconnected()),this,SLOT(tcpDisconnected()));
-	QObject::connect(&mTcpSocket,SIGNAL(error(QAbstractSocket::SocketError)),this,SLOT(tcpError(QAbstractSocket::SocketError)));
-	QObject::connect(&mTcpSocket,SIGNAL(stateChanged(QAbstractSocket::SocketState)),this,SLOT(tcpStateChanged(QAbstractSocket::SocketState)));
-	QObject::connect(&mTcpSocket,SIGNAL(hostFound()),this,SLOT(tcpHostFound()));
-	QObject::connect(&mTcpSocket,SIGNAL(readyRead()),this,SLOT(readyRead()));
 	mTrayIcon->show();
 }
 
@@ -315,12 +312,10 @@ void OpenNIC::update()
   */
 void OpenNIC::readyRead()
 {
-	QDataStream stream(&mTcpSocket);
 	QMap<QString,QVariant> serverPacket;
-	mTcpSocket.flush();
-	while ( mTcpSocket.bytesAvailable() )
+	QDataStream stream(&mTcpSocket);
+	if(mTcpSocket.bytesAvailable())
 	{
-		serverPacket.clear();
 		stream >> serverPacket;
 		if (!serverPacket.isEmpty() )
 		{
