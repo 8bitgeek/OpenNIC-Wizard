@@ -22,7 +22,7 @@
 #include <QHostAddress>
 #include <QTcpSocket>
 
-#define DEFAULT_FAST_TIMER						5			/* seconds */
+#define DEFAULT_FAST_TIMER						10			/* seconds */
 #define DEFAULT_REFRESH_TIMER_PERIOD			1			/* minutes */
 #define DEFAULT_RESOLVER_CACHE_SIZE				3
 #define DEFAULT_BOOTSTRAP_CACHE_SIZE			3
@@ -420,13 +420,13 @@ int OpenNICServer::updateDNS(int resolverCount)
 		mResolverPool.sort();
 		for(int n=0; n < mResolverPool.count() && n < resolverCount; n++)
 		{
-			OpenNICResolverPoolItem item = mResolverPool.at(n);
+			OpenNICResolverPoolItem& item = mResolverPool.at(n);
 			proposed.append(item);
 		}
 		/** see if what we are proposing is different than what we have cach'ed already... */
 		for(int n=0; n < proposed.count(); n++)
 		{
-			OpenNICResolverPoolItem item = proposed.at(n);
+			OpenNICResolverPoolItem& item = proposed.at(n);
 			if (!mResolverCache.contains(item))
 			{
 				replaceWithProposed = true;
@@ -440,7 +440,7 @@ int OpenNICServer::updateDNS(int resolverCount)
 			log("Applying new resolver cache of ("+QString::number(proposed.count())+") items...");
 			for(n=0; n < proposed.count(); n++)
 			{
-				OpenNICResolverPoolItem item = proposed.at(n);
+				OpenNICResolverPoolItem& item = proposed.at(n);
 				OpenNICSystem::insertSystemResolver(item.hostAddress(),n+1);
 				mResolverCache.append(item);
 				log(" > "+item.toString());
@@ -460,7 +460,7 @@ bool OpenNICServer::testResolverCache()
 {
 	for(int n=0; n < mResolverCache.count(); n++ )
 	{
-		OpenNICResolverPoolItem item = mResolverCache.at(n);
+		OpenNICResolverPoolItem& item = mResolverCache.at(n);
 		if ( !item.alive() )
 		{
 			log("** ACTIVE RESOLVER "+item.hostAddress().toString()+"' NOT RESPONDING **");
@@ -475,7 +475,6 @@ bool OpenNICServer::testResolverCache()
   */
 void OpenNICServer::refreshResolvers(bool force)
 {
-	readSettings();
 	if ( !mResolversInitialized )							/* have we started any resolvers yet? */
 	{
 		coldBoot();											/* start from scratch */
@@ -484,7 +483,7 @@ void OpenNICServer::refreshResolvers(bool force)
 	{
 		updateDNS(resolverCacheSize());
 	}
-	if (mResolverCache.count() && !testResolverCache())		/* how are our currently active resolvers doing?.. */
+	else if (mResolverCache.count() && !testResolverCache())		/* how are our currently active resolvers doing?.. */
 	{
 		updateDNS(resolverCacheSize());						/* ...not so good, get new ones. */
 	}
@@ -495,6 +494,7 @@ void OpenNICServer::refreshResolvers(bool force)
   */
 void OpenNICServer::runOnce()
 {
+	readSettings();
 	purgeDeadSesssions();									/* free up closed gui sessions */
 	refreshResolvers();										/* try to be smart */
 	announcePackets();										/* tell gui sessions what they need to know */
