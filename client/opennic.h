@@ -21,6 +21,7 @@
 #include <QMap>
 #include <QVariant>
 #include <QTcpSocket>
+#include <QAbstractButton>
 
 #define	VERSION_STRING	"0.2.5"
 
@@ -45,30 +46,33 @@ class OpenNIC : public QDialog
 		void					quit();
 
 	protected:
-		void					mapServerReply(QMap<QString,QVariant>& map);
-		QMap<QString,QVariant>	mapClientStatus();
+		void					storeServerPacket(QMap<QString,QVariant>& map);
 		void					createTrayIcon();
 		void					createActions();
 		virtual void			timerEvent(QTimerEvent* e);
 		virtual void			closeEvent(QCloseEvent* e);
 
-	protected slots:
+	private slots:
+		void					tabChanged(int tab);
+		void					clicked(QAbstractButton* button);
+		QMap<QString,QVariant>	clientSettingsPacket();
+		void					update();
+		void					updateT1List();
+		void					updateDomains();
+		void					updateDNS();
 		void					readyRead();
 		void					readSettings();
 		void					writeSettings();
 		void					settings();
 		void					about();
-
-	private slots:
+		void					maybeQuit();
 		void					fastRefresh();
 		void					slowRefresh();
-		void					update();
 		void					tcpConnected();
 		void					tcpDisconnected();
 		void					tcpError(QAbstractSocket::SocketError socketError);
 		void					tcpHostFound();
 		void					tcpStateChanged(QAbstractSocket::SocketState socketState);
-
 		void					updateResolverPool(QStringList resolverPool);
 		void					iconActivated(QSystemTrayIcon::ActivationReason reason);
 		void					showBalloonMessage(QString title, QString body);
@@ -88,14 +92,7 @@ class OpenNIC : public QDialog
 		QByteArray				mPacketBytes;
 		/** server settings **/
 		int						mTcpListenPort;				/** the TCP listen port */
-		QString					mLogFile;					/** the log file */
 		bool					mInitialized;				/** server variables are initialized? */
-		QStringList				mBootstrapT1List;			/** list of bootstrap T1's */
-		int						mBootstrapCacheSize;		/** number of T1s to select for boostrap */
-		bool					mBootstrapRandomSelect;		/** select bootstrap resolvers randomly */
-		QStringList				mResolverCache;				/** most recently selected resolver cache */
-		int						mResolverCacheSize;			/** the number of resolvers to keep in the cache (and apply to the O/S) */
-		int						mRefreshTimerPeriod;		/** the resolver refresh rate (apply cache to O/S) */
 };
 
 #endif // OPENNIC_H

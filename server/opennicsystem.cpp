@@ -19,11 +19,81 @@
 #include <QSettings>
 #include <QSpinBox>
 #include <QFile>
+#include <QIODevice>
+#include <QDateTime>
 
 #define OPENNIC_T1_BOOTSTRAP		"bootstrap.t1"
 #define	OPENNIC_DOMAINS_BOOTSTRAP	"bootstrap.domains"
 
 QStringList OpenNICSystem::mTestDomains;
+
+/**
+  * @brief file copy
+  */
+bool OpenNICSystem::fileCopy(QString from, QString to)
+{
+	if ( from != to && !from.isEmpty() && !to.isEmpty() )
+	{
+		QFile fFrom(from);
+		QFile fTo(to);
+		if (fFrom.open(QIODevice::ReadOnly))
+		{
+			if(fTo.open(QIODevice::ReadWrite))
+			{
+				fTo.write(fFrom.readAll());
+				fTo.close();
+			}
+			fFrom.close();
+		}
+	}
+}
+
+/**
+  * @brief backup a file
+  */
+bool OpenNICSystem::backup(QString filename)
+{
+	return fileCopy(filename,QDateTime::currentDateTime().toString("yyMMddhhmmss")+filename+".bak");
+}
+
+/**
+  * @brief write a string list to a file
+  */
+bool OpenNICSystem::writeStringListToFile(QString filename,QStringList list)
+{
+	if (backup(filename))
+	{
+		QFile file(filename);
+		if ( file.open(QIODevice::ReadWrite|QIODevice::Truncate) )
+		{
+			for(int n=0; n < list.count(); n++)
+			{
+				QByteArray line = list.at(n).toAscii();
+				line += '\n';
+				file.write(line);
+			}
+			file.close();
+			return true;
+		}
+	}
+	return false;
+}
+
+/**
+  * @brief re-wriet the T1 bootstrap file
+  */
+bool OpenNICSystem::saveBootstrapT1List(QStringList list)
+{
+	return writeStringListToFile(OPENNIC_T1_BOOTSTRAP,list);
+}
+
+/**
+  * @brief re-write the domains file
+  */
+bool OpenNICSystem::saveTestDomains(QStringList list)
+{
+	return writeStringListToFile(OPENNIC_DOMAINS_BOOTSTRAP,list);
+}
 
 /**
   * @brief Get a default T1 list from the bootstrap file.

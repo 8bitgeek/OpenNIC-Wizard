@@ -46,15 +46,21 @@ class OpenNICServer : public QObject
 		void					setRefreshPeriod(int period);
 		void					setResolverCacheSize(int size);
 
+	signals:
+		void					quit();
+
 	public slots:
 		void					log(QString msg);
 		void					logPurge();
 		void					runOnce();
 
-	signals:
-		void					quit();
+	private slots:
+		void					readyRead();
+		void					newConnection();
+		void					readSettings();
+		void					writeSettings();
 
-	protected:
+	private:
 		void					updateRefreshTimerPeriod();
 		void					pruneLog();
 		bool					testResolverCache();
@@ -67,12 +73,6 @@ class OpenNICServer : public QObject
 		int						initializeServer();
 		int						updateDNS(int resolver_count);
 		virtual void			timerEvent(QTimerEvent* e);
-
-	protected slots:
-		void					readyRead();
-		void					newConnection();
-		void					readSettings();
-		void					writeSettings();
 
 	private:
 		QList<QTcpSocket*>		mSessions;					/** active sessions */
@@ -88,6 +88,7 @@ class OpenNICServer : public QObject
 		bool					mResolversInitialized;      /** resolvers have been initialized */
 		int						mTcpListenPort;				/** the TCP listen port */
 		bool					mUpdatingDNS;				/** in the processof updating the DNS */
+		QString					mAsyncMessage;
 };
 
 #endif // OPENNICSERVER_H
