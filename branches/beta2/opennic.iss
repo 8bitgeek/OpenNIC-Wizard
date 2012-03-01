@@ -97,12 +97,11 @@ Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#MyAppName}"; Fil
 Name: "{commonstartup}\OpenNIC Wizard"; Filename: "{app}\{#MyAppExeName}"
 
 [Run]
-Filename: "{app}\{#MyAppServiceName}"; Parameters: "-install"; WorkingDir: "{app}"; Flags: nowait runascurrentuser skipifsilent; Description: "{cm:LaunchProgram,{#StringChange(MyAppServiceName, "&", "&&")}}"; StatusMsg: "Installing OpenNIC Service...";
-Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"; Flags: nowait runasoriginaluser skipifsilent; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, "&", "&&")}}"; StatusMsg: "Starting OpenNIC Task Tray Applet...";
-FileName: "{sys}\sc.exe"; Parameters: "config OpenNIC start= auto"; StatusMsg: "Configuring OpenNIC Service...";
-Filename: "{sys}\sc.exe"; Parameters: "start OpenNIC"; StatusMsg: "Starting OpenNIC Service...";
-Filename: "{sys}\sc.exe"; Parameters: "start OpenNIC"; StatusMsg: "Starting OpenNIC Service...";
-Filename: "http://http://wiki.opennic.glue/HomePage"; Flags: shellexec
+Filename: "{app}\{#MyAppServiceName}"; Parameters: "-install"; WorkingDir: "{app}"; Flags:  runascurrentuser; Description: "{cm:LaunchProgram,{#StringChange(MyAppServiceName, "&", "&&")}}"; StatusMsg: "Installing OpenNIC Service...";
+Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"; Flags: nowait runasoriginaluser; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, "&", "&&")}}"; StatusMsg: "Starting OpenNIC Task Tray Applet...";
+FileName: "{sys}\sc.exe"; Parameters: "config OpenNIC start= auto"; Flags: runascurrentuser; StatusMsg: "Configuring OpenNIC Service...";
+Filename: "{sys}\sc.exe"; Parameters: "start OpenNIC"; Flags: runascurrentuser; StatusMsg: "Starting OpenNIC Service...";
+Filename: "http://wiki.opennic.glue"; Description: "Open wiki.opennic.glue in a browser"; Flags: shellexec postinstall runasoriginaluser
 
 [UninstallRun]
 Filename: "{app}\{#MyAppServiceName}"; WorkingDir: "{app}"; Parameters: "-terminate";

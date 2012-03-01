@@ -24,33 +24,21 @@ class OpenNICResolverTest : public OpenNICDnsClient
 {
 	Q_OBJECT
 	public:
-		typedef struct
-		{
-			QHostAddress	addr;		/* The host ip address */
-			QString			name;		/* The host name to query */
-			QString			mxName;		/* The mx host name to query */
-			QDateTime		start;		/* The start of the query */
-			qint64			latency;	/* Latency in mulliseconds */
-			int				error;		/* Error Code */
-		} query;
 		OpenNICResolverTest(bool active=true, QObject *parent=0);
 		virtual ~OpenNICResolverTest();
 	protected slots:
-		virtual void		reply(dns_cb_data& rdata);
-		virtual	void		setInterval(int seconds);
+		virtual void					reply(dns_query& rdata);
+		virtual	void					setInterval(int seconds);
 	protected:
-		virtual void		purge();
-		virtual	void		test() {}
-		virtual void		resolve(QHostAddress addr, QString name, quint16 port=DEFAULT_DNS_PORT);
-		virtual void		timerEvent(QTimerEvent* e);
+		virtual void					purge() {}
+		virtual	void					test() {}
+		virtual void					resolve(QHostAddress addr, QString name, quint16 port=DEFAULT_DNS_PORT);
+		virtual void					timerEvent(QTimerEvent* e);
 	private:
-		void				dispose(query* q);
-		void				append(query* q);
-		query*				find(void* context);
-		QList<query*>		mQueries;
-		int					mSecondTimer;
-		int					mTimerInterval;
-		int					mTimerCount;
+		int								mSecondTimer;
+		int								mTimerInterval;
+		int								mTimerCount;
 };
+
 
 #endif // OPENNICRESOLVERTEST_H

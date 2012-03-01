@@ -79,16 +79,20 @@ bool OpenNICResolverPoolItem::operator>(OpenNICResolverPoolItem &other)
   */
 bool OpenNICResolverPoolItem::operator<(OpenNICResolverPoolItem &other)
 {
+	bool rc=false;
 	/* if one is alive and the other is not, then they are un-equal */
 	if ( alive() != other.alive() )
 	{
-		return !alive();
+		rc = !alive();
 	}
 	if ( kind() != other.kind() )
 	{
-		return kind() < other.kind();
+		rc = kind() < other.kind();
 	}
-	return averageLatency() > other.averageLatency();  /* less is more */
+	double a = averageLatency();
+	double b = other.averageLatency();
+	rc = a > b;  /* less is more */
+	return rc;
 }
 
 /**
@@ -207,7 +211,7 @@ double OpenNICResolverPoolItem::averageLatency()
 /**
   * @brief get here on dns callback data
   */
-void OpenNICResolverPoolItem::reply(dns_cb_data& data)
+void OpenNICResolverPoolItem::reply(dns_query& data)
 {
 	if (mTests > 0)
 	{

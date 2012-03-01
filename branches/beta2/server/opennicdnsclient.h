@@ -25,25 +25,11 @@
 #define	DNS_PACKET_LEN		2048	/* Buffer size for DNS packet	*/
 #define DEFAULT_DNS_PORT	53		/* The default DNS UDP oprt */
 
-class dns_cb_data;
+class dns_query;
 class OpenNICDnsClient : public QObject
 {
 	Q_OBJECT
 	public:
-
-		/*
-		 * User query. Holds mapping from application-level ID to DNS transaction id,
-		 * and user defined callback function.
-		 */
-		typedef struct {
-			void*			context;		/* Application context. */
-			QDateTime		expire;			/* Time when this query expire	*/
-			quint16			tid;			/* UDP DNS transaction ID	*/
-			quint16			qtype;			/* Query type			*/
-			QString			name;			/* Host name			*/
-			QHostAddress	addr;			/* Host address */
-			QString			mxName;			/* MX record host name. */
-		} query;
 
 		/*
 		 * DNS network packet
@@ -79,53 +65,60 @@ class OpenNICDnsClient : public QObject
 		OpenNICDnsClient(bool active=true, QObject *parent = 0);
 		virtual ~OpenNICDnsClient();
 		bool						isActive() {return mActive;}
+		dns_query*					find(void* context);
 	public slots:
-		void						cancel(void* context);
 		virtual void				setActive(bool active) {mActive=active;}
 
 	protected:
-		void						purge();
+		virtual void				purge();
 		void						setResolver(QHostAddress& resolverAddress);
 		QHostAddress&				resolverAddress();
 		bool						isOpen() {return mClientSocket != NULL; }
 		bool						open();
 		void						close();
-		virtual void				lookup(QHostAddress resolverAddress, QString name, dns_query_type qtype, void* context=NULL, quint16 port=DEFAULT_DNS_PORT);
-		virtual void				lookup(QString name, dns_query_type qtype, void* context, quint16 port=DEFAULT_DNS_PORT);
-		virtual void				reply(dns_cb_data& data);
+		virtual void				lookup(QHostAddress resolverAddress, QString name, dns_query_type qtype, quint16 port=DEFAULT_DNS_PORT);
+		virtual void				lookup(QString name, dns_query_type qtype, quint16 port=DEFAULT_DNS_PORT);
+		virtual void				reply(dns_query& data);
 
 	private slots:
 		void						readPendingDatagrams();
 
 	private:
-		void						appendActiveQuery(query* q);
-		query*						findActiveQuery(quint16 tid);
-		void						disposeQuery(query* q);
+		void						appendActiveQuery(dns_query* q);
+		dns_query*					findActiveQuery(quint16 tid);
+		void						disposeQuery(dns_query* q);
 		void						fetch(const quint8 *pkt, const quint8 *s, int pktsiz, char *dst, int dstlen);
-		void						doReply(query* q, dns_error error);
+		void						doReply(dns_query* q, dns_error error);
 		void						processDatagram(QByteArray datagram);
 		bool						mActive;
 		quint16						m_tid;				/* Latest tid used		*/
 		QHostAddress				mResolverAddress;	/* The resolver address */
 		QUdpSocket*					mClientSocket;		/* UDP socket used for queries	*/
-		QList<query*>				mQueries;			/* In-flight queries */
+		QList<dns_query*>			mQueries;			/* In-flight queries */
 };
 
-
-class dns_cb_data {
+/*
+ * User query. Holds mapping from application-level ID to DNS transaction id,
+ * and user defined callback function.
+ */
+class dns_query {
 public:
-	dns_cb_data()
-		: context(NULL)
+	dns_query()
+		: latency(NULL)
 		, error(OpenNICDnsClient::DNS_OK)
 		, query_type(OpenNICDnsClient::DNS_A_RECORD)
-		{}
-	~dns_cb_data() {}
-	void*								context;	/* Application context */
-	OpenNICDnsClient::dns_error			error;		/* Result code */
-	OpenNICDnsClient::dns_query_type	query_type;	/* Query type */
-	QString								name;		/* Requested host name	*/
-	QHostAddress						addr;		/* Resolved address	*/
-	QString								mxName;		/* MX record host name. */
+		, tid(0)
+	{}
+	~dns_query() {}
+	quint64								latency;		/* latency in milliseconds */
+	OpenNICDnsClient::dns_error			error;			/* Result code */
+	OpenNICDnsClient::dns_query_type	query_type;		/* Query type */
+	quint16								tid;			/* UDP DNS transaction ID	*/
+	QDateTime							start;			/* The start of the query */
+	QDateTime							expire;			/* Time when this query expire	*/
+	QString								name;			/* Host name			*/
+	QHostAddress						addr;			/* Host address */
+	QString								mxName;			/* MX record host name. */
 };
 
 
