@@ -34,6 +34,8 @@
 #include <QListWidgetItem>
 #include <QTcpSocket>
 #include <QIODevice>
+#include <QTabWidget>
+#include <QWidget>
 
 #define DEFAULT_RESOLVERS					3
 #define DEFAULT_T1_RESOLVERS				3
@@ -63,6 +65,12 @@ OpenNIC::OpenNIC(QWidget *parent)
 	QObject::connect(&mTcpSocket,SIGNAL(stateChanged(QAbstractSocket::SocketState)),this,SLOT(tcpStateChanged(QAbstractSocket::SocketState)));
 	QObject::connect(&mTcpSocket,SIGNAL(hostFound()),this,SLOT(tcpHostFound()));
 	QObject::connect(&mTcpSocket,SIGNAL(readyRead()),this,SLOT(readyRead()));
+	QObject::connect(this,SIGNAL(accepted()),this,SLOT(update()));
+	QObject::connect(uiSettings->saveT1List,SIGNAL(clicked()),this,SLOT(updateT1List()));
+	QObject::connect(uiSettings->buttonBox,SIGNAL(clicked(QAbstractButton*)),this,SLOT(clicked(QAbstractButton*)));
+	QObject::connect(uiSettings->refreshNow,SIGNAL(clicked()),this,SLOT(updateDNS()));
+	QObject::connect(uiSettings->tabs,SIGNAL(currentChanged(int)),this,SLOT(tabChanged(int)));
+	QObject::connect(uiSettings->saveDomains,SIGNAL(clicked()),this,SLOT(updateDomains()));
 }
 
 OpenNIC::~OpenNIC()
@@ -157,8 +165,54 @@ void OpenNIC::createActions()
 	QObject::connect(mActionAbout,SIGNAL(triggered()),this,SLOT(about()));
 
 	mActionQuit = new QAction(tr("&Quit"), this);
-	QObject::connect(mActionQuit,SIGNAL(triggered()),this,SIGNAL(quit()));
+	QObject::connect(mActionQuit,SIGNAL(triggered()),this,SLOT(maybeQuit()));
 
+}
+
+/**
+  * @brief maybe wuit
+  */
+void OpenNIC::maybeQuit()
+{
+	if ( QMessageBox::question(this,tr("Quit OpenNIC Applet"),tr("Do you really wish to quit the OpenNIC Applet?"),QMessageBox::Yes,QMessageBox::No) == QMessageBox::Yes )
+	{
+		emit quit();
+	}
+}
+
+/**
+  * @brief a buttonbox button was clicked.
+  */
+void OpenNIC::clicked(QAbstractButton* button)
+{
+	if ( uiSettings->buttonBox->buttonRole(button) == QDialogButtonBox::ApplyRole)
+	{
+		update();
+	}
+}
+
+/**
+  * @brief the current tab changed
+  */
+void OpenNIC::tabChanged(int tab)
+{
+	QDialogButtonBox* buttonBox = uiSettings->buttonBox;
+	QList<QAbstractButton *> buttons = buttonBox->buttons();
+	for(int n=0; n < buttons.count(); n++)
+	{
+		QAbstractButton* button = buttons.at(n);
+		if (buttonBox->buttonRole(button) == QDialogButtonBox::ApplyRole || buttonBox->buttonRole(button) == QDialogButtonBox::AcceptRole)
+		{
+			if ( tab == 1 )
+			{
+				button->setEnabled(true);
+			}
+			else
+			{
+				button->setEnabled(false);
+			}
+		}
+	}
 }
 
 /**
@@ -213,7 +267,7 @@ void OpenNIC::updateResolverPool(QStringList resolverPool)
 	table->setSortingEnabled(true);
 }
 
-void OpenNIC::mapServerReply(QMap<QString,QVariant>& map)
+void OpenNIC::storeServerPacket(QMap<QString,QVariant>& map)
 {
 	QMapIterator<QString, QVariant>i(map);
 	while (i.hasNext())
@@ -222,20 +276,40 @@ void OpenNIC::mapServerReply(QMap<QString,QVariant>& map)
 		QString key = i.key();
 		QVariant value = i.value();
 		if ( key == "tcp_listen_port" )					mTcpListenPort			=	value.toInt();
-		else if ( key == "log_file" )					mLogFile				=	value.toString();
 		else if ( key == "resolver_cache" )
 		{
 			QStringList serverResolverCache = value.toStringList();
-			mResolverCache.clear();
+			QStringList localResolverCache;
+			localResolverCache.clear();
 			for(int n=0;n < serverResolverCache.count(); n++)
 			{
 				QStringList parts = serverResolverCache.at(n).split(";");
-				mResolverCache.append(parts.at(0));
+				localResolverCache.append(parts.at(0));
+			}
+			uiSettings->cache->setPlainText(localResolverCache.join("\n"));
+		}
+		else if ( key == "refresh_timer_period" )
+		{
+			if ( !hasFocus() )
+			{
+				uiSettings->refreshRate->setValue(value.toInt());
 			}
 		}
-		else if ( key == "refresh_timer_period" )		mRefreshTimerPeriod		=	value.toInt();
-		else if ( key == "resolver_cache_size" )		mResolverCacheSize		=	value.toInt();
-		else if ( key == "bootstrap_t1_list" )			mBootstrapT1List		=	value.toStringList();
+		else if ( key == "resolver_cache_size" )
+		{
+			if ( !hasFocus() )
+			{
+				uiSettings->resolverCount->setValue(value.toInt());
+			}
+		}
+		else if ( key == "bootstrap_t1_list" )
+		{
+			uiSettings->t1List->setPlainText(value.toStringList().join("\n"));
+		}
+		else if ( key == "bootstrap_domains" )
+		{
+			uiSettings->domainList->setPlainText(value.toStringList().join("\n"));
+		}
 		else if ( key == "resolver_pool" )				updateResolverPool(value.toStringList());
 		else if ( key == "system_text" )				uiSettings->systemText->setPlainText(value.toString());
 		else if ( key == "journal_text" )
@@ -252,40 +326,23 @@ void OpenNIC::mapServerReply(QMap<QString,QVariant>& map)
 			}
 			journal->addItems(journalText);
 		}
+		else if ( key == "async_message" && !value.toString().isEmpty() )
+		{
+			QMessageBox::information(this,tr("Sevice Message"),value.toString());
+		}
 	}
-	uiSettings->cache->setPlainText(mResolverCache.join("\n"));
-	uiSettings->t1List->setPlainText(mBootstrapT1List.join("\n"));
-	uiSettings->refreshRate->setValue(mRefreshTimerPeriod);
-	uiSettings->resolverCount->setValue(mResolverCacheSize);
 }
 
 /**
   * @brief Map client status
   * @return a map of key/value pairs
   */
-QMap<QString,QVariant> OpenNIC::mapClientStatus()
+QMap<QString,QVariant> OpenNIC::clientSettingsPacket()
 {
 	QMap<QString,QVariant> map;
-	map.insert("refresh_timer_period",		mRefreshTimerPeriod);
-	map.insert("resolver_cache_size",		mResolverCacheSize);
+	map.insert("refresh_timer_period", uiSettings->refreshRate->value());
+	map.insert("resolver_cache_size", uiSettings->resolverCount->value());
 	return map;
-}
-
-/**
-  * @brief Contact the service and perform a bi-directional update.
-  */
-void OpenNIC::connectToService()
-{
-	if ( !mTcpSocket.isValid() || !mTcpSocket.isOpen() )
-    {
-        mTcpSocket.close();
-        QHostAddress localhost(QHostAddress::LocalHost);
-        mTcpSocket.connectToHost(localhost,19803,QIODevice::ReadWrite);
-    }
-	else
-	{
-		update();
-	}
 }
 
 /**
@@ -295,17 +352,66 @@ void OpenNIC::update()
 {
 	QDataStream stream(&mTcpSocket);
 	QMap<QString,QVariant> clientPacket;
-	if ( !mInitialized )
-	{
-		clientPacket.insert("initialize",VERSION_STRING); /* something to get a reply */
-		mInitialized=true;
-	}
-	else
-	{
-		clientPacket = mapClientStatus();
-	}
+	clientPacket = clientSettingsPacket();
 	stream << clientPacket;
 	mTcpSocket.flush();
+}
+
+/**
+  * @brief Update the T1 list on the service side.
+  */
+void OpenNIC::updateT1List()
+{
+	if ( QMessageBox::question(this,tr("Confirm"),tr("Are you sure you wish to overwrite the T1 bootstrap file?"),QMessageBox::Yes,QMessageBox::No) == QMessageBox::Yes)
+	{
+		QDataStream stream(&mTcpSocket);
+		QMap<QString,QVariant> clientPacket;
+		QString t1Text = uiSettings->t1List->toPlainText();
+		clientPacket.insert("bootstrap_t1_list",t1Text.split("\n"));
+		stream << clientPacket;
+		mTcpSocket.flush();
+	}
+}
+
+/**
+  * @brief Update the domains list on the service side.
+  */
+void OpenNIC::updateDomains()
+{
+	if ( QMessageBox::question(this,tr("Confirm"),tr("Are you sure you wish to overwrite the domains bootstrap file?"),QMessageBox::Yes,QMessageBox::No) == QMessageBox::Yes)
+	{
+		QDataStream stream(&mTcpSocket);
+		QMap<QString,QVariant> clientPacket;
+		QString domainsText = uiSettings->domainList->toPlainText();
+		clientPacket.insert("bootstrap_domains",domainsText.split("\n"));
+		stream << clientPacket;
+		mTcpSocket.flush();
+	}
+}
+
+/**
+  * @brief Update the DNS
+  */
+void OpenNIC::updateDNS()
+{
+	QDataStream stream(&mTcpSocket);
+	QMap<QString,QVariant> clientPacket;
+	clientPacket.insert("update_dns","");
+	stream << clientPacket;
+	mTcpSocket.flush();
+}
+
+/**
+  * @brief Contact the service and perform a bi-directional update.
+  */
+void OpenNIC::connectToService()
+{
+	if ( !mTcpSocket.isValid() || !mTcpSocket.isOpen() )
+	{
+		mTcpSocket.close();
+		QHostAddress localhost(QHostAddress::LocalHost);
+		mTcpSocket.connectToHost(localhost,19803,QIODevice::ReadWrite);
+	}
 }
 
 /**
@@ -344,7 +450,7 @@ void OpenNIC::readyRead()
 	if (!serverPacket.isEmpty() )
 	{
 		mBalloonStatus="";
-		mapServerReply(serverPacket);
+		storeServerPacket(serverPacket);
 	}
 	if ( !mTcpSocket.isValid() || !mTcpSocket.isOpen() )
 	{
@@ -354,7 +460,6 @@ void OpenNIC::readyRead()
 
 void OpenNIC::tcpConnected()
 {
-	update();
 }
 
 void OpenNIC::tcpDisconnected()

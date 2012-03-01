@@ -38,9 +38,9 @@ OpenNICServer::OpenNICServer(QObject *parent)
 , mEnabled(true)
 , mResolversInitialized(false)
 , mRefreshTimerPeriod(0)
+, mResolverCacheSize(0)
 , mUpdatingDNS(false)
 {
-	setRefreshPeriod(DEFAULT_REFRESH_TIMER_PERIOD);
 	readSettings();
 	initializeServer();
 	mFastTimer = startTimer(1000*DEFAULT_FAST_TIMER);
@@ -52,9 +52,7 @@ OpenNICServer::~OpenNICServer()
 
 int OpenNICServer::refreshPeriod()
 {
-	int rc;
-	rc = mRefreshTimerPeriod;
-	return rc;
+	return mRefreshTimerPeriod;
 }
 
 /**
@@ -62,7 +60,7 @@ int OpenNICServer::refreshPeriod()
   */
 void OpenNICServer::setRefreshPeriod(int period)
 {
-	if ( mRefreshTimerPeriod != period )
+	if ( mRefreshTimerPeriod != period && period >= 0 )
 	{
 		mRefreshTimerPeriod = period;
 		if ( mRefreshTimer >= 0 )
@@ -70,20 +68,24 @@ void OpenNICServer::setRefreshPeriod(int period)
 			killTimer(mRefreshTimer);
 			mRefreshTimer=-1;
 		}
+		log(tr("** DNS REFRESH IN ")+QString::number(mRefreshTimerPeriod)+tr(" MINUTES **"));
 		mRefreshTimer = startTimer((mRefreshTimerPeriod*60)*1000);
 	}
 }
 
 int OpenNICServer::resolverCacheSize()
 {
-	int rc;
-	rc = mResolverCacheSize;
-	return rc;
+	return mResolverCacheSize;
 }
 
 void OpenNICServer::setResolverCacheSize(int size)
 {
-	mResolverCacheSize = size;
+	if ( mResolverCacheSize != size && size >= 0 )
+	{
+		mResolverCacheSize = size;
+		log(tr("** ACTIVE CACHE SET TO ")+QString::number(mResolverCacheSize)+tr(" RESOLVERS **"));
+		updateDNS(mResolverCacheSize);
+	}
 }
 
 /**
@@ -149,6 +151,7 @@ void OpenNICServer::newConnection()
 	QTcpSocket* client;
 	while ( (client = mServer.nextPendingConnection()) != NULL )
 	{
+		QObject::connect(client,SIGNAL(readyRead()),this,SLOT(readyRead()));
 		mSessions.append(client);
 		log(tr("** client session created **"));
 	}
@@ -159,6 +162,7 @@ void OpenNICServer::newConnection()
   */
 void OpenNICServer::readyRead()
 {
+	mAsyncMessage.clear();
 	for(int n=0; n < mSessions.count(); n++)
 	{
 		QTcpSocket* session = mSessions[n];
@@ -166,8 +170,64 @@ void OpenNICServer::readyRead()
 		{
 			QMap<QString,QVariant> clientPacket;
 			QDataStream stream(session);
+			log("got "+QString::number(stream.device()->bytesAvailable())+" bytes from client");
 			stream >> clientPacket;
+			QMapIterator<QString, QVariant>i(clientPacket);
+			while (i.hasNext())
+			{
+				i.next();
+				QString key = i.key();
+				QVariant value = i.value();
+				if ( key == "resolver_cache_size" )
+				{
+					if (resolverCacheSize() != value.toInt())
+					{
+						mAsyncMessage = tr("Settings Applied");
+					}
+					setResolverCacheSize(value.toInt());
+				}
+				else if ( key == "refresh_timer_period" )
+				{
+					if (refreshPeriod() != value.toInt())
+					{
+						mAsyncMessage = tr("Settings Applied");
+					}
+					setRefreshPeriod(value.toInt());
+				}
+				else if ( key == "bootstrap_t1_list" )
+				{
+					if ( OpenNICSystem::saveBootstrapT1List(value.toStringList()) )
+					{
+						mAsyncMessage = tr("Bootstrap T1 List Saved");
+					}
+					else
+					{
+						mAsyncMessage = tr("There was a problem saving the T1 bootstrap list");
+					}
+				}
+				else if ( key == "bootstrap_domains" )
+				{
+					if ( OpenNICSystem::saveTestDomains(value.toStringList()) )
+					{
+						mAsyncMessage = tr("Domain List Saved");
+					}
+					else
+					{
+						mAsyncMessage = tr("There was a problem saving the domains list");
+					}
+				}
+				else if ( key == "update_dns" )
+				{
+					updateDNS(resolverCacheSize());
+				}
+			}
+
 		}
+	}
+	writeSettings();
+	if (!mAsyncMessage.isEmpty())
+	{
+		announcePackets();
 	}
 }
 
@@ -241,11 +301,14 @@ QByteArray& OpenNICServer::makeServerPacket(QByteArray& bytes)
 	packet.insert("resolver_pool",				mResolverPool.toStringList());
 	packet.insert("resolver_cache",				mResolverCache.toStringList());
 	packet.insert("bootstrap_t1_list",			OpenNICSystem::getBootstrapT1List());
+	packet.insert("bootstrap_domains",			OpenNICSystem::getTestDomains());
 	packet.insert("system_text",				OpenNICSystem::getSystemResolverList());
 	packet.insert("journal_text",				mLog);
+	packet.insert("async_message",				mAsyncMessage);
 	stream << packet;
 	return bytes;
 }
+
 
 /**
   * @brief announce packets to sessions
@@ -265,10 +328,11 @@ void OpenNICServer::announcePackets()
 				QDataStream stream(session);
 				stream << packet;
 				session->flush();
-				log("sent "+QString::number(packet.length())+" bytes.");
+				//log("sent "+QString::number(packet.length())+" bytes.");
 			}
 		}
 		logPurge();
+		mAsyncMessage.clear();
 	}
 }
 
