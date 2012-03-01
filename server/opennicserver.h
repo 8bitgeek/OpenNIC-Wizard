@@ -21,7 +21,7 @@
 #include <QList>
 #include "opennicresolverpool.h"
 
-#define	VERSION_STRING				"0.2.5"
+#define	VERSION_STRING				"0.3.rc1"
 
 class OpenNICSession;
 class OpenNICServer : public QObject

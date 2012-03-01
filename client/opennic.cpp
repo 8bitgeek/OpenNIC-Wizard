@@ -286,29 +286,44 @@ void OpenNIC::storeServerPacket(QMap<QString,QVariant>& map)
 				QStringList parts = serverResolverCache.at(n).split(";");
 				localResolverCache.append(parts.at(0));
 			}
-			uiSettings->cache->setPlainText(localResolverCache.join("\n"));
+			QString newText = localResolverCache.join("\n");
+			QString currentText = uiSettings->cache->toPlainText();
+			if ( newText != currentText )
+			{
+				uiSettings->cache->setPlainText(localResolverCache.join("\n"));
+			}
 		}
 		else if ( key == "refresh_timer_period" )
 		{
-			if ( !hasFocus() )
+			if ( uiSettings->refreshRate->value() !=  value.toInt() )
 			{
 				uiSettings->refreshRate->setValue(value.toInt());
 			}
 		}
 		else if ( key == "resolver_cache_size" )
 		{
-			if ( !hasFocus() )
+			if ( uiSettings->resolverCount->value() != value.toInt() )
 			{
 				uiSettings->resolverCount->setValue(value.toInt());
 			}
 		}
 		else if ( key == "bootstrap_t1_list" )
 		{
-			uiSettings->t1List->setPlainText(value.toStringList().join("\n"));
+			QString currentText = uiSettings->t1List->toPlainText();
+			QString newText = value.toStringList().join("\n");
+			if ( currentText != newText )
+			{
+				uiSettings->t1List->setPlainText(newText);
+			}
 		}
 		else if ( key == "bootstrap_domains" )
 		{
-			uiSettings->domainList->setPlainText(value.toStringList().join("\n"));
+			QString currentText = uiSettings->domainList->toPlainText();
+			QString newText = value.toStringList().join("\n");
+			if ( currentText != newText )
+			{
+				uiSettings->domainList->setPlainText(newText);
+			}
 		}
 		else if ( key == "resolver_pool" )				updateResolverPool(value.toStringList());
 		else if ( key == "system_text" )				uiSettings->systemText->setPlainText(value.toString());

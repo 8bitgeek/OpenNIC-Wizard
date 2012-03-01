@@ -33,7 +33,7 @@ class OpenNICResolverPool : public QObject
 		void							insort(OpenNICResolverPoolItem item);
 		int								indexOf(OpenNICResolverPoolItem& item);
 		int								indexOf(QHostAddress hostAddress);
-		QStringList						toStringList();
+		QStringList&					toStringList();
 		OpenNICResolverPool&			fromStringList(const QStringList strings);
 		OpenNICResolverPool&			operator<<(const QStringList& strings);
 	public slots:
@@ -44,6 +44,7 @@ class OpenNICResolverPool : public QObject
 	private:
 		void							swap(int a,int b);
 		QList<OpenNICResolverPoolItem>	mItems;
+		QStringList						mStringList;
 };
 
 

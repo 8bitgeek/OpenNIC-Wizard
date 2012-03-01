@@ -317,7 +317,6 @@ void OpenNICServer::announcePackets()
 {
 	if ( mSessions.count() )
 	{
-		QEventLoop loop;
 		QByteArray packet;
 		makeServerPacket(packet);
 		for(int n=0; n < mSessions.count(); n++)
@@ -495,10 +494,13 @@ void OpenNICServer::refreshResolvers(bool force)
 void OpenNICServer::runOnce()
 {
 	readSettings();
-	purgeDeadSesssions();									/* free up closed gui sessions */
 	refreshResolvers();										/* try to be smart */
-	announcePackets();										/* tell gui sessions what they need to know */
-	pruneLog();												/* don't let the log get out of hand */
+	if (mSessions.count())
+	{
+		purgeDeadSesssions();									/* free up closed gui sessions */
+		announcePackets();										/* tell gui sessions what they need to know */
+		pruneLog();												/* don't let the log get out of hand */
+	}
 }
 
 /**
