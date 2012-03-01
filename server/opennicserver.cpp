@@ -310,7 +310,6 @@ QByteArray& OpenNICServer::makeServerPacket(QByteArray& bytes)
 	return bytes;
 }
 
-
 /**
   * @brief announce packets to sessions
   */
