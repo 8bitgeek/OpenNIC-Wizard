@@ -220,7 +220,7 @@ QString OpenNICSystem::randomDomain()
   * @param resolver The IP address of teh resolver to add to the system
   * @param index resolver sequence (1..n)
   */
-QString OpenNICSystem::insertSystemResolver(QHostAddress resolver,int index)
+QString OpenNICSystem::insertSystemResolver(QHostAddress& resolver,int index)
 {
 	QString rc;
 	QEventLoop loop;
