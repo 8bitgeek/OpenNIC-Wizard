@@ -312,16 +312,25 @@ void OpenNIC::update()
   */
 void OpenNIC::readyRead()
 {
+	QByteArray bytes;
 	QMap<QString,QVariant> serverPacket;
-	QDataStream stream(&mTcpSocket);
-	if(mTcpSocket.bytesAvailable())
+	QDataStream tcpStream(&mTcpSocket);
+	int length;
+	tcpStream >> length;
+	tcpStream >> bytes;
+	if (bytes.length() == length)
 	{
-		stream >> serverPacket;
+		QDataStream byteStream(&bytes,QIODevice::ReadOnly);
+		byteStream >> serverPacket;
 		if (!serverPacket.isEmpty() )
 		{
 			mBalloonStatus="";
 			mapServerReply(serverPacket);
 		}
+	}
+	else
+	{
+		mBalloonStatus=tr("OpenNIC Service invalid packet size");
 	}
 	if ( !mTcpSocket.isValid() || !mTcpSocket.isOpen() )
 	{
