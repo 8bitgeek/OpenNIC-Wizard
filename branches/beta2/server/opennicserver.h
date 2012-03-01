@@ -63,7 +63,7 @@ class OpenNICServer : public QObject
 		void					refreshResolvers(bool force=false);
 		void					announcePackets();
 		void					purgeDeadSesssions();
-		QMap<QString,QVariant>&	makeServerPacket(QMap<QString,QVariant>& packet);
+		QMap<QString,QVariant>	makeServerPacket();
 		int						initializeServer();
 		int						updateDNS(int resolver_count);
 		virtual void			timerEvent(QTimerEvent* e);
@@ -87,6 +87,8 @@ class OpenNICServer : public QObject
 		int						mFastTimer;
 		bool					mResolversInitialized;      /** resolvers have been initialized */
 		int						mTcpListenPort;				/** the TCP listen port */
+		int						mPacketSeq;					/** packet sequence */
+		bool					mUpdatingDNS;				/** in the processof updating the DNS */
 };
 
 #endif // OPENNICSERVER_H

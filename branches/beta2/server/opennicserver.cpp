@@ -38,6 +38,8 @@ OpenNICServer::OpenNICServer(QObject *parent)
 , mEnabled(true)
 , mResolversInitialized(false)
 , mRefreshTimerPeriod(0)
+, mPacketSeq(0)
+, mUpdatingDNS(false)
 {
 	setRefreshPeriod(DEFAULT_REFRESH_TIMER_PERIOD);
 	readSettings();
@@ -93,6 +95,10 @@ void OpenNICServer::log(QString msg)
 	QString str = QDateTime::currentDateTime().toString("yyMMddhhmmss")+"|"+msg;
 	mLog << str;
 	fprintf(stderr,"%s\n",str.toAscii().data());
+	while(mLog.count() > MAX_LOG_LINES)
+	{
+		mLog.takeAt(0);
+	}
 }
 
 /**
@@ -140,16 +146,31 @@ void OpenNICServer::writeSettings()
   * @brief Make a server packet
   * @return a map of key/value pairs
   */
-QMap<QString,QVariant>& OpenNICServer::makeServerPacket(QMap<QString,QVariant>& packet)
+QMap<QString,QVariant> OpenNICServer::makeServerPacket()
 {
-	packet.insert("tcp_listen_port",			mTcpListenPort);
-	packet.insert("resolver_pool",				mResolverPool.toStringList());
-	packet.insert("resolver_cache",			mResolverCache.toStringList());
-	packet.insert("refresh_timer_period",		refreshPeriod());
-	packet.insert("resolver_cache_size",		resolverCacheSize());
-	packet.insert("bootstrap_t1_list",			OpenNICSystem::getBootstrapT1List());
-	packet.insert("system_text",				OpenNICSystem::getSystemResolverList());
-	packet.insert("journal_text",				mLog);
+	QMap<QString,QVariant> packet;
+	switch (mPacketSeq)
+	{
+	case 0:
+		packet.insert("tcp_listen_port",			mTcpListenPort);
+		packet.insert("refresh_timer_period",		refreshPeriod());
+		packet.insert("resolver_cache_size",		resolverCacheSize());
+		break;
+	case 1:
+		packet.insert("resolver_pool",				mResolverPool.toStringList());
+		break;
+	case 2:
+		packet.insert("resolver_cache",				mResolverCache.toStringList());
+		packet.insert("bootstrap_t1_list",			OpenNICSystem::getBootstrapT1List());
+		packet.insert("system_text",				OpenNICSystem::getSystemResolverList());
+		break;
+	case 3:
+		packet.insert("journal_text",				mLog);
+		logPurge();
+		break;
+	}
+	if (++mPacketSeq > 3)
+		mPacketSeq=0;
 	return packet;
 }
 
@@ -244,19 +265,20 @@ void OpenNICServer::purgeDeadSesssions()
   */
 void OpenNICServer::announcePackets()
 {
-	QMap<QString,QVariant> packet;
-	makeServerPacket(packet);
-	for(int n=0; n < mSessions.count(); n++)
+	if ( mSessions.count() )
 	{
-		QTcpSocket* session = mSessions[n];
-		if ( session->isOpen() && session->isValid() )
+		QMap<QString,QVariant> packet = makeServerPacket();
+		for(int n=0; n < mSessions.count(); n++)
 		{
-			QDataStream stream(session);
-			stream << packet;
-			session->flush();
+			QTcpSocket* session = mSessions[n];
+			if ( session->isOpen() && session->isValid() )
+			{
+				QDataStream stream(session);
+				stream << packet;
+				session->flush();
+			}
 		}
 	}
-	logPurge();
 }
 
 /**
@@ -333,41 +355,47 @@ int OpenNICServer::bootstrapResolvers()
   */
 int OpenNICServer::updateDNS(int resolverCount)
 {
-	bool replaceWithProposed = false;
-	OpenNICResolverPool proposed;
-	log("** UPDATE DNS **");
-	mResolverPool.sort();
-	for(int n=0; n < mResolverPool.count() && n < resolverCount; n++)
+	int rc=0;
+	if ( !mUpdatingDNS )
 	{
-		OpenNICResolverPoolItem item = mResolverPool.at(n);
-		proposed.append(item);
-	}
-	/** see if what we are proposing is different than what we have cach'ed already... */
-	for(int n=0; n < proposed.count(); n++)
-	{
-		OpenNICResolverPoolItem item = proposed.at(n);
-		if (!mResolverCache.contains(item))
+		bool replaceWithProposed = false;
+		OpenNICResolverPool proposed;
+		mUpdatingDNS=true;
+		log("** UPDATE DNS **");
+		mResolverPool.sort();
+		for(int n=0; n < mResolverPool.count() && n < resolverCount; n++)
 		{
-			replaceWithProposed = true;
+			OpenNICResolverPoolItem item = mResolverPool.at(n);
+			proposed.append(item);
 		}
-	}
-	if ( replaceWithProposed )
-	{
-		int n;
-		mResolverCache.clear();
-		proposed.sort();
-		log("Applying new resolver cache of ("+QString::number(proposed.count())+") items...");
-		for(n=0; n < proposed.count(); n++)
+		/** see if what we are proposing is different than what we have cach'ed already... */
+		for(int n=0; n < proposed.count(); n++)
 		{
 			OpenNICResolverPoolItem item = proposed.at(n);
-			OpenNICSystem::insertSystemResolver(item.hostAddress(),n+1);
-			mResolverCache.append(item);
-			log(" > "+item.toString());
+			if (!mResolverCache.contains(item))
+			{
+				replaceWithProposed = true;
+			}
 		}
-		log(tr("Applied ")+QString::number(n)+tr(" T2 resolvers"));
-		return n;
+		if ( replaceWithProposed )
+		{
+			int n;
+			mResolverCache.clear();
+			proposed.sort();
+			log("Applying new resolver cache of ("+QString::number(proposed.count())+") items...");
+			for(n=0; n < proposed.count(); n++)
+			{
+				OpenNICResolverPoolItem item = proposed.at(n);
+				OpenNICSystem::insertSystemResolver(item.hostAddress(),n+1);
+				mResolverCache.append(item);
+				log(" > "+item.toString());
+			}
+			log(tr("Applied ")+QString::number(n)+tr(" T2 resolvers"));
+			rc = n;
+		}
+		mUpdatingDNS=false;
 	}
-	return 0;
+	return rc;
 }
 
 /**
@@ -429,7 +457,6 @@ void OpenNICServer::timerEvent(QTimerEvent* e)
 	}
 	else if ( e->timerId() == mRefreshTimer )				/* get here once in a while, a slow timer... */
 	{
-		log("** REFRESH TIMER **");
 		refreshResolvers(true);								/* force a resolver cache refresh */
 	}
 	else
