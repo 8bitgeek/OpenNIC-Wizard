@@ -32,7 +32,7 @@ OpenNICDnsClient::~OpenNICDnsClient()
 	close();
 	for(int n=0; n < mQueries.count(); n++)
 	{
-		query* q = mQueries.takeAt(0);
+		dns_query* q = mQueries.takeAt(0);
 		delete q;
 	}
 	mQueries.clear();
@@ -41,16 +41,10 @@ OpenNICDnsClient::~OpenNICDnsClient()
 /**
   * @brief assemble a reply packet and emit it through the reply() sinal
   */
-void OpenNICDnsClient::doReply(query* q, dns_error error)
+void OpenNICDnsClient::doReply(dns_query* q, dns_error error)
 {
-	dns_cb_data	cbd;
-
-	cbd.context		= q->context;
-	cbd.query_type	= (dns_query_type)q->qtype;
-	cbd.error		= error;
-	cbd.name		= q->name;
-	cbd.addr		= q->addr;
-	reply(cbd);
+	q->error = error;
+	reply(*q);
 }
 
 
@@ -59,7 +53,7 @@ void OpenNICDnsClient::close()
 	if (mClientSocket !=NULL )
 	{
 		mClientSocket->close();
-		delete mClientSocket;
+		mClientSocket->deleteLater();
 		mClientSocket = NULL;
 	}
 }
@@ -110,7 +104,7 @@ void OpenNICDnsClient::purge()
 	QDateTime now = QDateTime::currentDateTime();
 	for(int n=0; n < mQueries.count(); n++ )
 	{
-		query* q = mQueries.at(n);
+		dns_query* q = mQueries.at(n);
 		if ( q->expire < now )
 		{
 			q->addr.clear();
@@ -123,7 +117,7 @@ void OpenNICDnsClient::purge()
 /**
   * @brief Append an active query to the list of active queries.
   */
-void OpenNICDnsClient::appendActiveQuery(query* q)
+void OpenNICDnsClient::appendActiveQuery(dns_query* q)
 {
 	mQueries.append(q);
 }
@@ -131,7 +125,7 @@ void OpenNICDnsClient::appendActiveQuery(query* q)
 /**
   * @brief Dispose a query.
   */
-void OpenNICDnsClient::disposeQuery(query *q)
+void OpenNICDnsClient::disposeQuery(dns_query *q)
 {
 	int n = mQueries.indexOf(q);
 	if ( n >= 0 )
@@ -141,29 +135,14 @@ void OpenNICDnsClient::disposeQuery(query *q)
 }
 
 /**
-  * @brief Caller wants to cancel querie(s).
-  */
-void OpenNICDnsClient::cancel(void* context)
-{
-	for(int n=0; n < mQueries.count(); n++)
-	{
-		query* q = mQueries.at(n);
-		if ( q->context == context )
-		{
-			delete mQueries.takeAt(n--);
-		}
-	}
-}
-
-/**
   * @brief Match a tid to a pending query.
   * @return the query or NULL.
   */
-OpenNICDnsClient::query* OpenNICDnsClient::findActiveQuery(quint16 tid)
+dns_query* OpenNICDnsClient::findActiveQuery(quint16 tid)
 {
 	for(int n=0; n < mQueries.count(); n++)
 	{
-		query* q = mQueries.at(n);
+		dns_query* q = mQueries.at(n);
 		if (tid == q->tid)
 		{
 			return q;
@@ -213,7 +192,7 @@ void OpenNICDnsClient::processDatagram(QByteArray datagram)
 	int				len = datagram.length();
 	header*			pkt_hdr;
 	const quint8	*p, *e, *s;
-	query*			q;
+	dns_query*		q;
 	quint16			type;
 	char			name[1025];
 	int				found, stop, dlen, nlen;
@@ -241,7 +220,7 @@ void OpenNICDnsClient::processDatagram(QByteArray datagram)
 #define	NTOHS(p)	(((p)[0] << 8) | (p)[1])
 
 	/* We sent query class 1, query type 1 */
-	if (&p[5] > e || NTOHS(p + 1) != q->qtype)
+	if (&p[5] > e || NTOHS(p + 1) != q->query_type)
 		return;
 
 	/* Go to the first answer section */
@@ -263,7 +242,7 @@ void OpenNICDnsClient::processDatagram(QByteArray datagram)
 			/* CNAME answer. shift to the next section */
 			dlen = htons(((uint16_t *) p)[5]);
 			p += 12 + dlen;
-		} else if (type == q->qtype) {
+		} else if (type == q->query_type) {
 			found = stop = 1;
 		} else {
 			stop = 1;
@@ -277,7 +256,7 @@ void OpenNICDnsClient::processDatagram(QByteArray datagram)
 		if (p + dlen <= e) {
 
 			/* Call user */
-			if (q->qtype == DNS_MX_RECORD)
+			if (q->query_type == DNS_MX_RECORD)
 			{
 				fetch((quint8*)pkt_hdr, p + 2, len, name, sizeof(name) - 1);
 				p = (const unsigned char *)name;
@@ -285,8 +264,9 @@ void OpenNICDnsClient::processDatagram(QByteArray datagram)
 				QByteArray mx((const char*)p,dlen);
 				q->mxName.append(mx);
 				doReply(q, DNS_OK);
+				disposeQuery(q);
 			}
-			else if (q->qtype == DNS_A_RECORD)
+			else if (q->query_type == DNS_A_RECORD)
 			{
 				QByteArray addr((const char*)p,dlen);
 				if (dlen >= 4)
@@ -298,6 +278,7 @@ void OpenNICDnsClient::processDatagram(QByteArray datagram)
 							QString::number((quint8)addr[3]);
 					q->addr.setAddress(sAddr);
 					doReply(q, DNS_OK);
+					disposeQuery(q);
 				}
 				else
 				{
@@ -322,10 +303,10 @@ void OpenNICDnsClient::processDatagram(QByteArray datagram)
   * @param port the port address at the resolver
   * @return Resultes are emitted by the reply() signal.
   */
-void OpenNICDnsClient::lookup(QHostAddress resolverAddress, QString name, dns_query_type type, void* context, quint16 port)
+void OpenNICDnsClient::lookup(QHostAddress resolverAddress, QString name, dns_query_type type, quint16 port)
 {
 	setResolver(resolverAddress);
-	lookup(name,type,context,port);
+	lookup(name,type,port);
 }
 
 /**
@@ -335,16 +316,15 @@ void OpenNICDnsClient::lookup(QHostAddress resolverAddress, QString name, dns_qu
   * @param port the port address at the resolver
   * @return Results are emitted by the reply() signal.
   */
-void OpenNICDnsClient::lookup(QString name, dns_query_type qtype, void* context, quint16 port)
+void OpenNICDnsClient::lookup(QString name, dns_query_type qtype, quint16 port)
 {
-	query* q;
-	dns_cb_data cbd;
+	dns_query* q;
 
 	if ( !isOpen() )
 	{
 		open();
 	}
-	if ( isOpen() && (q = new query) != NULL )
+	if ( isOpen() && (q = new dns_query) != NULL )
 	{
 		QDateTime now = QDateTime::currentDateTime();
 
@@ -354,8 +334,7 @@ void OpenNICDnsClient::lookup(QString name, dns_query_type qtype, void* context,
 		const char*	s;
 
 		/* Init query structure */
-		q->context	= context;
-		q->qtype	= (quint16)qtype;
+		q->query_type	= qtype;
 		q->tid		= ++m_tid;
 		q->expire	= now.addSecs(DNS_QUERY_TIMEOUT);
 		q->name		= name.toLower();
@@ -403,8 +382,7 @@ void OpenNICDnsClient::lookup(QString name, dns_query_type qtype, void* context,
 
 		if ( !(p < pkt + sizeof(pkt)) )
 		{
-			cbd.error = DNS_ERROR;
-			reply(cbd);
+			doReply(q,DNS_ERROR);
 			return;
 		}
 		n = p - pkt;					/* Total packet length */
@@ -412,16 +390,15 @@ void OpenNICDnsClient::lookup(QString name, dns_query_type qtype, void* context,
 		QByteArray datagram(pkt,n);
 		if ( mClientSocket->writeDatagram(datagram,resolverAddress(),port) < 0 )
 		{
-			cbd.error = DNS_ERROR;
-			reply(cbd);
-			disposeQuery(q);
+			doReply(q,DNS_ERROR);
+			delete q;
 		}
 		appendActiveQuery(q);
 	}
 	else
 	{
-		cbd.error = DNS_ERROR;
-		reply(cbd);
+		doReply(q,DNS_ERROR);
+		delete q;
 		return;
 	}
 }
@@ -429,7 +406,7 @@ void OpenNICDnsClient::lookup(QString name, dns_query_type qtype, void* context,
 /**
   * @brief get here on dns callback data
   */
-void OpenNICDnsClient::reply(dns_cb_data& data)
+void OpenNICDnsClient::reply(dns_query& data)
 {
 	/* NOP */
 }
