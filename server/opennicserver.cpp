@@ -262,12 +262,10 @@ void OpenNICServer::announcePackets()
 			QTcpSocket* session = mSessions[n];
 			if ( session->isOpen() && session->isValid() )
 			{
-				int length = packet.length();
 				QDataStream stream(session);
-				stream << length;
 				stream << packet;
 				session->flush();
-				log("sent "+QString::number(length)+" bytes.");
+				log("sent "+QString::number(packet.length())+" bytes.");
 			}
 		}
 		logPurge();

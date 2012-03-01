@@ -48,6 +48,7 @@ OpenNIC::OpenNIC(QWidget *parent)
 : inherited(parent)
 , uiSettings(new Ui::OpenNICSettings)
 , mInitialized(false)
+, mPacketState(0)
 {
 	uiSettings->setupUi(this);
 	createActions();
@@ -312,25 +313,38 @@ void OpenNIC::update()
   */
 void OpenNIC::readyRead()
 {
-	QByteArray bytes;
-	QMap<QString,QVariant> serverPacket;
-	QDataStream tcpStream(&mTcpSocket);
-	int length;
-	tcpStream >> length;
-	tcpStream >> bytes;
-	if (bytes.length() == length)
+
+	int chunkLength=0;
+	QByteArray chunk;
+	QDataStream stream(&mTcpSocket);
+	switch(mPacketState)
 	{
-		QDataStream byteStream(&bytes,QIODevice::ReadOnly);
-		byteStream >> serverPacket;
-		if (!serverPacket.isEmpty() )
+	case 0:
+		mPacketBytes.clear();
+		stream >> mPacketLength;
+		if (mPacketLength == 0xFFFFFFFF)
 		{
-			mBalloonStatus="";
-			mapServerReply(serverPacket);
+			return;
 		}
+		mPacketState=1;
+	case 1:
+		chunk = stream.device()->readAll();
+		chunkLength = chunk.length();
+		mPacketBytes.append(chunk);
+		if (mPacketBytes.length()<mPacketLength)
+		{
+			return;
+		}
+		mPacketState=0;
+		break;
 	}
-	else
+	QMap<QString,QVariant> serverPacket;
+	QDataStream byteStream(&mPacketBytes,QIODevice::ReadOnly);
+	byteStream >> serverPacket;
+	if (!serverPacket.isEmpty() )
 	{
-		mBalloonStatus=tr("OpenNIC Service invalid packet size");
+		mBalloonStatus="";
+		mapServerReply(serverPacket);
 	}
 	if ( !mTcpSocket.isValid() || !mTcpSocket.isOpen() )
 	{
