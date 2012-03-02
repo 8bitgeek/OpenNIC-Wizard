@@ -31,50 +31,52 @@ class OpenNICResolverPoolItem : public OpenNICResolverTest
 
 		OpenNICResolverPoolItem&	copy(const OpenNICResolverPoolItem& other);
 		QHostAddress&				hostAddress()		{return mHostAddress;}
-		int							testCount()			{return mTestCount;}
-		int							replyCount()		{return mReplyCount;}
-		int							timeoutCount()		{return mTimeoutCount;}
-		int							lastLatency()		{return mLatencySamples.count() ? mLatencySamples.at(mLatencySamples.count()-1) : 0;}
+		int							testCount();
+		int							replyCount();
+		int							timeoutCount();
+		int							lastLatency();
 		double						averageLatency();
-		QDateTime&					lastReply()			{return mLastReply;}
-		QDateTime&					lastTimeout()		{return mLastTimeout;}
-		QString&					lastFault()			{return mLastFault;}
-		bool						alive()				{return lastReply() > lastTimeout();}
-		int							tests()				{return mTests;}
+
+		QDateTime					lastReply();
+		QDateTime					lastTimeout();
+		QString						lastFault();
+
+		int							inFlightTests()		{return mTestsinFlight;}
+		bool						alive();
 
 		QString&					kind()				{return mKind;}
 		void						setKind(QString kind) {mKind=kind;}
 
 		OpenNICResolverPoolItem&	operator=(const OpenNICResolverPoolItem& other);
 		bool						operator==(OpenNICResolverPoolItem &other);
+		bool						operator!=(OpenNICResolverPoolItem &other);
 		bool						operator>(OpenNICResolverPoolItem &other);
 		bool						operator<(OpenNICResolverPoolItem &other);
 		bool						operator>=(OpenNICResolverPoolItem &other);
 		bool						operator<=(OpenNICResolverPoolItem &other);
 
+		QList<dns_query>&			history()			{return mHistory;}
+		int							historyDepth()		{return mHistory.count();}
+		int							maxHistoryDepth()	{return mMaxHistoryDepth;}
 		QString&					toString();
 
-
 	protected:
+		virtual	void				addToHistory(dns_query& query);
 		virtual void				test();
-		virtual void				reply(dns_query& data);
+		virtual void				reply(dns_query& query);
 
 	public slots:
+		void						setMaxHistoryDepth(int maxHistoryDepth);
 		void						clear();
 
 	private:
+		QList<dns_query>			mHistory;			/* maintain a recent history */
+		int							mMaxHistoryDepth;	/* the maximum depth of history */
 		QHostAddress				mHostAddress;		/* host address wrapper */
-		int							mTestCount;			/* number of tests conducted */
-		int							mReplyCount;		/* number of replies received */
-		int							mTimeoutCount;		/* number of tests resulting in a timeout */
-		QList<int>					mLatencySamples;	/* last latency samples (msec) */
-		QDateTime					mLastReply;			/* the time of teh last reply */
-		QDateTime					mLastTimeout;		/* the time of the last timeout */
-		QString						mLastFault;			/* the last fault message */
 		QString						mKind;				/* the kind of resolver */
-		int							mTests;				/* number of tests running */
-		QDateTime					mTestBegin;			/* start of test */
-		QString						mString;
+		int							mTestsinFlight;		/* number of tests in flight */
+		QString						mString;			/* for returning a string reference toString() */
+
 };
 
 

@@ -40,23 +40,23 @@ void OpenNICResolverTest::setInterval(int seconds)
 }
 
 /**
+  * get here on reply data or timeout
+  */
+void OpenNICResolverTest::reply(dns_query& rdata)
+{
+	rdata.latency = rdata.start.msecsTo(QDateTime::currentDateTime());
+}
+
+/**
   * @brief Test a resolver.
   */
-void OpenNICResolverTest::resolve(QHostAddress addr,QString name,quint16 port)
+void OpenNICResolverTest::resolve(QHostAddress addr,OpenNICDomainName name,quint16 port)
 {
 	dns_query* q = new dns_query;
 	q->addr			= addr;
 	q->name			= name;
 	q->start		= QDateTime::currentDateTime();
 	lookup(addr,name,OpenNICDnsClient::DNS_A_RECORD,port);
-}
-
-/**
-  * get here on reply data or timeout
-  */
-void OpenNICResolverTest::reply(dns_query& rdata)
-{
-	rdata.latency = rdata.start.msecsTo(QDateTime::currentDateTime());
 }
 
 void OpenNICResolverTest::timerEvent(QTimerEvent *e)

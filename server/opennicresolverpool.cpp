@@ -66,6 +66,17 @@ OpenNICResolverPool& OpenNICResolverPool::fromStringList(const QStringList items
 }
 
 /**
+  * @brief adjust the maximum history depth of all of the resolvers in the pool.
+  */
+void OpenNICResolverPool::setMaxHistoryDepth(int maxHistoryDepth)
+{
+	for(int n=0; n < mItems.count(); n++)
+	{
+		mItems[n].setMaxHistoryDepth(maxHistoryDepth);
+	}
+}
+
+/**
   * @brief clear the pool
   */
 void OpenNICResolverPool::clear()

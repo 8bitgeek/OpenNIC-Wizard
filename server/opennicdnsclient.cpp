@@ -186,7 +186,7 @@ void OpenNICDnsClient::fetch(const quint8 *pkt, const quint8 *s, int pktsiz, cha
   * @brief Process the datagram
   * @param datagram The raw datagram octets
   */
-void OpenNICDnsClient::processDatagram(QByteArray datagram)
+void OpenNICDnsClient::processDatagram(QByteArray& datagram)
 {
 	quint8*			pkt = (quint8*)datagram.data();
 	int				len = datagram.length();
@@ -303,7 +303,7 @@ void OpenNICDnsClient::processDatagram(QByteArray datagram)
   * @param port the port address at the resolver
   * @return Resultes are emitted by the reply() signal.
   */
-void OpenNICDnsClient::lookup(QHostAddress resolverAddress, QString name, dns_query_type type, quint16 port)
+void OpenNICDnsClient::lookup(QHostAddress resolverAddress, OpenNICDomainName name, dns_query_type type, quint16 port)
 {
 	setResolver(resolverAddress);
 	lookup(name,type,port);
@@ -316,7 +316,7 @@ void OpenNICDnsClient::lookup(QHostAddress resolverAddress, QString name, dns_qu
   * @param port the port address at the resolver
   * @return Results are emitted by the reply() signal.
   */
-void OpenNICDnsClient::lookup(QString name, dns_query_type qtype, quint16 port)
+void OpenNICDnsClient::lookup(OpenNICDomainName name, dns_query_type qtype, quint16 port)
 {
 	dns_query* q;
 
@@ -337,7 +337,7 @@ void OpenNICDnsClient::lookup(QString name, dns_query_type qtype, quint16 port)
 		q->query_type	= qtype;
 		q->tid		= ++m_tid;
 		q->expire	= now.addSecs(DNS_QUERY_TIMEOUT);
-		q->name		= name.toLower();
+		q->name		= name;
 
 		/* Prepare DNS packet header */
 		pkt_hdr				= (header*)pkt;
@@ -351,7 +351,7 @@ void OpenNICDnsClient::lookup(QString name, dns_query_type qtype, quint16 port)
 		/* Encode DNS name */
 
 		char sname[2048];
-		strcpy(sname,name.toAscii().data());
+		strcpy(sname,name.domainName().toAscii().data());
 		char* pname = &sname[0];
 		name_len = strlen(pname);
 		p = (char *) &pkt_hdr->data;	/* For encoding host name into packet */
@@ -401,14 +401,6 @@ void OpenNICDnsClient::lookup(QString name, dns_query_type qtype, quint16 port)
 		delete q;
 		return;
 	}
-}
-
-/**
-  * @brief get here on dns callback data
-  */
-void OpenNICDnsClient::reply(dns_query& data)
-{
-	/* NOP */
 }
 
 

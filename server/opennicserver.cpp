@@ -302,7 +302,7 @@ QByteArray& OpenNICServer::makeServerPacket(QByteArray& bytes)
 	packet.insert("resolver_pool",				mResolverPool.toStringList());
 	packet.insert("resolver_cache",				mResolverCache.toStringList());
 	packet.insert("bootstrap_t1_list",			OpenNICSystem::getBootstrapT1List());
-	packet.insert("bootstrap_domains",			OpenNICSystem::getTestDomains());
+	packet.insert("bootstrap_domains",			OpenNICSystem::getTestDomains().toStringList());
 	packet.insert("system_text",				OpenNICSystem::getSystemResolverList());
 	packet.insert("journal_text",				mLog);
 	packet.insert("async_message",				mAsyncMessage);
@@ -404,6 +404,49 @@ int OpenNICServer::bootstrapResolvers()
 }
 
 /**
+  * @brief determine if the active resolvers should be replaces with those proposed.
+  * @return true to replace active resolvers with those proposed, else false
+  */
+bool OpenNICServer::shouldReplaceWithProposed(OpenNICResolverPool& proposed)
+{
+	if ( proposed.count() >= 2 && proposed.count() == mResolverCache.count() )
+	{
+		int diffCount=0; /* number of differences */
+		for(int n=0; n < proposed.count(); n++)
+		{
+			OpenNICResolverPoolItem& item = proposed.at(n);
+			if (!mResolverCache.contains(item))
+			{
+				++diffCount;
+			}
+		}
+		return diffCount >= mResolverCache.count()/2; /* true if at least %50 different */
+	}
+	else if (proposed.count() == 1 && mResolverCache.count() == 1)
+	{
+		return proposed.at(0) == mResolverCache.at(0);
+	}
+	return true; /* when in doubt, replace */
+}
+
+/**
+  * @brief replace the active resolvers with those proposed
+  */
+void OpenNICServer::replaceActiveResolvers(OpenNICResolverPool& proposed)
+{
+	mResolverCache.clear();
+	proposed.sort();
+	log("Applying new resolver cache of ("+QString::number(proposed.count())+") items...");
+	for(int n=0; n < proposed.count(); n++)
+	{
+		OpenNICResolverPoolItem& item = proposed.at(n);
+		OpenNICSystem::insertSystemResolver(item.hostAddress(),n+1);
+		mResolverCache.append(item);
+		log(" > "+item.toString());
+	}
+}
+
+/**
   * @brief Perform the update function. Fetch DNS candidates, test for which to apply, and apply them.
   * @return the number of resolvers
   */
@@ -412,40 +455,22 @@ int OpenNICServer::updateDNS(int resolverCount)
 	int rc=0;
 	if ( !mUpdatingDNS )
 	{
-		bool replaceWithProposed = false;
+		log("** UPDATE DNS **");
 		OpenNICResolverPool proposed;
 		mUpdatingDNS=true;
-		log("** UPDATE DNS **");
+		log("Sorting resolver pool.");
 		mResolverPool.sort();
+		log("Proposing ("+QString::number(resolverCount)+") candidates.");
 		for(int n=0; n < mResolverPool.count() && n < resolverCount; n++)
 		{
 			OpenNICResolverPoolItem& item = mResolverPool.at(n);
 			proposed.append(item);
 		}
-		/** see if what we are proposing is different than what we have cach'ed already... */
-		for(int n=0; n < proposed.count(); n++)
+		/** see if what we are proposing is much different than what we have cach'ed already... */
+		if ( shouldReplaceWithProposed(proposed) )
 		{
-			OpenNICResolverPoolItem& item = proposed.at(n);
-			if (!mResolverCache.contains(item))
-			{
-				replaceWithProposed = true;
-			}
-		}
-		if ( replaceWithProposed )
-		{
-			int n;
-			mResolverCache.clear();
-			proposed.sort();
-			log("Applying new resolver cache of ("+QString::number(proposed.count())+") items...");
-			for(n=0; n < proposed.count(); n++)
-			{
-				OpenNICResolverPoolItem& item = proposed.at(n);
-				OpenNICSystem::insertSystemResolver(item.hostAddress(),n+1);
-				mResolverCache.append(item);
-				log(" > "+item.toString());
-			}
-			log(tr("Applied ")+QString::number(n)+tr(" T2 resolvers"));
-			rc = n;
+			replaceActiveResolvers(proposed);
+			rc=mResolverCache.count();
 		}
 		mUpdatingDNS=false;
 	}
