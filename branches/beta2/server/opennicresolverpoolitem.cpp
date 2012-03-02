@@ -9,25 +9,28 @@
 #include "opennicresolverpoolitem.h"
 #include "opennicsystem.h"
 
+#define MAX_HISTORY_DEPTH	30			/* the default maximum history depth */
+#define	BIG_LATENCY			100000		/* for uninitialized latencies so they come up at bottom fo a sort */
+
 #define inherited OpenNICResolverTest
 
 OpenNICResolverPoolItem::OpenNICResolverPoolItem(QObject* parent)
 : inherited(true, parent)
-, mTests(0)
+, mMaxHistoryDepth(MAX_HISTORY_DEPTH)
 {
 	clear();
 }
 
 OpenNICResolverPoolItem::OpenNICResolverPoolItem(bool active, QObject* parent)
 : inherited(active, parent)
-, mTests(0)
+, mMaxHistoryDepth(MAX_HISTORY_DEPTH)
 {
 	clear();
 }
 
 OpenNICResolverPoolItem::OpenNICResolverPoolItem(QHostAddress hostAddress, QString kind, QObject* parent)
 : inherited(true, parent)
-, mTests(0)
+, mMaxHistoryDepth(MAX_HISTORY_DEPTH)
 {
 	clear();
 	mHostAddress = hostAddress;
@@ -36,7 +39,7 @@ OpenNICResolverPoolItem::OpenNICResolverPoolItem(QHostAddress hostAddress, QStri
 
 OpenNICResolverPoolItem::OpenNICResolverPoolItem(const OpenNICResolverPoolItem& other)
 : inherited(true, NULL)
-, mTests(0)
+, mMaxHistoryDepth(MAX_HISTORY_DEPTH)
 {
 	copy(other);
 }
@@ -55,6 +58,14 @@ OpenNICResolverPoolItem::~OpenNICResolverPoolItem()
 bool OpenNICResolverPoolItem::operator==(OpenNICResolverPoolItem &other)
 {
 	return (hostAddress() == other.hostAddress());
+}
+
+/**
+  * @brief unequality operator
+  */
+bool OpenNICResolverPoolItem::operator!=(OpenNICResolverPoolItem &other)
+{
+	return (hostAddress() != other.hostAddress());
 }
 
 /**
@@ -139,6 +150,93 @@ OpenNICResolverPoolItem& OpenNICResolverPoolItem::operator=(const OpenNICResolve
 }
 
 /**
+  * @brief get the date/time of the last reply in the queue
+  */
+QDateTime OpenNICResolverPoolItem::lastReply()
+{
+	QDateTime rc;
+	for(int n=0; n < mHistory.count(); n++)
+	{
+		dns_query query = mHistory.at(n);
+		if ( query.error == OpenNICDnsClient::DNS_DOES_NOT_EXIST || query.error == OpenNICDnsClient::DNS_OK )
+		{
+			rc = query.end();
+			break;
+		}
+	}
+	return rc;
+}
+
+/**
+  * @brief get the date/time of the last timeout
+  */
+QDateTime OpenNICResolverPoolItem::lastTimeout()
+{
+	QDateTime rc;
+	for(int n=0; n < mHistory.count(); n++)
+	{
+		dns_query query = mHistory.at(n);
+		if ( query.error == OpenNICDnsClient::DNS_TIMEOUT )
+		{
+			rc = query.end();
+			break;
+		}
+	}
+	return rc;
+}
+
+/**
+  * @brief get the date/time of the last error
+  */
+QString OpenNICResolverPoolItem::lastFault()
+{
+	QString rc;
+	if (mHistory.count())
+	{
+		dns_query query = mHistory.at(0);
+		if (query.error == OpenNICDnsClient::DNS_OK)
+		{
+			rc="DNS_OK " + query.addr.toString() + " " + query.name.domainName()+" ("+query.name.dnsService()+")";
+		}
+		else if (query.error == OpenNICDnsClient::DNS_DOES_NOT_EXIST)
+		{
+			rc="DNS_DOES_NOT_EXIST " + query.name.domainName()+" ("+query.name.dnsService()+")";
+		}
+		else if (query.error == OpenNICDnsClient::DNS_TIMEOUT)
+		{
+			rc="DNS_TIMEOUT " + query.name.domainName()+" ("+query.name.dnsService()+")";
+		}
+		else if (query.error == OpenNICDnsClient::DNS_ERROR)
+		{
+			rc="DNS_ERROR " + query.name.domainName()+" ("+query.name.dnsService()+")";
+		}
+
+	}
+	return rc;
+}
+
+/**
+  * @brief test of the resolver is alive
+  */
+bool OpenNICResolverPoolItem::alive()
+{
+	int deadCount=0;
+	for(int n=0; n < mHistory.count(); n++)
+	{
+		dns_query query = mHistory.at(n);
+		if ( query.error == OpenNICDnsClient::DNS_TIMEOUT || query.error == OpenNICDnsClient::DNS_ERROR )
+		{
+			++deadCount;
+		}
+		else
+		{
+			break;
+		}
+	}
+	return deadCount >= 2; /* two strikes it's out */
+}
+
+/**
   * @brief convert to a formatted string
   * @brief <hostAddress>;<avgLatency>;<testCount>;<replyCount>;<lastReply>;<lastTimeout>;<lastFault>;<kind>;
   */
@@ -163,15 +261,11 @@ QString& OpenNICResolverPoolItem::toString()
   */
 OpenNICResolverPoolItem& OpenNICResolverPoolItem::copy(const OpenNICResolverPoolItem& other)
 {
-	mHostAddress	= other.mHostAddress;
-	mTestCount		= other.mTestCount;
-	mReplyCount		= other.mReplyCount;
-	mTimeoutCount	= other.mTimeoutCount;
-	mLatencySamples	= other.mLatencySamples;
-	mLastReply		= other.mLastReply;
-	mLastTimeout	= other.mLastTimeout;
-	mLastFault		= other.mLastFault;
-	mKind			= other.mKind;
+	mHistory			= other.mHistory;
+	mMaxHistoryDepth	= other.mMaxHistoryDepth;
+	mHostAddress		= other.mHostAddress;
+	mKind				= other.mKind;
+	mTestsinFlight		= other.mTestsinFlight;
 	return *this;
 }
 
@@ -180,71 +274,123 @@ OpenNICResolverPoolItem& OpenNICResolverPoolItem::copy(const OpenNICResolverPool
   */
 void OpenNICResolverPoolItem::clear()
 {
+	mHistory.clear();
+	mMaxHistoryDepth=MAX_HISTORY_DEPTH;
 	mHostAddress.clear();
-	mTestCount=0;
-	mReplyCount=0;
-	mTimeoutCount=0;
-	mLatencySamples.clear();
-	mLastReply.fromTime_t(0);
-	mLastTimeout.fromTime_t(0);
-	mLastFault.clear();
 	mKind.clear();
+	mTestsinFlight=0;
 }
 
 /**
-  * @brief calculate the average latency
+  * @brief set the maximum history depth.
+  */
+void OpenNICResolverPoolItem::setMaxHistoryDepth(int maxHistoryDepth)
+{
+	if (maxHistoryDepth>=1)
+	{
+		mMaxHistoryDepth = maxHistoryDepth;
+	}
+}
+
+/**
+  * @brief Return the number of tests which have been performed and are still on record in the history
+  */
+int OpenNICResolverPoolItem::testCount()
+{
+	return history().count();
+}
+
+/**
+  * @brief replies are those dns queries that came back as either DNS_OK or DNS_DOES_NOT_EXIST meaning communication with the resolver was established.
+  * @return the number of replies in the history for this resolver.
+  */
+int OpenNICResolverPoolItem::replyCount()
+{
+	int count=0;
+	int nHistory = mHistory.count();
+	for(int n=0; n < nHistory; n++)
+	{
+		dns_query query = mHistory[n];
+		if ( query.error == OpenNICDnsClient::DNS_OK || query.error == OpenNICDnsClient::DNS_DOES_NOT_EXIST )
+		{
+			++count;
+		}
+	}
+	return count;
+}
+
+/**
+  * @return the number of timeouts in the history buffer.
+  */
+int OpenNICResolverPoolItem::timeoutCount()
+{
+	int count=0;
+	int nHistory = mHistory.count();
+	for(int n=0; n < nHistory; n++)
+	{
+		dns_query query = mHistory[n];
+		if ( query.error == OpenNICDnsClient::DNS_TIMEOUT )
+		{
+			++count;
+		}
+	}
+	return count;
+}
+
+/**
+  * @return the latest latency.
+  */
+int OpenNICResolverPoolItem::lastLatency()
+{
+	int latency=BIG_LATENCY; /* something very big if there are no samples */
+	if ( mHistory.count() > 0 )
+	{
+		latency = mHistory[0].latency;
+	}
+	return latency;
+}
+
+/**
+  * @return the average latency from the history buffer.
   */
 double OpenNICResolverPoolItem::averageLatency()
 {
 	double total=0.0;
-	if ( mLatencySamples.count() )
+	int nHistory = mHistory.count();
+	if ( nHistory > 0 )
 	{
-		for(int n=0; n < mLatencySamples.count(); n++)
+		for(int n=0; n < nHistory; n++)
 		{
-			total += mLatencySamples.at(n);
+			total += mHistory[n].latency;
 		}
-		return total/mLatencySamples.count();
+		return total/nHistory;
 	}
-	return 10000;
+	return BIG_LATENCY;
+}
+
+
+/**
+  * @brief add a DNS query result to the history for this resolver.
+  */
+void OpenNICResolverPoolItem::addToHistory(dns_query& query)
+{
+	mHistory.prepend(query);
+	while(mHistory.count()>maxHistoryDepth()) /* prune... */
+	{
+		mHistory.takeFirst();
+	}
 }
 
 /**
-  * @brief get here on dns callback data
+  * @brief get here on dns callback data, the dns_query object contains all we need to know.
   */
-void OpenNICResolverPoolItem::reply(dns_query& data)
+void OpenNICResolverPoolItem::reply(dns_query& query)
 {
-	if (mTests > 0)
+	inherited::reply(query); /* let our inherited sniff it and time-stamp it */
+	if (mTestsinFlight > 0)
 	{
-		QDateTime now = QDateTime::currentDateTime();
-		if (data.error == OpenNICDnsClient::DNS_OK)
-		{
-			++mReplyCount;
-			mLastReply = now;
-			mLatencySamples.append(mTestBegin.msecsTo(now));
-			mLastFault="DNS_OK " + data.addr.toString() + " " + data.name;
-		}
-		else if (data.error == OpenNICDnsClient::DNS_DOES_NOT_EXIST)
-		{
-			++mReplyCount;
-			mLastReply = now;
-			mLatencySamples.append(mTestBegin.msecsTo(now));
-			mLastFault="DNS_DOES_NOT_EXIST " + data.name;
-		}
-		else if (data.error == OpenNICDnsClient::DNS_TIMEOUT)
-		{
-			++mTimeoutCount;
-			mLastTimeout = now;
-			mLastFault="DNS_TIMEOUT " + data.name;
-		}
-		else if (data.error == OpenNICDnsClient::DNS_ERROR)
-		{
-			mLastFault="DNS_ERROR " + data.name;
-		}
-		--mTests;
-	}
-	while(mLatencySamples.count() > 10)
-	{
-		mLatencySamples.takeAt(0);
+		--mTestsinFlight;
+		addToHistory(query);
 	}
 }
 
@@ -255,13 +401,8 @@ void OpenNICResolverPoolItem::test()
 {
 	if ( isActive() )
 	{
-		if (mTests==0)
-		{
-			++mTests;
-			++mTestCount;
-			mTestBegin = QDateTime::currentDateTime();
-			resolve(hostAddress(), OpenNICSystem::randomDomain());
-		}
+		++mTestsinFlight;
+		resolve(hostAddress(), OpenNICSystem::randomDomain());
 	}
 }
 

@@ -21,7 +21,7 @@
 #include <QList>
 #include "opennicresolverpool.h"
 
-#define	VERSION_STRING				"0.3.rc1"
+#define	VERSION_STRING				"0.3.rc2"
 
 class OpenNICSession;
 class OpenNICServer : public QObject
@@ -61,6 +61,8 @@ class OpenNICServer : public QObject
 		void					writeSettings();
 
 	private:
+		bool					shouldReplaceWithProposed(OpenNICResolverPool& proposed);
+		void					replaceActiveResolvers(OpenNICResolverPool& proposed);
 		void					updateRefreshTimerPeriod();
 		void					pruneLog();
 		bool					testResolverCache();

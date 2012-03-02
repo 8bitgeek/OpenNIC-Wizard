@@ -25,7 +25,7 @@
 #define OPENNIC_T1_BOOTSTRAP		"bootstrap.t1"
 #define	OPENNIC_DOMAINS_BOOTSTRAP	"bootstrap.domains"
 
-QStringList OpenNICSystem::mTestDomains;
+OpenNICDomainNamePool OpenNICSystem::mTestDomains;
 
 /**
   * @brief file copy
@@ -169,37 +169,48 @@ QStringList OpenNICSystem::getBootstrapT2List()
   * @brief Get a domains list from the bootstrap file.
   * @return A string list of domains to test.
   */
-QStringList OpenNICSystem::getTestDomains()
+OpenNICDomainNamePool OpenNICSystem::getTestDomains()
 {
-	if ( mTestDomains.empty() )
+	if ( mTestDomains.count() == 0 )
 	{
 		QStringList rc;
 		QFile file(OPENNIC_DOMAINS_BOOTSTRAP);
 		if ( file.open(QIODevice::ReadOnly) )
 		{
-			while (!file.atEnd()) {
-				QByteArray line = file.readLine();
-				QString ip(line);
-				if ( !ip.trimmed().isEmpty() )
+			while (!file.atEnd())
+			{
+				QString line = file.readLine();
+				if (!line.trimmed().isEmpty())
 				{
-					rc << ip.trimmed();
+					OpenNICDomainName domain(line.trimmed());
+					mTestDomains.append(domain);
 				}
 			}
 			file.close();
 		}
-		if ( !rc.count() )
+		else
 		{
 			/** a last ditch effort... */
-			rc << "dns.opennic.glue";
-			rc << "register.bbs";
-			rc << "for.free";
-			rc << "grep.geek";
-			rc << "register.ing";
-			rc << "google.com";
-			rc << "yahoo.com";
-			rc << "wikipedia.com";
+			rc << "icann;wikipedia.org";
+			rc << "icann;www.abs.gov.au";
+			rc << "icann;yahoo.com";
+			rc << "icann;google.com";
+			rc << "icann;360.cn";
+			rc << "icann;canada.ca";
+			rc << "opennic;dns.opennic.glue";
+			rc << "opennic;grep.geek";
+			rc << "opennic;opennic.glue";
+			rc << "opennic;reg.for.free";
+			rc << "opennic;register.bbs";
+			rc << "opennic;register.fur";
+			rc << "opennic;register.gopher";
+			rc << "opennic;register.ing";
+			for(int n=0; n < rc.count(); n++)
+			{
+				OpenNICDomainName domain(rc[n]);
+				mTestDomains.append(domain);
+			}
 		}
-		return rc;
 	}
 	return mTestDomains;
 }
@@ -207,9 +218,9 @@ QStringList OpenNICSystem::getTestDomains()
 /**
   * @brief retrieve a random domain
   */
-QString OpenNICSystem::randomDomain()
+OpenNICDomainName OpenNICSystem::randomDomain()
 {
-	QStringList domains = getTestDomains();
+	OpenNICDomainNamePool domains = getTestDomains();
 	int n = random(0,domains.count()-1);
 	return domains.at(n);
 }

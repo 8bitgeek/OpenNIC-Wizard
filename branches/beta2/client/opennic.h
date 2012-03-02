@@ -23,7 +23,7 @@
 #include <QTcpSocket>
 #include <QAbstractButton>
 
-#define	VERSION_STRING	"0.3.rc1"
+#define	VERSION_STRING	"0.3.rc2"
 
 namespace Ui
 {
