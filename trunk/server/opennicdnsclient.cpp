@@ -191,7 +191,7 @@ void OpenNICDnsClient::processDatagram(QByteArray& datagram)
 	quint8*				pkt = (quint8*)datagram.data();
 	int					len = datagram.length();
 	header*				pkt_hdr;
-	const quint8		*p, *e, *s;
+	const quint8		*p, *e;
 	OpenNICDnsQuery*	q;
 	quint16				type;
 	char				name[1025];
@@ -214,7 +214,7 @@ void OpenNICDnsClient::processDatagram(QByteArray& datagram)
 	}
 
 	/* Skip host name */
-	for (e = pkt + len, nlen = 0, s = p = &pkt_hdr->data[0];  p < e && *p != '\0';  p++)
+	for (e = pkt + len, nlen = 0, p = &pkt_hdr->data[0];  p < e && *p != '\0';  p++)
 		nlen++;
 
 #define	NTOHS(p)	(((p)[0] << 8) | (p)[1])

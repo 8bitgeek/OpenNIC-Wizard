@@ -28,6 +28,7 @@ OpenNICDomainName::OpenNICDomainName(QString text, QObject *parent)
 }
 
 OpenNICDomainName::OpenNICDomainName(const OpenNICDomainName& other)
+: inherited(NULL)
 {
 	copy(other);
 }

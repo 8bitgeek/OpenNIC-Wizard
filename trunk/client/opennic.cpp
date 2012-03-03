@@ -46,11 +46,25 @@
 
 #define inherited QDialog
 
+
+
+
+
 OpenNIC::OpenNIC(QWidget *parent)
 : inherited(parent)
+, mActionSettings(NULL)
+, mActionAbout(NULL)
+, mActionQuit(NULL)
+, mTrayIcon(NULL)
+, mTrayIconMenu(NULL)
 , uiSettings(new Ui::OpenNICSettings)
-, mInitialized(false)
+, mRefreshTimer(0)
 , mPacketState(0)
+, mPacketLength(0)
+, mTcpListenPort(0)
+, mInitialized(false)
+, mBalloonIcon(QSystemTrayIcon::Information)
+
 {
 	uiSettings->setupUi(this);
 	createActions();
@@ -113,10 +127,12 @@ void OpenNIC::iconActivated(QSystemTrayIcon::ActivationReason reason)
 	{
 		if ( mBalloonStatus.isEmpty() )
 		{
+			mBalloonIcon = QSystemTrayIcon::Information;
 			showBalloonMessage( tr( "OpenNIC Resolvers" ), uiSettings->cache->toPlainText() );
 		}
 		else
 		{
+			mBalloonIcon = QSystemTrayIcon::Warning;
 			showBalloonMessage( tr( "Status" ), mBalloonStatus );
 		}
 	}
@@ -133,8 +149,7 @@ void OpenNIC::iconActivated(QSystemTrayIcon::ActivationReason reason)
 
 void OpenNIC::showBalloonMessage(QString title, QString body)
 {
-   QSystemTrayIcon::MessageIcon icon;
-   mTrayIcon->showMessage(title, body, icon, 5 * 1000);
+	mTrayIcon->showMessage(title, body, mBalloonIcon, 5 * 1000);
 }
 
 void OpenNIC::createTrayIcon()
@@ -434,8 +449,6 @@ void OpenNIC::connectToService()
   */
 void OpenNIC::readyRead()
 {
-
-	int chunkLength=0;
 	QByteArray chunk;
 	QDataStream stream(&mTcpSocket);
 	switch(mPacketState)
@@ -450,9 +463,8 @@ void OpenNIC::readyRead()
 		mPacketState=1;
 	case 1:
 		chunk = stream.device()->readAll();
-		chunkLength = chunk.length();
 		mPacketBytes.append(chunk);
-		if (mPacketBytes.length()<mPacketLength)
+		if (mPacketBytes.length()<(int)mPacketLength)
 		{
 			return;
 		}
@@ -497,7 +509,7 @@ void OpenNIC::tcpHostFound()
 {
 }
 
-void OpenNIC::tcpStateChanged(QAbstractSocket::SocketState socketState)
+void OpenNIC::tcpStateChanged(QAbstractSocket::SocketState /* socketState */)
 {
 }
 
