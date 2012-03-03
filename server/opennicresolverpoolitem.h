@@ -51,6 +51,7 @@ class OpenNICResolverPoolItem : public OpenNICDnsQueryListener
 		void						setScore(double score);
 		QString&					kind()				{return mKind;}
 		void						setKind(QString kind) {mKind=kind;}
+		OpenNICDnsQuery*			mostRecentQuery();
 		QList<OpenNICDnsQuery*>&	history()			{return mHistory;}
 		int							historyDepth()		{return mHistory.count();}
 		int							maxHistoryDepth()	{return mMaxHistoryDepth;}

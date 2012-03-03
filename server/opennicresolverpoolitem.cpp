@@ -60,7 +60,7 @@ OpenNICResolverPoolItem::~OpenNICResolverPoolItem()
   */
 bool OpenNICResolverPoolItem::operator==(OpenNICResolverPoolItem &other)
 {
-	return (hostAddress() == other.hostAddress());
+	return score() == other.score();
 }
 
 /**
@@ -68,7 +68,7 @@ bool OpenNICResolverPoolItem::operator==(OpenNICResolverPoolItem &other)
   */
 bool OpenNICResolverPoolItem::operator!=(OpenNICResolverPoolItem &other)
 {
-	return (hostAddress() != other.hostAddress());
+	return score() != other.score();
 }
 
 /**
@@ -334,6 +334,19 @@ double OpenNICResolverPoolItem::averageLatency()
 }
 
 /**
+  * @brief return a pointer to the last query pushed into the history
+  */
+OpenNICDnsQuery* OpenNICResolverPoolItem::mostRecentQuery()
+{
+	if ( history().count() > 0 )
+	{
+		OpenNICDnsQuery* query = history().at(0);
+		return query;
+	}
+	return NULL;
+}
+
+/**
   * @brief calculate the score
   */
 double OpenNICResolverPoolItem::score()
@@ -366,6 +379,7 @@ void OpenNICResolverPoolItem::addToHistory(OpenNICDnsQuery* query)
 
 void OpenNICResolverPoolItem::starting(OpenNICDnsQuery* query)
 {
+	//fprintf(stderr,"starting\n");
 }
 
 void OpenNICResolverPoolItem::finished(OpenNICDnsQuery* query)
@@ -376,6 +390,7 @@ void OpenNICResolverPoolItem::finished(OpenNICDnsQuery* query)
 
 void OpenNICResolverPoolItem::expired(OpenNICDnsQuery* query)
 {
+	//fprintf(stderr,"expired\n");
 }
 
 /**
