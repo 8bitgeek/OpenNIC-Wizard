@@ -16,6 +16,7 @@
 #include <QHostAddress>
 #include <QTimerEvent>
 
+#include "opennicdnsquery.h"
 #include "opennicdnsclient.h"
 #include "opennicdomainname.h"
 
@@ -28,7 +29,7 @@ class OpenNICResolverTest : public OpenNICDnsClient
 		OpenNICResolverTest(bool active=true, QObject *parent=0);
 		virtual ~OpenNICResolverTest();
 	protected slots:
-		virtual void					reply(dns_query& rdata);
+		virtual void					reply(OpenNICDnsQuery& query);
 		virtual	void					setInterval(int seconds);
 	protected:
 		virtual void					purge() {}

@@ -9,6 +9,9 @@
 #include "opennicresolvertest.h"
 #include "opennicsystem.h"
 
+#define		RANDOM_INTERVAL_MIN			10		/* seconds */
+#define		RANDOM_INTERVAL_MAX			(10*60)	/* seconds */
+
 #define inherited OpenNICDnsClient
 
 #define TIMER_RESOLUTION	5	/* seconds */
@@ -42,9 +45,11 @@ void OpenNICResolverTest::setInterval(int seconds)
 /**
   * get here on reply data or timeout
   */
-void OpenNICResolverTest::reply(dns_query& rdata)
+void OpenNICResolverTest::reply(OpenNICDnsQuery& query)
 {
-	rdata.latency = rdata.start.msecsTo(QDateTime::currentDateTime());
+	/* time stamp the query reply */
+	QDateTime endTime = QDateTime::currentDateTime();
+	query.setEndTime(endTime);
 }
 
 /**
@@ -52,11 +57,12 @@ void OpenNICResolverTest::reply(dns_query& rdata)
   */
 void OpenNICResolverTest::resolve(QHostAddress addr,OpenNICDomainName name,quint16 port)
 {
-	dns_query* q = new dns_query;
-	q->addr			= addr;
-	q->name			= name;
-	q->start		= QDateTime::currentDateTime();
-	lookup(addr,name,OpenNICDnsClient::DNS_A_RECORD,port);
+	QDateTime startTime = QDateTime::currentDateTime();
+	OpenNICDnsQuery* q = new OpenNICDnsQuery;
+	q->setAddr(addr);
+	q->setName(name);
+	q->setStartTime(startTime);
+	lookup(addr,name,OpenNICDnsQuery::DNS_A_RECORD,port);
 }
 
 void OpenNICResolverTest::timerEvent(QTimerEvent *e)
@@ -72,8 +78,7 @@ void OpenNICResolverTest::timerEvent(QTimerEvent *e)
 			{
 				test();
 			}
-			setInterval(OpenNICSystem::random(10,60*10)); /* beween 10 seconds to 10 minutes */
-			//setInterval(OpenNICSystem::random(10,60*5)); /* beween 10 seconds to 15 minutes */
+			setInterval(OpenNICSystem::random(RANDOM_INTERVAL_MIN,RANDOM_INTERVAL_MAX)); /* set next random interval */
 			mTimerCount=0;
 		}
 	}

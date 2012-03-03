@@ -16,6 +16,7 @@
 
 OpenNICResolverPoolItem::OpenNICResolverPoolItem(QObject* parent)
 : inherited(true, parent)
+, mScore(0.0)
 , mMaxHistoryDepth(MAX_HISTORY_DEPTH)
 {
 	clear();
@@ -23,6 +24,7 @@ OpenNICResolverPoolItem::OpenNICResolverPoolItem(QObject* parent)
 
 OpenNICResolverPoolItem::OpenNICResolverPoolItem(bool active, QObject* parent)
 : inherited(active, parent)
+, mScore(0.0)
 , mMaxHistoryDepth(MAX_HISTORY_DEPTH)
 {
 	clear();
@@ -30,6 +32,7 @@ OpenNICResolverPoolItem::OpenNICResolverPoolItem(bool active, QObject* parent)
 
 OpenNICResolverPoolItem::OpenNICResolverPoolItem(QHostAddress hostAddress, QString kind, QObject* parent)
 : inherited(true, parent)
+, mScore(0.0)
 , mMaxHistoryDepth(MAX_HISTORY_DEPTH)
 {
 	clear();
@@ -39,6 +42,7 @@ OpenNICResolverPoolItem::OpenNICResolverPoolItem(QHostAddress hostAddress, QStri
 
 OpenNICResolverPoolItem::OpenNICResolverPoolItem(const OpenNICResolverPoolItem& other)
 : inherited(true, NULL)
+, mScore(0.0)
 , mMaxHistoryDepth(MAX_HISTORY_DEPTH)
 {
 	copy(other);
@@ -157,10 +161,10 @@ QDateTime OpenNICResolverPoolItem::lastReply()
 	QDateTime rc;
 	for(int n=0; n < mHistory.count(); n++)
 	{
-		dns_query query = mHistory.at(n);
-		if ( query.error == OpenNICDnsClient::DNS_DOES_NOT_EXIST || query.error == OpenNICDnsClient::DNS_OK )
+		OpenNICDnsQuery query = mHistory.at(n);
+		if ( query.error() == OpenNICDnsQuery::DNS_DOES_NOT_EXIST || query.error() == OpenNICDnsQuery::DNS_OK )
 		{
-			rc = query.end();
+			rc = query.endTime();
 			break;
 		}
 	}
@@ -175,10 +179,10 @@ QDateTime OpenNICResolverPoolItem::lastTimeout()
 	QDateTime rc;
 	for(int n=0; n < mHistory.count(); n++)
 	{
-		dns_query query = mHistory.at(n);
-		if ( query.error == OpenNICDnsClient::DNS_TIMEOUT )
+		OpenNICDnsQuery query = mHistory.at(n);
+		if ( query.error() == OpenNICDnsQuery::DNS_TIMEOUT )
 		{
-			rc = query.end();
+			rc = query.endTime();
 			break;
 		}
 	}
@@ -193,22 +197,22 @@ QString OpenNICResolverPoolItem::lastFault()
 	QString rc;
 	if (mHistory.count())
 	{
-		dns_query query = mHistory.at(0);
-		if (query.error == OpenNICDnsClient::DNS_OK)
+		OpenNICDnsQuery query = mHistory.at(0);
+		if (query.error() == OpenNICDnsQuery::DNS_OK)
 		{
-			rc="DNS_OK " + query.addr.toString() + " " + query.name.domainName()+" ("+query.name.dnsService()+")";
+			rc="DNS_OK " + query.addr().toString() + " " + query.name().domainName()+" ("+query.name().dnsService()+")";
 		}
-		else if (query.error == OpenNICDnsClient::DNS_DOES_NOT_EXIST)
+		else if (query.error() == OpenNICDnsQuery::DNS_DOES_NOT_EXIST)
 		{
-			rc="DNS_DOES_NOT_EXIST " + query.name.domainName()+" ("+query.name.dnsService()+")";
+			rc="DNS_DOES_NOT_EXIST " + query.name().domainName()+" ("+query.name().dnsService()+")";
 		}
-		else if (query.error == OpenNICDnsClient::DNS_TIMEOUT)
+		else if (query.error() == OpenNICDnsQuery::DNS_TIMEOUT)
 		{
-			rc="DNS_TIMEOUT " + query.name.domainName()+" ("+query.name.dnsService()+")";
+			rc="DNS_TIMEOUT " + query.name().domainName()+" ("+query.name().dnsService()+")";
 		}
-		else if (query.error == OpenNICDnsClient::DNS_ERROR)
+		else if (query.error() == OpenNICDnsQuery::DNS_ERROR)
 		{
-			rc="DNS_ERROR " + query.name.domainName()+" ("+query.name.dnsService()+")";
+			rc="DNS_ERROR " + query.name().domainName()+" ("+query.name().dnsService()+")";
 		}
 
 	}
@@ -223,8 +227,8 @@ bool OpenNICResolverPoolItem::alive()
 	int deadCount=0;
 	for(int n=0; n < mHistory.count(); n++)
 	{
-		dns_query query = mHistory.at(n);
-		if ( query.error == OpenNICDnsClient::DNS_TIMEOUT || query.error == OpenNICDnsClient::DNS_ERROR )
+		OpenNICDnsQuery query = mHistory.at(n);
+		if ( query.error() == OpenNICDnsQuery::DNS_TIMEOUT || query.error() == OpenNICDnsQuery::DNS_ERROR )
 		{
 			++deadCount;
 		}
@@ -261,11 +265,12 @@ QString& OpenNICResolverPoolItem::toString()
   */
 OpenNICResolverPoolItem& OpenNICResolverPoolItem::copy(const OpenNICResolverPoolItem& other)
 {
+	mScore				= other.mScore;
 	mHistory			= other.mHistory;
 	mMaxHistoryDepth	= other.mMaxHistoryDepth;
 	mHostAddress		= other.mHostAddress;
 	mKind				= other.mKind;
-	mTestsinFlight		= other.mTestsinFlight;
+	mTestsInFlight		= other.mTestsInFlight;
 	return *this;
 }
 
@@ -278,7 +283,7 @@ void OpenNICResolverPoolItem::clear()
 	mMaxHistoryDepth=MAX_HISTORY_DEPTH;
 	mHostAddress.clear();
 	mKind.clear();
-	mTestsinFlight=0;
+	mTestsInFlight=0;
 }
 
 /**
@@ -310,8 +315,8 @@ int OpenNICResolverPoolItem::replyCount()
 	int nHistory = mHistory.count();
 	for(int n=0; n < nHistory; n++)
 	{
-		dns_query query = mHistory[n];
-		if ( query.error == OpenNICDnsClient::DNS_OK || query.error == OpenNICDnsClient::DNS_DOES_NOT_EXIST )
+		OpenNICDnsQuery query = mHistory[n];
+		if ( query.error() == OpenNICDnsQuery::DNS_OK || query.error() == OpenNICDnsQuery::DNS_DOES_NOT_EXIST )
 		{
 			++count;
 		}
@@ -328,8 +333,8 @@ int OpenNICResolverPoolItem::timeoutCount()
 	int nHistory = mHistory.count();
 	for(int n=0; n < nHistory; n++)
 	{
-		dns_query query = mHistory[n];
-		if ( query.error == OpenNICDnsClient::DNS_TIMEOUT )
+		OpenNICDnsQuery query = mHistory[n];
+		if ( query.error() == OpenNICDnsQuery::DNS_TIMEOUT )
 		{
 			++count;
 		}
@@ -345,7 +350,7 @@ int OpenNICResolverPoolItem::lastLatency()
 	int latency=BIG_LATENCY; /* something very big if there are no samples */
 	if ( mHistory.count() > 0 )
 	{
-		latency = mHistory[0].latency;
+		latency = mHistory[0].latency();
 	}
 	return latency;
 }
@@ -361,35 +366,65 @@ double OpenNICResolverPoolItem::averageLatency()
 	{
 		for(int n=0; n < nHistory; n++)
 		{
-			total += mHistory[n].latency;
+			total += mHistory[n].latency();
 		}
 		return total/nHistory;
 	}
 	return BIG_LATENCY;
 }
 
+/**
+  * @brief calculate the score
+  */
+double OpenNICResolverPoolItem::score()
+{
+	double rc=0.0;
+	/** FIXME calculate the pool item scores */
+	return rc;
+}
 
 /**
-  * @brief add a DNS query result to the history for this resolver.
+  * @brief prune history record back to the limit.
   */
-void OpenNICResolverPoolItem::addToHistory(dns_query& query)
+void OpenNICResolverPoolItem::pruneHistory()
 {
-	mHistory.prepend(query);
-	while(mHistory.count()>maxHistoryDepth()) /* prune... */
+	/* prune... */
+	while(mHistory.count()>0 && mHistory.count()>maxHistoryDepth())
 	{
 		mHistory.takeFirst();
 	}
 }
 
 /**
-  * @brief get here on dns callback data, the dns_query object contains all we need to know.
+  * @brief add a DNS query result to the history for this resolver.
   */
-void OpenNICResolverPoolItem::reply(dns_query& query)
+void OpenNICResolverPoolItem::addToHistory(OpenNICDnsQuery& query)
+{
+	mHistory.prepend(query);
+	pruneHistory();
+}
+
+/**
+  * @brief get here on dns callback data, the dns_query object contains all we need to know about what happened during the query
+  * @param query the data associated with the query as it passed through the test layer and dns resolver layer
+  */
+void OpenNICResolverPoolItem::reply(OpenNICDnsQuery& query)
 {
 	inherited::reply(query); /* let our inherited sniff it and time-stamp it */
-	if (mTestsinFlight > 0)
+	if (mTestsInFlight > 0)
 	{
-		--mTestsinFlight;
+		switch(query.error())
+		{
+			case OpenNICDnsQuery::DNS_OK:
+			break;
+			case OpenNICDnsQuery::DNS_DOES_NOT_EXIST:
+			break;
+			case OpenNICDnsQuery::DNS_TIMEOUT:
+			break;
+			case OpenNICDnsQuery::DNS_ERROR:
+			break;
+		}
+		--mTestsInFlight;
 		addToHistory(query);
 	}
 }
@@ -401,7 +436,7 @@ void OpenNICResolverPoolItem::test()
 {
 	if ( isActive() )
 	{
-		++mTestsinFlight;
+		++mTestsInFlight;
 		resolve(hostAddress(), OpenNICSystem::randomDomain());
 	}
 }
