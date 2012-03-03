@@ -16,7 +16,7 @@
 #include <QHostAddress>
 #include <QTimerEvent>
 #include <QUdpSocket>
-#include <QMultiHash>
+#include <QList>
 
 #include "opennicdomainname.h"
 
@@ -69,7 +69,7 @@ class OpenNICDnsQuery : public QObject
 		QHostAddress&						addr()									{return mAddr;}
 		QString&							mxName()								{return mMxName;}
 		quint32								port()									{return mPort;}
-		static QMultiHash<OpenNICDnsQueryListener*,OpenNICDnsQuery*> queries()		{return mQueries;}
+		static QList<OpenNICDnsQuery*>		queries()								{return mQueries;}
 	signals:
 		void								starting(OpenNICDnsQuery* query);
 		void								finished(OpenNICDnsQuery* query);
@@ -97,7 +97,7 @@ class OpenNICDnsQuery : public QObject
 		void								setStartTime(QDateTime startTime);
 		void								setEndTime(QDateTime endTime);
 	private:
-		static QMultiHash<OpenNICDnsQueryListener*,OpenNICDnsQuery*> mQueries;		/* all queries */
+		static QList<OpenNICDnsQuery*>		mQueries;								/* all queries */
 		static quint16						mMasterTid;
 		OpenNICDnsQueryListener*			mListener;
 		QHostAddress						mResolver;								/* Resolver Host address */

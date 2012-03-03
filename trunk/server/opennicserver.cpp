@@ -266,7 +266,7 @@ QString OpenNICServer::license()
 	return QString( 	tr( "LICENSE\n\"THE BEER-WARE LICENSE\" (Revision 42):\n"
 						"Mike Sharkey wrote this thing. As long as you retain this notice you\n"
 						"can do whatever you want with this stuff. If we meet some day, and you think\n"
-						"this stuff is worth it, you can buy me a beer in return.\n" )
+						"this stuff is worth it, you can buy me a beer in return." )
 					   );
 }
 
@@ -470,6 +470,10 @@ bool OpenNICServer::replaceActiveResolvers(OpenNICResolverPool& proposed)
 		log(tr("** Operating system refused to begin comitting changes **"));
 		log(tr("** Operating syetem said: ")+output);
 		applied=false;
+	}
+	if (applied)
+	{
+		log(tr("Next scheduled refresh proposal in ")+QString::number(refreshPeriod())+tr(" minutes"));
 	}
 	return applied;
 }

@@ -19,8 +19,8 @@
 	#error "Platform not defined."
 #endif
 
-quint16													OpenNICDnsQuery::mMasterTid=0;
-QMultiHash<OpenNICDnsQueryListener*,OpenNICDnsQuery*>	OpenNICDnsQuery::mQueries;
+quint16					OpenNICDnsQuery::mMasterTid=0;
+QList<OpenNICDnsQuery*>	OpenNICDnsQuery::mQueries;
 
 /*
  * DNS network packet
@@ -63,7 +63,7 @@ OpenNICDnsQuery::OpenNICDnsQuery(OpenNICDnsQueryListener* listener, QHostAddress
 , mPort(port)
 , mExpiryTimer(-1)
 {
-	mQueries.insert(listener,this);
+	mQueries.append(this);
 	mUDPSocket.bind();
 	QObject::connect(this,SIGNAL(expired(OpenNICDnsQuery*)),listener,SLOT(expired(OpenNICDnsQuery*)));
 	QObject::connect(this,SIGNAL(finished(OpenNICDnsQuery*)),listener,SLOT(finished(OpenNICDnsQuery*)));
@@ -84,7 +84,7 @@ OpenNICDnsQuery::OpenNICDnsQuery(OpenNICDnsQueryListener* listener, QHostAddress
 , mPort(port)
 , mExpiryTimer(-1)
 {
-	mQueries.insert(listener,this);
+	mQueries.append(this);
 	mUDPSocket.bind();
 	QObject::connect(this,SIGNAL(expired(OpenNICDnsQuery*)),listener,SLOT(expired(OpenNICDnsQuery*)));
 	QObject::connect(this,SIGNAL(finished(OpenNICDnsQuery*)),listener,SLOT(finished(OpenNICDnsQuery*)));
@@ -99,24 +99,17 @@ OpenNICDnsQuery::OpenNICDnsQuery(const OpenNICDnsQuery& other)
 : inherited(NULL)
 , mListener(NULL)
 {
-	mQueries.insert(other.mListener,this);
 	copy(other);
 }
 
 OpenNICDnsQuery::~OpenNICDnsQuery()
 {
-	QMultiHash<OpenNICDnsQueryListener*,OpenNICDnsQuery*>::iterator i = mQueries.begin();
-	 while (i != mQueries.end())
-	 {
-		 OpenNICDnsQuery* other = i.value();
-		 if ( other == this )
-		 {
-			 mQueries.take(i.key());
-			 break;
-		 }
-		 ++i;
-	 }
-	fprintf(stderr,"q=%d\n",mQueries.count());
+	int idx = mQueries.indexOf(this);
+	if (idx>=0)
+	{
+		mQueries.takeAt(idx);
+	}
+	//fprintf(stderr,"q=%d\n",mQueries.count());
 }
 
 /**
@@ -134,6 +127,10 @@ OpenNICDnsQuery& OpenNICDnsQuery::copy(const OpenNICDnsQuery& other)
 {
 	if ( &other != this )
 	{
+		if (mQueries.indexOf(this)<0)
+		{
+			mQueries.append(this);
+		}
 		mListener		= other.mListener;
 		mError			= other.mError;
 		mResolver		= other.mResolver;
@@ -218,6 +215,11 @@ void OpenNICDnsQuery::terminate()
 {
 	setEndTime(QDateTime::currentDateTime());
 	mUDPSocket.close();
+	if (mExpiryTimer>=0)
+	{
+		killTimer(mExpiryTimer);
+		mExpiryTimer=-1;
+	}
 	emit finished(this);
 }
 

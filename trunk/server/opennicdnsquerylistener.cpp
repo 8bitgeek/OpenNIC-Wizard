@@ -16,13 +16,14 @@ OpenNICDnsQueryListener::OpenNICDnsQueryListener(QObject *parent)
 
 OpenNICDnsQueryListener::~OpenNICDnsQueryListener()
 {
-	const QMultiHash<OpenNICDnsQueryListener*,OpenNICDnsQuery*>& queries = OpenNICDnsQuery::queries();
-	QMultiHash<OpenNICDnsQueryListener*,OpenNICDnsQuery*>::const_iterator i = queries.find(this);
-	while (i != queries.end() && i.key() == this)
+	const QList<OpenNICDnsQuery*>& queries = OpenNICDnsQuery::queries();
+	for(int n=0; n < queries.count(); n++)
 	{
-		OpenNICDnsQuery* query = i.value();
-		++i;
-		query->deleteLater();
+		OpenNICDnsQuery* query = queries[n];
+		if (query->listener() == this)
+		{
+			query->deleteLater();
+		}
 	}
 }
 
