@@ -13,13 +13,14 @@
 #include <QHostAddress>
 #include <QDateTime>
 #include <QString>
+#include <QTimerEvent>
 
 #include "opennicdnsquery.h"
-#include "opennicresolvertest.h"
+#include "opennicdnsquerylistener.h"
 
 #define RESOLVER_SAMPLE_STORAGE_LIMIT		10			/* number of samples to remember for averaging */
 
-class OpenNICResolverPoolItem : public OpenNICResolverTest
+class OpenNICResolverPoolItem : public OpenNICDnsQueryListener
 {
 	Q_OBJECT
 	public:
@@ -28,28 +29,7 @@ class OpenNICResolverPoolItem : public OpenNICResolverTest
 		OpenNICResolverPoolItem(QHostAddress hostAddress, QString kind="", QObject* parent=NULL);
 		OpenNICResolverPoolItem(const OpenNICResolverPoolItem& other);
 		virtual ~OpenNICResolverPoolItem();
-
 		OpenNICResolverPoolItem&	copy(const OpenNICResolverPoolItem& other);
-		QHostAddress&				hostAddress()		{return mHostAddress;}
-		int							testCount();
-		int							replyCount();
-		int							timeoutCount();
-		int							lastLatency();
-
-		double						averageLatency();
-		QDateTime					lastReply();
-		QDateTime					lastTimeout();
-		QString						lastFault();
-
-		int							inFlightTests()		{return mTestsInFlight;}
-		bool						alive();
-
-		double						score();
-		void						setScore(double score);
-
-		QString&					kind()				{return mKind;}
-		void						setKind(QString kind) {mKind=kind;}
-
 		OpenNICResolverPoolItem&	operator=(const OpenNICResolverPoolItem& other);
 		bool						operator==(OpenNICResolverPoolItem &other);
 		bool						operator!=(OpenNICResolverPoolItem &other);
@@ -57,29 +37,45 @@ class OpenNICResolverPoolItem : public OpenNICResolverTest
 		bool						operator<(OpenNICResolverPoolItem &other);
 		bool						operator>=(OpenNICResolverPoolItem &other);
 		bool						operator<=(OpenNICResolverPoolItem &other);
-
-		QList<OpenNICDnsQuery>&		history()			{return mHistory;}
+		QHostAddress&				hostAddress()		{return mHostAddress;}
+		int							testCount();
+		int							replyCount();
+		int							timeoutCount();
+		int							lastLatency();
+		double						averageLatency();
+		QDateTime					lastReply();
+		QDateTime					lastTimeout();
+		QString						lastFault();
+		bool						alive();
+		double						score();
+		void						setScore(double score);
+		QString&					kind()				{return mKind;}
+		void						setKind(QString kind) {mKind=kind;}
+		QList<OpenNICDnsQuery*>&	history()			{return mHistory;}
 		int							historyDepth()		{return mHistory.count();}
 		int							maxHistoryDepth()	{return mMaxHistoryDepth;}
 		QString&					toString();
-
+	protected slots:
+		virtual void				starting(OpenNICDnsQuery* query);
+		virtual void				finished(OpenNICDnsQuery* query);
+		virtual void				expired(OpenNICDnsQuery* query);
 	protected:
 		virtual	void				pruneHistory();
-		virtual	void				addToHistory(OpenNICDnsQuery& query);
-		virtual void				test();
-		virtual void				reply(OpenNICDnsQuery& query);
-
+		virtual	void				addToHistory(OpenNICDnsQuery* query);
+		virtual	void				test();
+		virtual void				timerEvent(QTimerEvent *);
 	public slots:
 		void						setMaxHistoryDepth(int maxHistoryDepth);
 		void						clear();
-
+	private slots:
+		void						resetQueryTimer();
 	private:
 		double						mScore;				/* the score realtive to other resolvers in the pool */
 		int							mMaxHistoryDepth;	/* the maximum depth of history */
-		QList<OpenNICDnsQuery>		mHistory;			/* maintain a recent history */
+		QList<OpenNICDnsQuery*>		mHistory;			/* maintain a recent history */
 		QHostAddress				mHostAddress;		/* host address wrapper */
 		QString						mKind;				/* the kind of resolver */
-		int							mTestsInFlight;		/* number of tests in flight */
+		int							mQueryIntervalTimer;/* interval timer */
 		QString						mString;			/* for returning a string reference toString() */
 };
 

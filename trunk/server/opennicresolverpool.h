@@ -38,12 +38,9 @@ class OpenNICResolverPool : public QObject
 		OpenNICResolverPool&			operator<<(const QStringList& strings);
 	public slots:
 		void							setMaxHistoryDepth(int maxHistoryDepth);
-		void							setActive(bool active);
-
 		void							score();
 		void							randomize();
 		void							sort();
-
 		void							clear();
 	private:
 		void							swap(int a,int b);

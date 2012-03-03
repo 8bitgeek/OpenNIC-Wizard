@@ -66,8 +66,11 @@ bool OpenNICDomainName::operator!=(OpenNICDomainName &other)
   */
 OpenNICDomainName&	OpenNICDomainName::copy(const OpenNICDomainName& other)
 {
-	mDnsService = other.mDnsService;
-	mDomainName = other.mDomainName;
+	if ( &other != this )
+	{
+		mDnsService = other.mDnsService;
+		mDomainName = other.mDomainName;
+	}
 	return *this;
 }
 

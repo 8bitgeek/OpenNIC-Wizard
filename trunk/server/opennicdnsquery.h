@@ -14,13 +14,21 @@
 #include <QStringList>
 #include <QDateTime>
 #include <QHostAddress>
+#include <QTimerEvent>
+#include <QUdpSocket>
 
 #include "opennicdomainname.h"
+
+#define	DNS_QUERY_TIMEOUT	30		/* Query timeout, seconds	*/
+#define	DNS_MAX				1025	/* Maximum host name		*/
+#define	DNS_PACKET_LEN		2048	/* Buffer size for DNS packet	*/
+#define DEFAULT_DNS_PORT	53		/* The default DNS UDP oprt */
 
 /*
  * User query. Holds mapping from application-level ID to DNS transaction id,
  * and user defined callback function.
  */
+class OpenNICDnsQueryListener;
 class OpenNICDnsQuery : public QObject
 {
 	Q_OBJECT
@@ -29,53 +37,68 @@ class OpenNICDnsQuery : public QObject
 			DNS_A_RECORD = 0x01,			/* Lookup IP adress for host */
 			DNS_MX_RECORD = 0x0f			/* Lookup MX for domain */
 		} DNSQueryType;
-
 		typedef enum {
 			DNS_OK,							/* No error */
 			DNS_DOES_NOT_EXIST,				/* Error: adress does not exist */
 			DNS_TIMEOUT,					/* Lookup time expired */
 			DNS_ERROR						/* No memory or other error */
 		} DNSError;
-
 		typedef enum
 		{
 			Red=0,							/* service is down */
 			Yellow,							/* service may be down */
 			Green							/* service is up */
 		} ColourCode;
-
 		OpenNICDnsQuery(QObject *parent = 0);
+		OpenNICDnsQuery(OpenNICDnsQueryListener* listener, QHostAddress resolver, OpenNICDomainName name, quint32 port = DEFAULT_DNS_PORT, DNSQueryType queryType=DNS_A_RECORD, QObject *parent = 0);
+		OpenNICDnsQuery(OpenNICDnsQueryListener* listener, QHostAddress resolver, OpenNICDomainName name, QDateTime expiryTime, quint32 port = DEFAULT_DNS_PORT, DNSQueryType queryType=DNS_A_RECORD, QObject *parent = 0);
 		OpenNICDnsQuery(const OpenNICDnsQuery& other);
 		virtual ~OpenNICDnsQuery();
 		OpenNICDnsQuery&					operator=(const OpenNICDnsQuery& other);
 		OpenNICDnsQuery&					copy(const OpenNICDnsQuery& other);
-
+		OpenNICDnsQueryListener*			listener()								{return mListener;}
 		quint64								latency();
+		QHostAddress&						resolver()								{return mResolver;}
 		DNSError							error()									{return mError;}
 		DNSQueryType						queryType()								{return mQueryType;}
-		quint16								tid()									{return mTid;}
 		QDateTime&							startTime()								{return mStartTime;}
 		QDateTime&							endTime()								{return mEndTime;}
 		QDateTime&							expireTime()							{return mExpireTime;}
 		OpenNICDomainName&					name()									{return mName;}
 		QHostAddress&						addr()									{return mAddr;}
 		QString&							mxName()								{return mMxName;}
-
+		quint32								port()									{return mPort;}
+		static QList<OpenNICDnsQuery*>		queries()								{return mQueries;}
 	signals:
+		void								starting(OpenNICDnsQuery* query);
 		void								finished(OpenNICDnsQuery* query);
-
+		void								expired(OpenNICDnsQuery* query);
+	protected:
+		virtual void						timerEvent(QTimerEvent *);
 	public slots:
+		void								lookup();
+		void								terminate();
+		void								terminate(DNSError error);
+		void								setResolver(QHostAddress& resolver)		{mResolver = resolver;}
 		void								setError(DNSError& error)				{mError = error;}
 		void								setQueryType(DNSQueryType& queryType)	{mQueryType = queryType;}
-		void								setTid(quint16 tid)						{mTid = tid;}
-		void								setStartTime(QDateTime startTime)		{mStartTime = startTime;}
-		void								setEndTime(QDateTime endTime);
-		void								setExpireTime(QDateTime expireTime)		{mExpireTime = expireTime;}
+		void								setExpireTime(QDateTime expireTime);
 		void								setName(OpenNICDomainName& name)		{mName = name;}
-		void								setAddr(QHostAddress& addr)				{mAddr = addr;}
-		void								setMxName(QString& mxName)				{mMxName = mxName;}
-
+		void								setPort(quint32 port)					{mPort = port;}
 	private:
+		static quint16						nextTid()								{return ++mMasterTid;}
+		quint16								tid()									{return mTid;}
+		void								setTid(quint16 tid)						{mTid = tid;}
+		void								fetch(const quint8 *pkt, const quint8 *s, int pktsiz, char *dst, int dstlen);
+		void								processDatagram(QByteArray& datagram);
+		void								readPendingDatagrams();
+		void								setStartTime(QDateTime startTime);
+		void								setEndTime(QDateTime endTime);
+	private:
+		static QList<OpenNICDnsQuery*>		mQueries;								/* all queries */
+		static quint16						mMasterTid;
+		OpenNICDnsQueryListener*			mListener;
+		QHostAddress						mResolver;								/* Resolver Host address */
 		DNSError							mError;									/* Result code */
 		DNSQueryType						mQueryType;								/* Query type */
 		quint16								mTid;									/* UDP DNS transaction ID	*/
@@ -85,6 +108,9 @@ class OpenNICDnsQuery : public QObject
 		OpenNICDomainName					mName;									/* Host name			*/
 		QHostAddress						mAddr;									/* Host address */
 		QString								mMxName;								/* MX record host name. */
+		quint32								mPort;									/* UDP port # */
+		int									mExpiryTimer;							/* expiry timer */
+		QUdpSocket							mUDPSocket;								/* UDP socket used for queries	*/
 };
 
 #endif // OPENNICDNSQUERY_H

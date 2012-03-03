@@ -24,7 +24,10 @@ OpenNICResolverPool::~OpenNICResolverPool()
 
 OpenNICResolverPool& OpenNICResolverPool::copy(OpenNICResolverPool& other)
 {
-	mItems		= other.mItems;
+	if ( &other != this )
+	{
+		mItems		= other.mItems;
+	}
 	return *this;
 }
 
@@ -82,17 +85,6 @@ void OpenNICResolverPool::setMaxHistoryDepth(int maxHistoryDepth)
 void OpenNICResolverPool::clear()
 {
 	mItems.clear();
-}
-
-/**
-  * @brief set active state
-  */
-void OpenNICResolverPool::setActive(bool active)
-{
-	for(int n=0; n < count(); n++)
-	{
-		mItems[n].setActive(active);
-	}
 }
 
 /**
