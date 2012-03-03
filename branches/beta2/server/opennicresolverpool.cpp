@@ -129,6 +129,14 @@ void OpenNICResolverPool::swap(int a,int b)
 }
 
 /**
+  * @brief score the items in the pool
+  */
+void OpenNICResolverPool::score()
+{
+
+}
+
+/**
   * @brief opposite of sort()
   */
 void OpenNICResolverPool::randomize()
