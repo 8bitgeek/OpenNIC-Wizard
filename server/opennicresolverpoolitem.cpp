@@ -9,43 +9,42 @@
 #include "opennicresolverpoolitem.h"
 #include "opennicsystem.h"
 
-#define MAX_HISTORY_DEPTH	30			/* the default maximum history depth */
-#define	BIG_LATENCY			100000		/* for uninitialized latencies so they come up at bottom fo a sort */
+#define		MAX_HISTORY_DEPTH			30				/* the default maximum history depth */
+#define		BIG_LATENCY					100000			/* for uninitialized latencies so they come up at bottom fo a sort */
+#define		RANDOM_INTERVAL_MIN			(10*1000)		/* milliseconds */
+#define		RANDOM_INTERVAL_MAX			((10*60)*1000)	/* milliseconds */
 
-#define inherited OpenNICResolverTest
+#define inherited OpenNICDnsQueryListener
 
 OpenNICResolverPoolItem::OpenNICResolverPoolItem(QObject* parent)
-: inherited(true, parent)
+: inherited(parent)
 , mScore(0.0)
 , mMaxHistoryDepth(MAX_HISTORY_DEPTH)
-{
-	clear();
-}
-
-OpenNICResolverPoolItem::OpenNICResolverPoolItem(bool active, QObject* parent)
-: inherited(active, parent)
-, mScore(0.0)
-, mMaxHistoryDepth(MAX_HISTORY_DEPTH)
+, mQueryIntervalTimer(-1)
 {
 	clear();
 }
 
 OpenNICResolverPoolItem::OpenNICResolverPoolItem(QHostAddress hostAddress, QString kind, QObject* parent)
-: inherited(true, parent)
+: inherited(parent)
 , mScore(0.0)
 , mMaxHistoryDepth(MAX_HISTORY_DEPTH)
+, mQueryIntervalTimer(-1)
 {
 	clear();
 	mHostAddress = hostAddress;
 	mKind = kind;
+	test();
 }
 
 OpenNICResolverPoolItem::OpenNICResolverPoolItem(const OpenNICResolverPoolItem& other)
-: inherited(true, NULL)
+: inherited(NULL)
 , mScore(0.0)
 , mMaxHistoryDepth(MAX_HISTORY_DEPTH)
+, mQueryIntervalTimer(-1)
 {
 	copy(other);
+	test();
 }
 
 /**
@@ -265,12 +264,14 @@ QString& OpenNICResolverPoolItem::toString()
   */
 OpenNICResolverPoolItem& OpenNICResolverPoolItem::copy(const OpenNICResolverPoolItem& other)
 {
-	mScore				= other.mScore;
-	mHistory			= other.mHistory;
-	mMaxHistoryDepth	= other.mMaxHistoryDepth;
-	mHostAddress		= other.mHostAddress;
-	mKind				= other.mKind;
-	mTestsInFlight		= other.mTestsInFlight;
+	if ( &other != this )
+	{
+		mScore				= other.mScore;
+		mHistory			= other.mHistory;
+		mMaxHistoryDepth	= other.mMaxHistoryDepth;
+		mHostAddress		= other.mHostAddress;
+		mKind				= other.mKind;
+	}
 	return *this;
 }
 
@@ -283,7 +284,6 @@ void OpenNICResolverPoolItem::clear()
 	mMaxHistoryDepth=MAX_HISTORY_DEPTH;
 	mHostAddress.clear();
 	mKind.clear();
-	mTestsInFlight=0;
 }
 
 /**
@@ -350,7 +350,7 @@ int OpenNICResolverPoolItem::lastLatency()
 	int latency=BIG_LATENCY; /* something very big if there are no samples */
 	if ( mHistory.count() > 0 )
 	{
-		latency = mHistory[0].latency();
+		latency = mHistory[0]->latency();
 	}
 	return latency;
 }
@@ -366,7 +366,7 @@ double OpenNICResolverPoolItem::averageLatency()
 	{
 		for(int n=0; n < nHistory; n++)
 		{
-			total += mHistory[n].latency();
+			total += mHistory[n]->latency();
 		}
 		return total/nHistory;
 	}
@@ -398,46 +398,56 @@ void OpenNICResolverPoolItem::pruneHistory()
 /**
   * @brief add a DNS query result to the history for this resolver.
   */
-void OpenNICResolverPoolItem::addToHistory(OpenNICDnsQuery& query)
+void OpenNICResolverPoolItem::addToHistory(OpenNICDnsQuery* query)
 {
 	mHistory.prepend(query);
 	pruneHistory();
 }
 
-/**
-  * @brief get here on dns callback data, the dns_query object contains all we need to know about what happened during the query
-  * @param query the data associated with the query as it passed through the test layer and dns resolver layer
-  */
-void OpenNICResolverPoolItem::reply(OpenNICDnsQuery& query)
+void OpenNICResolverPoolItem::starting(OpenNICDnsQuery* query)
 {
-	inherited::reply(query); /* let our inherited sniff it and time-stamp it */
-	if (mTestsInFlight > 0)
+}
+
+void OpenNICResolverPoolItem::finished(OpenNICDnsQuery* query)
+{
+	addToHistory(query);
+}
+
+void OpenNICResolverPoolItem::expired(OpenNICDnsQuery* query)
+{
+}
+
+/**
+  * @brief run the resolver test
+  */
+void OpenNICResolverPoolItem::test()
+{
+	new OpenNICDnsQuery(this,hostAddress(),OpenNICSystem::randomDomain()); /* launch a new query */
+	resetQueryTimer();
+
+}
+
+/**
+  * @brief reset the query timer
+  */
+void OpenNICResolverPoolItem::resetQueryTimer()
+{
+	if (mQueryIntervalTimer >= 0 )
 	{
-		switch(query.error())
-		{
-			case OpenNICDnsQuery::DNS_OK:
-			break;
-			case OpenNICDnsQuery::DNS_DOES_NOT_EXIST:
-			break;
-			case OpenNICDnsQuery::DNS_TIMEOUT:
-			break;
-			case OpenNICDnsQuery::DNS_ERROR:
-			break;
-		}
-		--mTestsInFlight;
-		addToHistory(query);
+		killTimer(mQueryIntervalTimer);
+		mQueryIntervalTimer=-1;
 	}
+	mQueryIntervalTimer = startTimer(OpenNICSystem::random(RANDOM_INTERVAL_MIN,RANDOM_INTERVAL_MAX));
 }
 
 /**
   * @brief get here once in a while to run a test
   */
-void OpenNICResolverPoolItem::test()
+void OpenNICResolverPoolItem::timerEvent(QTimerEvent *e)
 {
-	if ( isActive() )
+	if ( e->timerId() == mQueryIntervalTimer )
 	{
-		++mTestsInFlight;
-		resolve(hostAddress(), OpenNICSystem::randomDomain());
+		test();
 	}
 }
 

@@ -31,7 +31,10 @@ OpenNICDomainNamePool::~OpenNICDomainNamePool()
   */
 OpenNICDomainNamePool& OpenNICDomainNamePool::copy(const OpenNICDomainNamePool& other)
 {
-	mDomains = other.mDomains;
+	if ( &other != this )
+	{
+		mDomains = other.mDomains;
+	}
 	return *this;
 }
 
