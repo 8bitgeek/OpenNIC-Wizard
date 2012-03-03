@@ -34,11 +34,13 @@
 
 OpenNICServer::OpenNICServer(QObject *parent)
 : inherited(parent)
-, mRefreshTimer(-1)
-, mEnabled(true)
-, mResolversInitialized(false)
 , mRefreshTimerPeriod(0)
 , mResolverCacheSize(0)
+, mEnabled(true)
+, mRefreshTimer(-1)
+, mFastTimer(-1)
+, mResolversInitialized(false)
+, mTcpListenPort(DEFAULT_TCP_LISTEN_PORT)
 , mUpdatingDNS(false)
 {
 	readSettings();

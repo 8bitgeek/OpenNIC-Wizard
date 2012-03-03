@@ -19,6 +19,7 @@ OpenNICDnsQuery::OpenNICDnsQuery(QObject *parent)
 }
 
 OpenNICDnsQuery::OpenNICDnsQuery(const OpenNICDnsQuery& other)
+: inherited(NULL)
 {
 	copy(other);
 }

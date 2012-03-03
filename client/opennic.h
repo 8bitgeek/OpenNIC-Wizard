@@ -85,15 +85,14 @@ class OpenNIC : public QDialog
 		QMenu*					mTrayIconMenu;
 		Ui::OpenNICSettings*	uiSettings;
 		int						mRefreshTimer;
-		QTcpSocket				mTcpSocket;
-        QString                 mBalloonStatus;             /** status message to apply to ballon */
 		int						mPacketState;				/** 0 expecting, 1 receiving, 2 completed. */
 		quint32					mPacketLength;
-		QByteArray				mPacketBytes;
-		/** server settings **/
 		int						mTcpListenPort;				/** the TCP listen port */
 		bool					mInitialized;				/** server variables are initialized? */
-
+		QTcpSocket				mTcpSocket;
+        QString                 mBalloonStatus;             /** status message to apply to ballon */
+		QByteArray				mPacketBytes;
+		QSystemTrayIcon::MessageIcon mBalloonIcon;
 };
 
 #endif // OPENNIC_H

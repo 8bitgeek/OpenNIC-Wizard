@@ -69,7 +69,7 @@ class OpenNICDnsClient : public QObject
 		void						close();
 		virtual void				lookup(QHostAddress resolverAddress, OpenNICDomainName name, OpenNICDnsQuery::DNSQueryType qtype, quint16 port=DEFAULT_DNS_PORT);
 		virtual void				lookup(OpenNICDomainName name, OpenNICDnsQuery::DNSQueryType qtype, quint16 port=DEFAULT_DNS_PORT);
-		virtual void				reply(OpenNICDnsQuery& data) {}
+		virtual void				reply(OpenNICDnsQuery& /* data */) {}
 
 	private slots:
 		void						readPendingDatagrams();

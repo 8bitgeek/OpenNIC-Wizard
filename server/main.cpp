@@ -61,7 +61,6 @@ class OpenNICService : public QtService<QCoreApplication>
 
 int main(int argc, char **argv)
 {
-	int rc=0;
 	qsrand(QDateTime::currentDateTime().toTime_t()); /* seed random numbers */
 	Q_INIT_RESOURCE(opennicserver);
 #if 0 // !defined(Q_WS_WIN)

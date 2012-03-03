@@ -44,8 +44,10 @@ bool OpenNICSystem::fileCopy(QString from, QString to)
 				fTo.close();
 			}
 			fFrom.close();
+			return true;
 		}
 	}
+	return false;
 }
 
 /**
