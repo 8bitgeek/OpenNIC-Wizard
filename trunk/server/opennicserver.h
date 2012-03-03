@@ -62,7 +62,7 @@ class OpenNICServer : public QObject
 
 	private:
 		bool					shouldReplaceWithProposed(OpenNICResolverPool& proposed);
-		void					replaceActiveResolvers(OpenNICResolverPool& proposed);
+		bool					replaceActiveResolvers(OpenNICResolverPool& proposed);
 		void					updateRefreshTimerPeriod();
 		void					pruneLog();
 		bool					testResolverCache();

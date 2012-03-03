@@ -34,7 +34,10 @@ class OpenNICSystem
 		static OpenNICDomainNamePool	getTestDomains();
 		static OpenNICDomainName		randomDomain();
 		static QString					getSystemResolverList();
-		static QString					insertSystemResolver(QHostAddress& dns,int index);
+
+		static bool						beginUpdateResolvers(QString& output);
+		static int						updateResolver(QHostAddress& dns,int index, QString& output);
+		static bool						endUpdateResolvers(QString& output);
 	private:
 		static OpenNICDomainNamePool	mTestDomains;
 };

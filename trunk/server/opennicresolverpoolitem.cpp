@@ -76,16 +76,7 @@ bool OpenNICResolverPoolItem::operator!=(OpenNICResolverPoolItem &other)
   */
 bool OpenNICResolverPoolItem::operator>(OpenNICResolverPoolItem &other)
 {
-	/* if one is alive and the other is not, then they are un-equal */
-	if ( alive() != other.alive() )
-	{
-		return alive();
-	}
-	if ( kind() != other.kind() )
-	{
-		return kind() > other.kind();
-	}
-	return averageLatency() < other.averageLatency();  /* less is more */
+	return score() > other.score();
 }
 
 /**
@@ -93,20 +84,7 @@ bool OpenNICResolverPoolItem::operator>(OpenNICResolverPoolItem &other)
   */
 bool OpenNICResolverPoolItem::operator<(OpenNICResolverPoolItem &other)
 {
-	bool rc=false;
-	/* if one is alive and the other is not, then they are un-equal */
-	if ( alive() != other.alive() )
-	{
-		rc = !alive();
-	}
-	if ( kind() != other.kind() )
-	{
-		rc = kind() < other.kind();
-	}
-	double a = averageLatency();
-	double b = other.averageLatency();
-	rc = a > b;  /* less is more */
-	return rc;
+	return score() < other.score();
 }
 
 /**
@@ -114,16 +92,7 @@ bool OpenNICResolverPoolItem::operator<(OpenNICResolverPoolItem &other)
   */
 bool OpenNICResolverPoolItem::operator>=(OpenNICResolverPoolItem &other)
 {
-	/* if one is alive and the other is not, then they are un-equal */
-	if ( alive() != other.alive() )
-	{
-		return alive();
-	}
-	if ( kind() != other.kind() )
-	{
-		return kind() > other.kind();
-	}
-	return averageLatency() <= other.averageLatency();  /* less is more */
+	return score() >= other.score();
 }
 
 /**
@@ -131,16 +100,7 @@ bool OpenNICResolverPoolItem::operator>=(OpenNICResolverPoolItem &other)
   */
 bool OpenNICResolverPoolItem::operator<=(OpenNICResolverPoolItem &other)
 {
-	/* if one is alive and the other is not, then they are un-equal */
-	if ( alive() != other.alive() )
-	{
-		return !alive();
-	}
-	if ( kind() != other.kind() )
-	{
-		return kind() < other.kind();
-	}
-	return averageLatency() >= other.averageLatency();  /* less is more */
+	return score() <= other.score();
 }
 
 
@@ -236,7 +196,7 @@ bool OpenNICResolverPoolItem::alive()
 			break;
 		}
 	}
-	return deadCount >= 2; /* two strikes it's out */
+	return !(deadCount >= 2); /* two strikes it's out */
 }
 
 /**
@@ -410,6 +370,7 @@ void OpenNICResolverPoolItem::starting(OpenNICDnsQuery* query)
 
 void OpenNICResolverPoolItem::finished(OpenNICDnsQuery* query)
 {
+	//fprintf(stderr,"finished\n");
 	addToHistory(query);
 }
 
@@ -422,6 +383,7 @@ void OpenNICResolverPoolItem::expired(OpenNICDnsQuery* query)
   */
 void OpenNICResolverPoolItem::test()
 {
+	//fprintf(stderr,"test\n");
 	new OpenNICDnsQuery(this,hostAddress(),OpenNICSystem::randomDomain()); /* launch a new query */
 	resetQueryTimer();
 

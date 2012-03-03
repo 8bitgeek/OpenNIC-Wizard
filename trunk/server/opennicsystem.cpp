@@ -228,18 +228,24 @@ OpenNICDomainName OpenNICSystem::randomDomain()
 }
 
 #if defined(Q_OS_WIN32)
+bool OpenNICSystem::beginUpdateResolvers(QString& output)
+{
+	/* on windows nothing to do here */
+	return true;
+}
+
 /**
   * @brief Add a dns entry to the system's list of DNS resolvers.
   * @param resolver The IP address of teh resolver to add to the system
   * @param index resolver sequence (1..n)
   */
-QString OpenNICSystem::insertSystemResolver(QHostAddress& resolver,int index)
+int OpenNICSystem::updateResolver(QHostAddress& resolver,int index,QString& output)
 {
-	QString rc;
+	int rc;
 	QEventLoop loop;
 	QString program = "netsh";
 	QStringList arguments;
-	if ( index == 1 )
+	if ( ++index == 1 ) /* on windows(tm) index starts at 1 */
 	{
 		arguments << "interface" << "ip" << "set" << "dns" << "Local Area Connection" << "static" << resolver.toString();
 	}
@@ -253,9 +259,15 @@ QString OpenNICSystem::insertSystemResolver(QHostAddress& resolver,int index)
 	{
 		loop.processEvents();
 	}
-	rc = process->readAllStandardOutput().trimmed() + "\n";
+	output = process->readAllStandardOutput().trimmed() + "\n";
+	rc = process->exitCode();
 	delete process;
 	return rc;
+}
+
+bool OpenNICSystem::endUpdateResolvers(QString& output)
+{
+	return true;
 }
 
 /**
@@ -291,17 +303,23 @@ QString OpenNICSystem::getSystemResolverList()
 QString sResolvConf;
 #endif
 
+bool OpenNICSystem::beginUpdateResolvers(QString& output)
+{
+	/* on windows nothing to do here */
+	return true;
+}
+
 /**
   * @brief Add a dns entry to the system's list of DNS resolvers.
   * @param resolver The IP address of teh resolver to add to the system
   * @param index resolver sequence (1..n)
   */
-QString OpenNICSystem::insertSystemResolver(QHostAddress& resolver,int index)
+int OpenNICSystem::updateResolver(QHostAddress& resolver,int index,QString& output)
 {
 #ifdef SIMULATE
 		if (index == 1) sResolvConf.clear();
 		sResolvConf += "nameserver "+resolver.toString()+"\n";
-		return resolver.toString();
+		output=resolver.toString();
 #else
 	QFile file("/etc/resolv.conf");
 	if ( (index==1) ? file.open(QIODevice::ReadWrite|QIODevice::Truncate) : file.open(QIODevice::ReadWrite|QIODevice::Append) )
@@ -309,12 +327,16 @@ QString OpenNICSystem::insertSystemResolver(QHostAddress& resolver,int index)
 		QString line("nameserver "+resolver.toString()+"\n");
 		file.write(line.toAscii());
 		file.close();
-		return resolver.toString();
+		output=resolver.toString();
 	}
-	return "";
+	return 0;
 #endif
 }
 
+bool OpenNICSystem::endUpdateResolvers(QString& output)
+{
+	return true;
+}
 
 /**
   * @brief Get the text which will show the current DNS resolver settings.
