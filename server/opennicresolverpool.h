@@ -35,6 +35,7 @@ class OpenNICResolverPool : public QObject
 		int								indexOf(QHostAddress hostAddress);
 		QStringList&					toStringList();
 		OpenNICResolverPool&			fromStringList(const QStringList strings);
+		OpenNICResolverPool&			fromIPList(const QStringList ips,QString kind);
 		OpenNICResolverPool&			operator<<(const QStringList& strings);
 	public slots:
 		void							setMaxHistoryDepth(int maxHistoryDepth);

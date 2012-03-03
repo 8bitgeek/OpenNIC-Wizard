@@ -69,6 +69,22 @@ OpenNICResolverPool& OpenNICResolverPool::fromStringList(const QStringList items
 }
 
 /**
+  * @brief from a IP list
+  */
+OpenNICResolverPool& OpenNICResolverPool::fromIPList(const QStringList items, QString kind)
+{
+	for(int n=0; n < items.count(); n++)
+	{
+		if (!items[n].trimmed().isEmpty())
+		{
+			OpenNICResolverPoolItem item(QHostAddress(items[n].trimmed()),kind);
+			insort(item);
+		}
+	}
+	return *this;
+}
+
+/**
   * @brief adjust the maximum history depth of all of the resolvers in the pool.
   */
 void OpenNICResolverPool::setMaxHistoryDepth(int maxHistoryDepth)

@@ -19,8 +19,8 @@
 	#error "Platform not defined."
 #endif
 
-quint16						OpenNICDnsQuery::mMasterTid=0;
-QList<OpenNICDnsQuery*>		OpenNICDnsQuery::mQueries;
+quint16													OpenNICDnsQuery::mMasterTid=0;
+QMultiHash<OpenNICDnsQueryListener*,OpenNICDnsQuery*>	OpenNICDnsQuery::mQueries;
 
 /*
  * DNS network packet
@@ -46,9 +46,9 @@ OpenNICDnsQuery::OpenNICDnsQuery(QObject *parent)
 , mPort(DEFAULT_DNS_PORT)
 , mExpiryTimer(-1)
 {
-	mQueries.append(this);
-	QObject::connect(&mUDPSocket, SIGNAL(readyRead()), this, SLOT(readPendingDatagrams()));
+	mQueries.insert(NULL,this);
 	mUDPSocket.bind();
+	QObject::connect(&mUDPSocket, SIGNAL(readyRead()), this, SLOT(readPendingDatagrams()));
 	setStartTime(QDateTime::currentDateTime());
 }
 
@@ -63,12 +63,12 @@ OpenNICDnsQuery::OpenNICDnsQuery(OpenNICDnsQueryListener* listener, QHostAddress
 , mPort(port)
 , mExpiryTimer(-1)
 {
-	mQueries.append(this);
+	mQueries.insert(listener,this);
+	mUDPSocket.bind();
 	QObject::connect(this,SIGNAL(expired(OpenNICDnsQuery*)),listener,SLOT(expired(OpenNICDnsQuery*)));
 	QObject::connect(this,SIGNAL(finished(OpenNICDnsQuery*)),listener,SLOT(finished(OpenNICDnsQuery*)));
 	QObject::connect(this,SIGNAL(starting(OpenNICDnsQuery*)),listener,SLOT(starting(OpenNICDnsQuery*)));
 	QObject::connect(&mUDPSocket, SIGNAL(readyRead()), this, SLOT(readPendingDatagrams()));
-	mUDPSocket.bind();
 	setStartTime(QDateTime::currentDateTime());
 	lookup();
 }
@@ -84,12 +84,12 @@ OpenNICDnsQuery::OpenNICDnsQuery(OpenNICDnsQueryListener* listener, QHostAddress
 , mPort(port)
 , mExpiryTimer(-1)
 {
-	mQueries.append(this);
+	mQueries.insert(listener,this);
+	mUDPSocket.bind();
 	QObject::connect(this,SIGNAL(expired(OpenNICDnsQuery*)),listener,SLOT(expired(OpenNICDnsQuery*)));
 	QObject::connect(this,SIGNAL(finished(OpenNICDnsQuery*)),listener,SLOT(finished(OpenNICDnsQuery*)));
 	QObject::connect(this,SIGNAL(starting(OpenNICDnsQuery*)),listener,SLOT(starting(OpenNICDnsQuery*)));
 	QObject::connect(&mUDPSocket, SIGNAL(readyRead()), this, SLOT(readPendingDatagrams()));
-	mUDPSocket.bind();
 	setStartTime(QDateTime::currentDateTime());
 	setExpireTime(expiryTime);
 	lookup();
@@ -99,17 +99,24 @@ OpenNICDnsQuery::OpenNICDnsQuery(const OpenNICDnsQuery& other)
 : inherited(NULL)
 , mListener(NULL)
 {
-	mQueries.append(this);
+	mQueries.insert(other.mListener,this);
 	copy(other);
 }
 
 OpenNICDnsQuery::~OpenNICDnsQuery()
 {
-	int idx = mQueries.indexOf(this);
-	if ( idx >= 0 )
-	{
-		mQueries.takeAt(idx);
-	}
+	QMultiHash<OpenNICDnsQueryListener*,OpenNICDnsQuery*>::iterator i = mQueries.begin();
+	 while (i != mQueries.end())
+	 {
+		 OpenNICDnsQuery* other = i.value();
+		 if ( other == this )
+		 {
+			 mQueries.take(i.key());
+			 break;
+		 }
+		 ++i;
+	 }
+	fprintf(stderr,"q=%d\n",mQueries.count());
 }
 
 /**
@@ -149,6 +156,8 @@ OpenNICDnsQuery& OpenNICDnsQuery::copy(const OpenNICDnsQuery& other)
 			QObject::connect(this,SIGNAL(finished(OpenNICDnsQuery*)),mListener,SLOT(finished(OpenNICDnsQuery*)));
 			QObject::connect(this,SIGNAL(starting(OpenNICDnsQuery*)),mListener,SLOT(starting(OpenNICDnsQuery*)));
 		}
+		mUDPSocket.bind();
+		QObject::connect(&mUDPSocket, SIGNAL(readyRead()), this, SLOT(readPendingDatagrams()));
 	}
 	return *this;
 }
@@ -375,13 +384,14 @@ void OpenNICDnsQuery::processDatagram(QByteArray& datagram)
   */
 void OpenNICDnsQuery::readPendingDatagrams()
 {
-	while (mUDPSocket.hasPendingDatagrams())
+	while (mUDPSocket.state() == QAbstractSocket::BoundState && mUDPSocket.hasPendingDatagrams())
 	{
 		QByteArray datagram;
 		datagram.resize(mUDPSocket.pendingDatagramSize());
 		QHostAddress sender;
 		quint16 senderPort;
 		mUDPSocket.readDatagram(datagram.data(), datagram.size(), &sender, &senderPort);
+		//fprintf(stderr,"receiving reply\n");
 		processDatagram(datagram);
 	}
 }
@@ -443,6 +453,7 @@ void OpenNICDnsQuery::lookup()
 		n = p - pkt;					/* Total packet length */
 
 		QByteArray datagram(pkt,n);
+		//fprintf(stderr,"sending query packet\n");
 		if ( mUDPSocket.writeDatagram(datagram,resolver(),port()) < 0 )
 		{
 			terminate(DNS_ERROR);

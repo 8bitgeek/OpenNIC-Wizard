@@ -7,6 +7,7 @@
  * this stuff is worth it, you can buy me a beer in return.
  */
 #include "opennicdnsquerylistener.h"
+#include <QMultiHash>
 
 OpenNICDnsQueryListener::OpenNICDnsQueryListener(QObject *parent)
 : QObject(parent)
@@ -15,14 +16,13 @@ OpenNICDnsQueryListener::OpenNICDnsQueryListener(QObject *parent)
 
 OpenNICDnsQueryListener::~OpenNICDnsQueryListener()
 {
-	QList<OpenNICDnsQuery*> queries;
-	for(int n=0; n < queries.count(); n++)
+	const QMultiHash<OpenNICDnsQueryListener*,OpenNICDnsQuery*>& queries = OpenNICDnsQuery::queries();
+	QMultiHash<OpenNICDnsQueryListener*,OpenNICDnsQuery*>::const_iterator i = queries.find(this);
+	while (i != queries.end() && i.key() == this)
 	{
-		OpenNICDnsQuery* query = queries[n];
-		if (query->listener() == this)
-		{
-			delete query;
-		}
+		OpenNICDnsQuery* query = i.value();
+		++i;
+		query->deleteLater();
 	}
 }
 

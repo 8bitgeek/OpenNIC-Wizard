@@ -263,8 +263,7 @@ QString OpenNICServer::copyright()
 
 QString OpenNICServer::license()
 {
-	return QString( copyright() +
-						tr( "\"THE BEER-WARE LICENSE\" (Revision 42):\n"
+	return QString( 	tr( "LICENSE\n\"THE BEER-WARE LICENSE\" (Revision 42):\n"
 						"Mike Sharkey wrote this thing. As long as you retain this notice you\n"
 						"can do whatever you want with this stuff. If we meet some day, and you think\n"
 						"this stuff is worth it, you can buy me a beer in return.\n" )
@@ -359,50 +358,50 @@ void OpenNICServer::coldBoot()
   */
 int OpenNICServer::bootstrapResolvers()
 {
-	int n, rc;
 	mResolversInitialized=false;
 	/** get the bootstrap resolvers... */
-	mResolverPool.clear();
 	QStringList bootstrapList = OpenNICSystem::getBootstrapT1List();
-	log(tr("Found ")+QString::number(bootstrapList.count())+tr(" T1 resolvers"));
-	for(n=0; n < bootstrapList.count(); n++)
-	{
-		QString resolver = bootstrapList.at(n).trimmed();
-		if ( !resolver.isEmpty() )
-		{
-			OpenNICResolverPoolItem item(QHostAddress(resolver),"T1");
-			mResolverPool.insort(item);
-			log(item.toString());
-		}
-	}
-	/** apply the bootstrap resolvers */
-	log(tr("Randomizing T1 list..."));
+	OpenNICResolverPool proposed;
+	mResolverPool.clear();
+	mResolverPool.fromIPList(bootstrapList,"T1");
 	mResolverPool.randomize();
-	int nBootstrapResolvers = resolverCacheSize() <= mResolverPool.count() ? resolverCacheSize() : mResolverPool.count();
-	log(tr("Applying ")+QString::number(nBootstrapResolvers)+tr(" T1 resolvers..."));
-	for(n=0; n < nBootstrapResolvers; n++)
+	log(tr("Found ")+QString::number(mResolverPool.count())+tr(" T1 resolvers"));
+	if (mResolverPool.count() < resolverCacheSize())
+	{
+		log(tr("** Warning: T1 bootstrap resolver count is less than resolver cache size"));
+	}
+	for(int n=0; n < ((resolverCacheSize() <= mResolverPool.count()) ? resolverCacheSize() : mResolverPool.count()); n++)
 	{
 		OpenNICResolverPoolItem item = mResolverPool.at(n);
-		OpenNICSystem::insertSystemResolver(item.hostAddress(),n+1);
-		log(" > "+item.toString());
+		proposed.insort(item);
 	}
-	rc=n;
+	/** Apply the T1 bootstrap resolvers */
+	log(tr("Randomizing T1 list"));
+	proposed.randomize();
+	log(tr("Applying (")+QString::number(proposed.count())+tr(") resolvers from the T1 list"));
+	replaceActiveResolvers(proposed);
 	/** get the T2 resolvers */
-	log(tr("Fetching T2 resolvers..."));
-	QStringList t2List = OpenNICSystem::getBootstrapT2List();
-	for(n=0; n < t2List.count(); n++)
+	log(tr("Fetching T2 resolvers"));
+	bootstrapList = OpenNICSystem::getBootstrapT2List();
+	mResolverPool.fromIPList(bootstrapList,"T2");
+	mResolverPool.sort();
+	proposed.clear();
+	for(int n=0; n < ((resolverCacheSize() <= mResolverPool.count()) ? resolverCacheSize() : mResolverPool.count()); n++)
 	{
-		QString resolver = t2List.at(n).trimmed();
-		if ( !resolver.isEmpty() )
-		{
-			OpenNICResolverPoolItem item(QHostAddress(resolver),"T2");
-			mResolverPool.insort(item);
-			mResolversInitialized=true;
-		}
+		OpenNICResolverPoolItem item = mResolverPool.at(n);
+		proposed.insort(item);
 	}
-	log(tr("Found ")+QString::number(t2List.count())+tr(" T2 resolvers"));
+	if (proposed.count())
+	{
+		log(tr("Applying (")+QString::number(proposed.count())+tr(") resolvers from the T1 list"));
+		mResolversInitialized=replaceActiveResolvers(proposed);
+	}
+	else
+	{
+		log(tr("** Critical: no T2 resolvers found **"));
+	}
 	log("mResolversInitialized="+QString(mResolversInitialized?"TRUE":"FALSE"));
-	return rc;
+	return mResolversInitialized ? proposed.count() : 0;
 }
 
 /**
@@ -434,18 +433,45 @@ bool OpenNICServer::shouldReplaceWithProposed(OpenNICResolverPool& proposed)
 /**
   * @brief replace the active resolvers with those proposed
   */
-void OpenNICServer::replaceActiveResolvers(OpenNICResolverPool& proposed)
+bool OpenNICServer::replaceActiveResolvers(OpenNICResolverPool& proposed)
 {
+	QString output;
+	bool applied=true;
 	mResolverCache.clear();
 	proposed.sort();
-	log("Applying new resolver cache of ("+QString::number(proposed.count())+") items...");
-	for(int n=0; n < proposed.count(); n++)
+	log("Begin applying updated resolver cache of ("+QString::number(proposed.count())+") items...");
+	if ( OpenNICSystem::beginUpdateResolvers(output) )
 	{
-		OpenNICResolverPoolItem& item = proposed.at(n);
-		OpenNICSystem::insertSystemResolver(item.hostAddress(),n+1);
-		mResolverCache.append(item);
-		log(" > "+item.toString());
+		for(int n=0; n < proposed.count(); n++)
+		{
+			int exitCode;
+			OpenNICResolverPoolItem& item = proposed.at(n);
+			if ( (exitCode=OpenNICSystem::updateResolver(item.hostAddress(),n,output)) == 0 )
+			{
+				log(" > "+item.toString());
+				mResolverCache.append(item);
+			}
+			else
+			{
+				log(tr("** exit code: ")+QString::number(exitCode));
+				log(tr("** Operating syetem said: ")+output);
+				applied=false;
+			}
+		}
+		if ( !OpenNICSystem::endUpdateResolvers(output) )
+		{
+			log("** Operating system failed to commit resolver cache changes **");
+			log(tr("** Operating syetem said: ")+output);
+			applied=false;
+		}
 	}
+	else
+	{
+		log(tr("** Operating system refused to begin comitting changes **"));
+		log(tr("** Operating syetem said: ")+output);
+		applied=false;
+	}
+	return applied;
 }
 
 /**
@@ -471,7 +497,10 @@ int OpenNICServer::updateDNS(int resolverCount)
 		/** see if what we are proposing is much different than what we have cach'ed already... */
 		if ( shouldReplaceWithProposed(proposed) )
 		{
-			replaceActiveResolvers(proposed);
+			if ( !replaceActiveResolvers(proposed) )
+			{
+				log(tr("** Warning: A problem occured while activating resolver cache"));
+			}
 			rc=mResolverCache.count();
 		}
 		mUpdatingDNS=false;
