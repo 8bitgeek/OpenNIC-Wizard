@@ -14,15 +14,15 @@
 #if 0
 ; My Windows 7 64-bit configuration
 #define MyOutputDir       "C:\Users\mike\Documents"
-#define MyOpenNICSource   "C:\Users\mike\Documents\OpenNIC\branches\beta2"
-#define MyOpenNICBuild    "C:\Users\mike\Documents\OpenNIC\branches\OpenNIC-build-desktop_Debug\"
+#define MyOpenNICSource   "C:\Users\mike\Documents\OpenNIC\trunk"
+#define MyOpenNICBuild    "C:\Users\mike\Documents\OpenNIC\OpenNIC-build-desktop_Debug"
 #define MyQtLib           "C:\QtSDK\Desktop\Qt\4.8.0\mingw\bin"
 #define MyMingwBin        "C:\QtSDK\mingw\bin"
 #else
 ; My Windows XP 32-bit configuration
 #define MyOutputDir       "C:\Documents and Settings\Mike\My Documents"
-#define MyOpenNICSource   "C:\Documents and Settings\Mike\My Documents\OpenNIC\branches\beta2"
-#define MyOpenNICBuild    "C:\Documents and Settings\Mike\My Documents\OpenNIC\branches\OpenNIC-build-desktop_Debug"
+#define MyOpenNICSource   "C:\Documents and Settings\Mike\My Documents\OpenNIC\trunk"
+#define MyOpenNICBuild    "C:\Documents and Settings\Mike\My Documents\OpenNIC\OpenNIC-build-desktop_Debug"
 #define MyQtLib           "C:\QtSDK\Desktop\Qt\4.7.4\mingw\lib"
 #define MyMingwBin        "C:\QtSDK\mingw\bin"
 #endif
@@ -56,10 +56,6 @@ Name: "french"; MessagesFile: "compiler:Languages\French.isl"
 Name: "german"; MessagesFile: "compiler:Languages\German.isl"
 Name: "spanish"; MessagesFile: "compiler:Languages\Spanish.isl"
 
-[Tasks]
-Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
-Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked; OnlyBelowVersion: 0,6.1
-
 [Files]
 Source: {#MyOpenNICBuild}\client\debug\OpenNIC.exe; DestDir: {app}; Flags: ignoreversion; Permissions: admins-full; MinVersion: 0,5.1.2600;
 Source: {#MyOpenNICBuild}\server\debug\OpenNICServer.exe; DestDir: {app}; Flags: ignoreversion; Permissions: admins-full; MinVersion: 0,5.1.2600;
@@ -81,19 +77,14 @@ Source: {#MyOpenNICSource}\COPYING; DestDir: "{app}"; Flags: ignoreversion
 Source: {#MyOpenNICSource}\README; DestDir: "{app}"; Flags: ignoreversion
 Source: {#MyOpenNICSource}\server\bootstrap.t1; DestDir: {app}; Flags: ignoreversion; 
 Source: {#MyOpenNICSource}\server\bootstrap.domains; DestDir: {app}; Flags: ignoreversion; 
-; Source: {#MyOpenNICSource}\client\OpenNIC.exe.manifest; DestDir: {app}; Flags: ignoreversion; 
 Source: {#MyOpenNICSource}\server\OpenNICServer.exe.manifest; DestDir: {app}; Flags: ignoreversion; 
 
 Source: {#MyMingwBin}\mingwm10.dll; DestDir: "{app}"; Flags: ignoreversion
 Source: {#MyMingwBin}\libgcc_s_dw2-1.dll; DestDir: "{app}"; Flags: ignoreversion
 
-; NOTE: Don't use "Flags: ignoreversion" on any shared system files
-
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
-Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
-Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: quicklaunchicon
 Name: "{commonstartup}\OpenNIC Wizard"; Filename: "{app}\{#MyAppExeName}"
 
 [Run]
@@ -101,7 +92,7 @@ Filename: "{app}\{#MyAppServiceName}"; Parameters: "-install"; WorkingDir: "{app
 Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"; Flags: nowait runasoriginaluser; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, "&", "&&")}}"; StatusMsg: "Starting OpenNIC Task Tray Applet...";
 FileName: "{sys}\sc.exe"; Parameters: "config OpenNIC start= auto"; Flags: runascurrentuser; StatusMsg: "Configuring OpenNIC Service...";
 Filename: "{sys}\sc.exe"; Parameters: "start OpenNIC"; Flags: runascurrentuser; StatusMsg: "Starting OpenNIC Service...";
-Filename: "http://wiki.opennic.glue"; Description: "Open wiki.opennic.glue in a browser"; Flags: shellexec postinstall runasoriginaluser
+Filename: "http://grep.geek"; Description: "Open http://grep.geek in a web browser"; Flags: shellexec postinstall runasoriginaluser
 
 [UninstallRun]
 Filename: "{app}\{#MyAppServiceName}"; WorkingDir: "{app}"; Parameters: "-terminate";
@@ -109,11 +100,6 @@ Filename: "{app}\{#MyAppServiceName}"; WorkingDir: "{app}"; Parameters: "-uninst
 Filename: "{sys}\sc.exe"; Parameters: "stop OpenNIC";
 Filename: "{sys}\sc.exe"; Parameters: "delete OpenNIC";
 Filename: "{sys}\sc.exe"; Parameters: "delete OpenNIC";
-
-; Filename: "{app}\{#MyAppServiceName}"; WorkingDir: "{app}"; Parameters: "-terminate"; StatusMsg: "Installing OpenNIC Service...";
-; Filename: "{app}\{#MyAppServiceName}"; WorkingDir: "{app}"; Parameters: "-uninstall"; StatusMsg: "Installing OpenNIC Service...";
-; Filename: "{sys}\sc.exe"; Parameters: "stop OpenNIC"; Flags: runhidden;
-; Filename: "{sys}\sc.exe"; Parameters: "delete OpenNIC"; Flags: runhidden;
 
 [Code]
 function InitializeSetup(): Boolean;
