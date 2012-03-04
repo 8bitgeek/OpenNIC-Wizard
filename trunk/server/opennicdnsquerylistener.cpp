@@ -9,21 +9,83 @@
 #include "opennicdnsquerylistener.h"
 #include <QMultiHash>
 
+#define inherited QObject
+
 OpenNICDnsQueryListener::OpenNICDnsQueryListener(QObject *parent)
-: QObject(parent)
+: inherited(parent)
+, mMaxHistoryDepth(MAX_HISTORY_DEPTH)
 {
+}
+
+OpenNICDnsQueryListener::OpenNICDnsQueryListener(const OpenNICDnsQueryListener& other)
+: inherited()
+, mMaxHistoryDepth(MAX_HISTORY_DEPTH)
+{
+	copy(other);
 }
 
 OpenNICDnsQueryListener::~OpenNICDnsQueryListener()
 {
-	const QList<OpenNICDnsQuery*>& queries = OpenNICDnsQuery::queries();
-	for(int n=0; n < queries.count(); n++)
+	for(int n=0; n < mHistory.count(); n++)
 	{
-		OpenNICDnsQuery* query = queries[n];
-		if (query->listener() == this)
+		delete mHistory.takeAt(n);
+	}
+	mHistory.clear();
+}
+
+OpenNICDnsQueryListener& OpenNICDnsQueryListener::copy(const OpenNICDnsQueryListener& other)
+{
+	if ( &other != this )
+	{
+		for(int n=0; n < other.mHistory.count(); n++)
 		{
-			query->deleteLater();
+			OpenNICDnsQuery* query = new OpenNICDnsQuery(this,*(other.mHistory[n]));
+			mHistory.append(query);
 		}
+		mMaxHistoryDepth	= other.mMaxHistoryDepth;
+	}
+	return *this;
+}
+
+
+/**
+  * @brief set the maximum history depth.
+  */
+void OpenNICDnsQueryListener::setMaxHistoryDepth(int maxHistoryDepth)
+{
+	if (maxHistoryDepth>=1)
+	{
+		mMaxHistoryDepth = maxHistoryDepth;
+	}
+	pruneHistory();
+}
+
+/**
+  * @brief prune history record back to the limit.
+  */
+void OpenNICDnsQueryListener::pruneHistory()
+{
+	/* prune... */
+	while(mHistory.count()>0 && mHistory.count()>maxHistoryDepth())
+	{
+		delete mHistory.takeFirst();
 	}
 }
 
+/**
+  * @brief add a DNS query result to the history for this resolver.
+  */
+void OpenNICDnsQueryListener::addToHistory(OpenNICDnsQuery* query)
+{
+	mHistory.prepend(query);
+	pruneHistory();
+}
+
+/**
+  * @brief reset all internals to default state.
+  */
+void OpenNICDnsQueryListener::clear()
+{
+	mHistory.clear();
+	mMaxHistoryDepth=MAX_HISTORY_DEPTH;
+}
