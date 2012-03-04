@@ -46,7 +46,7 @@ OpenNICDnsQuery::OpenNICDnsQuery(QObject *parent)
 , mPort(DEFAULT_DNS_PORT)
 , mExpiryTimer(-1)
 {
-	mQueries.insert(NULL,this);
+	mQueries.append(this);
 	mUDPSocket.bind();
 	QObject::connect(&mUDPSocket, SIGNAL(readyRead()), this, SLOT(readPendingDatagrams()));
 	setStartTime(QDateTime::currentDateTime());
@@ -240,7 +240,6 @@ void OpenNICDnsQuery::timerEvent(QTimerEvent *e)
 	inherited::timerEvent(e);
 	if (e->timerId() == mExpiryTimer)
 	{
-		killTimer(mExpiryTimer);
 		emit expired(this);
 		terminate();
 	}

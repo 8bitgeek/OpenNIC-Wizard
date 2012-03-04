@@ -141,7 +141,23 @@ void OpenNICResolverPool::swap(int a,int b)
   */
 void OpenNICResolverPool::score()
 {
-
+	int nResolvers = mItems.count();
+	double totalAverageLatency=0.0;
+	double averageLatency=0.0;
+	for(int n=0; n < nResolvers; n++)
+	{
+		OpenNICResolverPoolItem& item = mItems[n];
+		totalAverageLatency += item.averageLatency();
+	}
+	averageLatency = totalAverageLatency/(double)nResolvers;
+	/** apply the scores... */
+	for(int n=0; n < nResolvers; n++)
+	{
+		OpenNICResolverPoolItem& item = mItems[n];
+		double score = averageLatency/item.averageLatency();
+		if (item.kind()=="T2") score = score * 2;
+		item.setScore(score);
+	}
 }
 
 /**

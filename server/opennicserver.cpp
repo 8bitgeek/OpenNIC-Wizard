@@ -22,13 +22,15 @@
 #include <QHostAddress>
 #include <QTcpSocket>
 
-#define DEFAULT_FAST_TIMER						10			/* seconds */
+#define DEFAULT_FAST_TIMER						5			/* seconds */
 #define DEFAULT_REFRESH_TIMER_PERIOD			1			/* minutes */
 #define DEFAULT_RESOLVER_CACHE_SIZE				3
 #define DEFAULT_BOOTSTRAP_CACHE_SIZE			3
 #define DEFAULT_CLIENT_TIMEOUT					3			/* seconds */
 #define DEFAULT_TCP_LISTEN_PORT				    19803		/* localhost port for communication with GUI */
 #define MAX_LOG_LINES							100			/* max lines to keep in log cache */
+#define BOOTSTRAP_TIMER							(15*1000)	/* boostrap timer interva */
+#define BOOTSTRAP_TICKS							12			/* number of bootstrap ticks */
 
 #define inherited QObject
 
@@ -42,10 +44,12 @@ OpenNICServer::OpenNICServer(QObject *parent)
 , mResolversInitialized(false)
 , mTcpListenPort(DEFAULT_TCP_LISTEN_PORT)
 , mUpdatingDNS(false)
+, mBootstrapTicks(0)
 {
 	readSettings();
 	initializeServer();
 	mFastTimer = startTimer(1000*DEFAULT_FAST_TIMER);
+	mBootstrapTimer = startTimer(BOOTSTRAP_TIMER);
 }
 
 OpenNICServer::~OpenNICServer()
@@ -80,6 +84,9 @@ int OpenNICServer::resolverCacheSize()
 	return mResolverCacheSize;
 }
 
+/**
+  * @brief set the resolver cache size and update the dns with the settings
+  */
 void OpenNICServer::setResolverCacheSize(int size)
 {
 	if ( mResolverCacheSize != size && size >= 0 )
@@ -373,7 +380,7 @@ int OpenNICServer::bootstrapResolvers()
 	for(int n=0; n < ((resolverCacheSize() <= mResolverPool.count()) ? resolverCacheSize() : mResolverPool.count()); n++)
 	{
 		OpenNICResolverPoolItem item = mResolverPool.at(n);
-		proposed.insort(item);
+		proposed.append(item);
 	}
 	/** Apply the T1 bootstrap resolvers */
 	log(tr("Randomizing T1 list"));
@@ -384,12 +391,13 @@ int OpenNICServer::bootstrapResolvers()
 	log(tr("Fetching T2 resolvers"));
 	bootstrapList = OpenNICSystem::getBootstrapT2List();
 	mResolverPool.fromIPList(bootstrapList,"T2");
-	mResolverPool.sort();
+	log(tr("Randomizing T2 Resolvers"));
+	mResolverPool.randomize();
 	proposed.clear();
 	for(int n=0; n < ((resolverCacheSize() <= mResolverPool.count()) ? resolverCacheSize() : mResolverPool.count()); n++)
 	{
 		OpenNICResolverPoolItem item = mResolverPool.at(n);
-		proposed.insort(item);
+		proposed.append(item);
 	}
 	if (proposed.count())
 	{
@@ -421,12 +429,31 @@ bool OpenNICServer::shouldReplaceWithProposed(OpenNICResolverPool& proposed)
 				++diffCount;
 			}
 		}
-		return diffCount >= mResolverCache.count()/2; /* true if at least %50 different */
+		if ( diffCount >= mResolverCache.count()/2 )
+		{
+			log(tr("Recommending active resolvers be replaced due to >= %50 change proposed"));
+			return true;
+		}
+		else
+		{
+			log(tr("Not recommending active resolvers be replaced due to < %50 change proposed"));
+			return false;
+		}
 	}
 	else if (proposed.count() == 1 && mResolverCache.count() == 1)
 	{
-		return proposed.at(0) == mResolverCache.at(0);
+		if( proposed.at(0) == mResolverCache.at(0) )
+		{
+			log(tr("Recommending active resolver be replaced due single proposed <> single active resolver"));
+			return true;
+		}
+		else
+		{
+			log(tr("Not recommending active resolvers be replaced due tosingle proposed == single active resolver"));
+			return false;
+		}
 	}
+	log(tr("Recommending resolvers be replaced with proposed as a default measure"));
 	return true; /* when in doubt, replace */
 }
 
@@ -490,6 +517,8 @@ int OpenNICServer::updateDNS(int resolverCount)
 		log("** UPDATE DNS **");
 		OpenNICResolverPool proposed;
 		mUpdatingDNS=true;
+		log("Scoring resolver pool.");
+		mResolverPool.score();
 		log("Sorting resolver pool.");
 		mResolverPool.sort();
 		log("Proposing ("+QString::number(resolverCount)+") candidates.");
@@ -501,11 +530,16 @@ int OpenNICServer::updateDNS(int resolverCount)
 		/** see if what we are proposing is much different than what we have cach'ed already... */
 		if ( shouldReplaceWithProposed(proposed) )
 		{
+			log(tr("Proposal accepted."));
 			if ( !replaceActiveResolvers(proposed) )
 			{
 				log(tr("** Warning: A problem occured while activating resolver cache"));
 			}
 			rc=mResolverCache.count();
+		}
+		else
+		{
+			log(tr("Proposal declined"));
 		}
 		mUpdatingDNS=false;
 	}
@@ -571,6 +605,15 @@ void OpenNICServer::timerEvent(QTimerEvent* e)
 	if ( e->timerId() == mFastTimer )
 	{
 		runOnce();											/* don't let the log get out of hand */
+	}
+	else if ( e->timerId() == mBootstrapTimer )				/* higher frequency bootstrap timer to assist in stabalizing */
+	{
+		refreshResolvers(true);
+		if(mBootstrapTicks ++ > BOOTSTRAP_TICKS)			/* kill off this timer after a little bit... */
+		{
+			killTimer(mBootstrapTimer);
+			mBootstrapTimer=(-1);
+		}
 	}
 	else if ( e->timerId() == mRefreshTimer )				/* get here once in a while, a slow timer... */
 	{
