@@ -52,28 +52,20 @@ class OpenNICResolverPoolItem : public OpenNICDnsQueryListener
 		QString&					kind()				{return mKind;}
 		void						setKind(QString kind) {mKind=kind;}
 		OpenNICDnsQuery*			mostRecentQuery();
-		QList<OpenNICDnsQuery*>&	history()			{return mHistory;}
-		int							historyDepth()		{return mHistory.count();}
-		int							maxHistoryDepth()	{return mMaxHistoryDepth;}
 		QString&					toString();
 	protected slots:
 		virtual void				starting(OpenNICDnsQuery* query);
 		virtual void				finished(OpenNICDnsQuery* query);
 		virtual void				expired(OpenNICDnsQuery* query);
 	protected:
-		virtual	void				pruneHistory();
-		virtual	void				addToHistory(OpenNICDnsQuery* query);
 		virtual	void				test();
 		virtual void				timerEvent(QTimerEvent *);
 	public slots:
-		void						setMaxHistoryDepth(int maxHistoryDepth);
-		void						clear();
+		virtual void				clear();
 	private slots:
 		void						resetQueryTimer();
 	private:
 		double						mScore;				/* the score realtive to other resolvers in the pool */
-		int							mMaxHistoryDepth;	/* the maximum depth of history */
-		QList<OpenNICDnsQuery*>		mHistory;			/* maintain a recent history */
 		QHostAddress				mHostAddress;		/* host address wrapper */
 		QString						mKind;				/* the kind of resolver */
 		int							mQueryIntervalTimer;/* interval timer */

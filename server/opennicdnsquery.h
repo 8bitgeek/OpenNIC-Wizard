@@ -53,6 +53,7 @@ class OpenNICDnsQuery : public QObject
 		OpenNICDnsQuery(QObject *parent = 0);
 		OpenNICDnsQuery(OpenNICDnsQueryListener* listener, QHostAddress resolver, OpenNICDomainName name, quint32 port = DEFAULT_DNS_PORT, DNSQueryType queryType=DNS_A_RECORD, QObject *parent = 0);
 		OpenNICDnsQuery(OpenNICDnsQueryListener* listener, QHostAddress resolver, OpenNICDomainName name, QDateTime expiryTime, quint32 port = DEFAULT_DNS_PORT, DNSQueryType queryType=DNS_A_RECORD, QObject *parent = 0);
+		OpenNICDnsQuery(OpenNICDnsQueryListener* listener, const OpenNICDnsQuery& other);
 		OpenNICDnsQuery(const OpenNICDnsQuery& other);
 		virtual ~OpenNICDnsQuery();
 		OpenNICDnsQuery&					operator=(const OpenNICDnsQuery& other);
@@ -69,7 +70,7 @@ class OpenNICDnsQuery : public QObject
 		QHostAddress&						addr()									{return mAddr;}
 		QString&							mxName()								{return mMxName;}
 		quint32								port()									{return mPort;}
-		static QList<OpenNICDnsQuery*>		queries()								{return mQueries;}
+		static int							queries()								{return mQueries;}
 	signals:
 		void								starting(OpenNICDnsQuery* query);
 		void								finished(OpenNICDnsQuery* query);
@@ -80,6 +81,7 @@ class OpenNICDnsQuery : public QObject
 		void								lookup();
 		void								terminate();
 		void								terminate(DNSError error);
+		void								setListener(OpenNICDnsQueryListener* listener);
 		void								setResolver(QHostAddress& resolver)		{mResolver = resolver;}
 		void								setError(DNSError& error)				{mError = error;}
 		void								setQueryType(DNSQueryType& queryType)	{mQueryType = queryType;}
@@ -97,7 +99,7 @@ class OpenNICDnsQuery : public QObject
 		void								setStartTime(QDateTime startTime);
 		void								setEndTime(QDateTime endTime);
 	private:
-		static QList<OpenNICDnsQuery*>		mQueries;								/* all queries */
+		static int							mQueries;								/* all queries */
 		static quint16						mMasterTid;
 		OpenNICDnsQueryListener*			mListener;
 		QHostAddress						mResolver;								/* Resolver Host address */

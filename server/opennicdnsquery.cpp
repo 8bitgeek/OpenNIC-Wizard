@@ -20,7 +20,7 @@
 #endif
 
 quint16					OpenNICDnsQuery::mMasterTid=0;
-QList<OpenNICDnsQuery*>	OpenNICDnsQuery::mQueries;
+int						OpenNICDnsQuery::mQueries=0;
 
 /*
  * DNS network packet
@@ -46,7 +46,7 @@ OpenNICDnsQuery::OpenNICDnsQuery(QObject *parent)
 , mPort(DEFAULT_DNS_PORT)
 , mExpiryTimer(-1)
 {
-	mQueries.append(this);
+	++mQueries;
 	mUDPSocket.bind();
 	QObject::connect(&mUDPSocket, SIGNAL(readyRead()), this, SLOT(readPendingDatagrams()));
 	setStartTime(QDateTime::currentDateTime());
@@ -63,11 +63,9 @@ OpenNICDnsQuery::OpenNICDnsQuery(OpenNICDnsQueryListener* listener, QHostAddress
 , mPort(port)
 , mExpiryTimer(-1)
 {
-	mQueries.append(this);
+	++mQueries;
+	setListener(listener);
 	mUDPSocket.bind();
-	QObject::connect(this,SIGNAL(expired(OpenNICDnsQuery*)),listener,SLOT(expired(OpenNICDnsQuery*)));
-	QObject::connect(this,SIGNAL(finished(OpenNICDnsQuery*)),listener,SLOT(finished(OpenNICDnsQuery*)));
-	QObject::connect(this,SIGNAL(starting(OpenNICDnsQuery*)),listener,SLOT(starting(OpenNICDnsQuery*)));
 	QObject::connect(&mUDPSocket, SIGNAL(readyRead()), this, SLOT(readPendingDatagrams()));
 	setStartTime(QDateTime::currentDateTime());
 	lookup();
@@ -84,32 +82,42 @@ OpenNICDnsQuery::OpenNICDnsQuery(OpenNICDnsQueryListener* listener, QHostAddress
 , mPort(port)
 , mExpiryTimer(-1)
 {
-	mQueries.append(this);
+	++mQueries;
+	setListener(listener);
 	mUDPSocket.bind();
-	QObject::connect(this,SIGNAL(expired(OpenNICDnsQuery*)),listener,SLOT(expired(OpenNICDnsQuery*)));
-	QObject::connect(this,SIGNAL(finished(OpenNICDnsQuery*)),listener,SLOT(finished(OpenNICDnsQuery*)));
-	QObject::connect(this,SIGNAL(starting(OpenNICDnsQuery*)),listener,SLOT(starting(OpenNICDnsQuery*)));
 	QObject::connect(&mUDPSocket, SIGNAL(readyRead()), this, SLOT(readPendingDatagrams()));
 	setStartTime(QDateTime::currentDateTime());
 	setExpireTime(expiryTime);
 	lookup();
 }
 
+OpenNICDnsQuery::OpenNICDnsQuery(OpenNICDnsQueryListener* listener, const OpenNICDnsQuery& other)
+: inherited(NULL)
+, mListener(NULL)
+{
+	++mQueries;
+	copy(other);
+	setListener(listener);
+	mUDPSocket.bind();
+	QObject::connect(&mUDPSocket, SIGNAL(readyRead()), this, SLOT(readPendingDatagrams()));
+
+}
+
 OpenNICDnsQuery::OpenNICDnsQuery(const OpenNICDnsQuery& other)
 : inherited(NULL)
 , mListener(NULL)
 {
+	++mQueries;
 	copy(other);
+	mUDPSocket.bind();
+	QObject::connect(&mUDPSocket, SIGNAL(readyRead()), this, SLOT(readPendingDatagrams()));
+
 }
 
 OpenNICDnsQuery::~OpenNICDnsQuery()
 {
-	int idx = mQueries.indexOf(this);
-	if (idx>=0)
-	{
-		mQueries.takeAt(idx);
-	}
-	//fprintf(stderr,"q=%d\n",mQueries.count());
+	--mQueries;
+	fprintf(stderr,"q=%d\n",mQueries);
 }
 
 /**
@@ -127,11 +135,6 @@ OpenNICDnsQuery& OpenNICDnsQuery::copy(const OpenNICDnsQuery& other)
 {
 	if ( &other != this )
 	{
-		if (mQueries.indexOf(this)<0)
-		{
-			mQueries.append(this);
-		}
-		mListener		= other.mListener;
 		mError			= other.mError;
 		mResolver		= other.mResolver;
 		mQueryType		= other.mQueryType;
@@ -147,16 +150,28 @@ OpenNICDnsQuery& OpenNICDnsQuery::copy(const OpenNICDnsQuery& other)
 		{
 			setExpireTime(mExpireTime);
 		}
-		if (mListener != NULL )
-		{
-			QObject::connect(this,SIGNAL(expired(OpenNICDnsQuery*)),mListener,SLOT(expired(OpenNICDnsQuery*)));
-			QObject::connect(this,SIGNAL(finished(OpenNICDnsQuery*)),mListener,SLOT(finished(OpenNICDnsQuery*)));
-			QObject::connect(this,SIGNAL(starting(OpenNICDnsQuery*)),mListener,SLOT(starting(OpenNICDnsQuery*)));
-		}
-		mUDPSocket.bind();
-		QObject::connect(&mUDPSocket, SIGNAL(readyRead()), this, SLOT(readPendingDatagrams()));
 	}
 	return *this;
+}
+
+/**
+  * @brief set the listener
+  */
+void OpenNICDnsQuery::setListener(OpenNICDnsQueryListener *listener)
+{
+	if (mListener != NULL)
+	{
+		QObject::connect(this,SIGNAL(expired(OpenNICDnsQuery*)),mListener,SLOT(expired(OpenNICDnsQuery*)));
+		QObject::connect(this,SIGNAL(finished(OpenNICDnsQuery*)),mListener,SLOT(finished(OpenNICDnsQuery*)));
+		QObject::connect(this,SIGNAL(starting(OpenNICDnsQuery*)),mListener,SLOT(starting(OpenNICDnsQuery*)));
+	}
+	mListener = listener;
+	if (mListener != NULL)
+	{
+		QObject::connect(this,SIGNAL(expired(OpenNICDnsQuery*)),mListener,SLOT(expired(OpenNICDnsQuery*)));
+		QObject::connect(this,SIGNAL(finished(OpenNICDnsQuery*)),mListener,SLOT(finished(OpenNICDnsQuery*)));
+		QObject::connect(this,SIGNAL(starting(OpenNICDnsQuery*)),mListener,SLOT(starting(OpenNICDnsQuery*)));
+	}
 }
 
 /**
