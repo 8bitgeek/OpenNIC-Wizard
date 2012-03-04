@@ -77,6 +77,7 @@ class OpenNICResolverPoolItem : public OpenNICDnsQueryListener
 		QHostAddress				mHostAddress;		/* host address wrapper */
 		QString						mKind;				/* the kind of resolver */
 		int							mQueryIntervalTimer;/* interval timer */
+		int							mBootstrapTicks;	/* higher frequency intervals during the bootstrap ticks */
 		QString						mString;			/* for returning a string reference toString() */
 };
 

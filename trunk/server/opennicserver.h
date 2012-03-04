@@ -91,6 +91,8 @@ class OpenNICServer : public QObject
 		int						mTcpListenPort;				/** the TCP listen port */
 		bool					mUpdatingDNS;				/** in the processof updating the DNS */
 		QString					mAsyncMessage;
+		int						mBootstrapTimer;			/** short running HF timer for bootstrap */
+		int						mBootstrapTicks;			/** number of botstrap ticks */
 };
 
 #endif // OPENNICSERVER_H

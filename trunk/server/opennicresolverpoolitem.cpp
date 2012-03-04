@@ -13,6 +13,8 @@
 #define		BIG_LATENCY					100000			/* for uninitialized latencies so they come up at bottom fo a sort */
 #define		RANDOM_INTERVAL_MIN			(10*1000)		/* milliseconds */
 #define		RANDOM_INTERVAL_MAX			((10*60)*1000)	/* milliseconds */
+#define		MAX_TIMEOUT					(10*1000)		/* milliseconds */
+#define		BOOTSTRAP_TIMER_TICKS		3
 
 #define inherited OpenNICDnsQueryListener
 
@@ -21,6 +23,7 @@ OpenNICResolverPoolItem::OpenNICResolverPoolItem(QObject* parent)
 , mScore(0.0)
 , mMaxHistoryDepth(MAX_HISTORY_DEPTH)
 , mQueryIntervalTimer(-1)
+, mBootstrapTicks(0)
 {
 	clear();
 }
@@ -30,6 +33,7 @@ OpenNICResolverPoolItem::OpenNICResolverPoolItem(QHostAddress hostAddress, QStri
 , mScore(0.0)
 , mMaxHistoryDepth(MAX_HISTORY_DEPTH)
 , mQueryIntervalTimer(-1)
+, mBootstrapTicks(0)
 {
 	clear();
 	mHostAddress = hostAddress;
@@ -42,6 +46,7 @@ OpenNICResolverPoolItem::OpenNICResolverPoolItem(const OpenNICResolverPoolItem& 
 , mScore(0.0)
 , mMaxHistoryDepth(MAX_HISTORY_DEPTH)
 , mQueryIntervalTimer(-1)
+, mBootstrapTicks(0)
 {
 	copy(other);
 	test();
@@ -351,9 +356,15 @@ OpenNICDnsQuery* OpenNICResolverPoolItem::mostRecentQuery()
   */
 double OpenNICResolverPoolItem::score()
 {
-	double rc=0.0;
-	/** FIXME calculate the pool item scores */
-	return rc;
+	return mScore;
+}
+
+/**
+  * @brief return the score
+  */
+void OpenNICResolverPoolItem::setScore(double score)
+{
+	mScore=score;
 }
 
 /**
@@ -390,7 +401,7 @@ void OpenNICResolverPoolItem::finished(OpenNICDnsQuery* query)
 
 void OpenNICResolverPoolItem::expired(OpenNICDnsQuery* query)
 {
-	//fprintf(stderr,"expired\n");
+	fprintf(stderr,"expired %s : %s\n",query->resolver().toString().toAscii().data(), query->name().toString().toAscii().data());
 }
 
 /**
@@ -399,7 +410,7 @@ void OpenNICResolverPoolItem::expired(OpenNICDnsQuery* query)
 void OpenNICResolverPoolItem::test()
 {
 	//fprintf(stderr,"test\n");
-	new OpenNICDnsQuery(this,hostAddress(),OpenNICSystem::randomDomain()); /* launch a new query */
+	new OpenNICDnsQuery(this,hostAddress(),OpenNICSystem::randomDomain(),QDateTime::currentDateTime().addMSecs(MAX_TIMEOUT)); /* launch a new query */
 	resetQueryTimer();
 
 }
@@ -414,7 +425,14 @@ void OpenNICResolverPoolItem::resetQueryTimer()
 		killTimer(mQueryIntervalTimer);
 		mQueryIntervalTimer=-1;
 	}
-	mQueryIntervalTimer = startTimer(OpenNICSystem::random(RANDOM_INTERVAL_MIN,RANDOM_INTERVAL_MAX));
+	if (mBootstrapTicks++ < BOOTSTRAP_TIMER_TICKS)
+	{
+		mQueryIntervalTimer = startTimer(OpenNICSystem::random(RANDOM_INTERVAL_MIN/4,RANDOM_INTERVAL_MAX/8));
+	}
+	else
+	{
+		mQueryIntervalTimer = startTimer(OpenNICSystem::random(RANDOM_INTERVAL_MIN,RANDOM_INTERVAL_MAX));
+	}
 }
 
 /**
