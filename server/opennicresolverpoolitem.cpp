@@ -359,7 +359,7 @@ void OpenNICResolverPoolItem::starting(OpenNICDnsQuery* query)
 void OpenNICResolverPoolItem::finished(OpenNICDnsQuery* query)
 {
 	//fprintf(stderr,"finished\n");
-	addToHistory(query);
+	//addToHistory(query);
 }
 
 void OpenNICResolverPoolItem::expired(OpenNICDnsQuery* query)
@@ -373,7 +373,7 @@ void OpenNICResolverPoolItem::expired(OpenNICDnsQuery* query)
 void OpenNICResolverPoolItem::test()
 {
 	//fprintf(stderr,"test\n");
-	new OpenNICDnsQuery(this,hostAddress(),OpenNICSystem::randomDomain(),QDateTime::currentDateTime().addMSecs(MAX_TIMEOUT)); /* launch a new query */
+	addToHistory(new OpenNICDnsQuery(this,hostAddress(),OpenNICSystem::randomDomain(),QDateTime::currentDateTime().addMSecs(MAX_TIMEOUT))); /* launch a new query */
 	resetQueryTimer();
 
 }

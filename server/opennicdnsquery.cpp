@@ -117,6 +117,10 @@ OpenNICDnsQuery::OpenNICDnsQuery(const OpenNICDnsQuery& other)
 OpenNICDnsQuery::~OpenNICDnsQuery()
 {
 	--mQueries;
+	if (mUDPSocket.state() == QAbstractSocket::BoundState )
+	{
+		mUDPSocket.close();
+	}
 	fprintf(stderr,"q=%d\n",mQueries);
 }
 
