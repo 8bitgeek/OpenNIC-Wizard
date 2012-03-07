@@ -46,12 +46,11 @@ class OpenNICServer : public QObject
 		void					setRefreshPeriod(int period);
 		void					setResolverCacheSize(int size);
 
+		static void				log(QString msg);
 	signals:
 		void					quit();
 
 	public slots:
-		void					log(QString msg);
-		void					logPurge();
 		void					runOnce();
 
 	private slots:
@@ -61,6 +60,7 @@ class OpenNICServer : public QObject
 		void					writeSettings();
 
 	private:
+		static void				logPurge();
 		bool					shouldReplaceWithProposed(OpenNICResolverPool& proposed);
 		bool					replaceActiveResolvers(OpenNICResolverPool& proposed);
 		void					updateRefreshTimerPeriod();
@@ -80,7 +80,7 @@ class OpenNICServer : public QObject
 		QList<QTcpSocket*>		mSessions;					/** active sessions */
 		OpenNICResolverPool		mResolverPool;				/** the comlpete resolver pool */
 		OpenNICResolverPool		mResolverCache;				/** the active resolver pool */
-		QStringList				mLog;						/** log history */
+		static QStringList		mLog;						/** log history */
 		QTcpServer				mServer;					/** the localhost TCP server */
 		int						mRefreshTimerPeriod;		/** the refresh timer period in minutes */
 		int						mResolverCacheSize;			/** the number of resolvers to keep in the cache (and apply to the O/S) */

@@ -32,6 +32,8 @@
 #define BOOTSTRAP_TIMER							(15*1000)	/* boostrap timer interva */
 #define BOOTSTRAP_TICKS							12			/* number of bootstrap ticks */
 
+QStringList		OpenNICServer::mLog;	/* the log text */
+
 #define inherited QObject
 
 OpenNICServer::OpenNICServer(QObject *parent)
