@@ -13,72 +13,72 @@
 
 OpenNICDnsQueryListener::OpenNICDnsQueryListener(QObject *parent)
 : inherited(parent)
-, mMaxHistoryDepth(MAX_HISTORY_DEPTH)
+, mMaxQueryDepth(MAX_QUERY_DEPTH)
 {
 }
 
 OpenNICDnsQueryListener::OpenNICDnsQueryListener(const OpenNICDnsQueryListener& other)
 : inherited()
-, mMaxHistoryDepth(MAX_HISTORY_DEPTH)
+, mMaxQueryDepth(MAX_QUERY_DEPTH)
 {
 	copy(other);
 }
 
 OpenNICDnsQueryListener::~OpenNICDnsQueryListener()
 {
-	for(int n=0; n < mHistory.count(); n++)
+	for(int n=0; n < mQueries.count(); n++)
 	{
-		delete mHistory.takeAt(n);
+		delete mQueries.takeAt(n);
 	}
-	mHistory.clear();
+	mQueries.clear();
 }
 
 OpenNICDnsQueryListener& OpenNICDnsQueryListener::copy(const OpenNICDnsQueryListener& other)
 {
 	if ( &other != this )
 	{
-		for(int n=0; n < other.mHistory.count(); n++)
+		for(int n=0; n < other.mQueries.count(); n++)
 		{
-			OpenNICDnsQuery* query = new OpenNICDnsQuery(this,*(other.mHistory[n]));
-			mHistory.append(query);
+			OpenNICDnsQuery* otherQuery = other.mQueries.at(n);
+			OpenNICDnsQuery* query = new OpenNICDnsQuery(this,*otherQuery);
+			mQueries.append(query);
 		}
-		mMaxHistoryDepth	= other.mMaxHistoryDepth;
-	}
-	return *this;
+		mMaxQueryDepth = other.mMaxQueryDepth;
+	}	return *this;
 }
 
 
 /**
   * @brief set the maximum history depth.
   */
-void OpenNICDnsQueryListener::setMaxHistoryDepth(int maxHistoryDepth)
+void OpenNICDnsQueryListener::setMaxQueryDepth(int maxHistoryDepth)
 {
 	if (maxHistoryDepth>=1)
 	{
-		mMaxHistoryDepth = maxHistoryDepth;
+		mMaxQueryDepth = maxHistoryDepth;
 	}
-	pruneHistory();
+	pruneQueries();
 }
 
 /**
   * @brief prune history record back to the limit.
   */
-void OpenNICDnsQueryListener::pruneHistory()
+void OpenNICDnsQueryListener::pruneQueries()
 {
 	/* prune... */
-	while(mHistory.count()>0 && mHistory.count()>maxHistoryDepth())
+	while(mQueries.count()>0 && mQueries.count()>maxHistoryDepth())
 	{
-		delete mHistory.takeFirst();
+		delete mQueries.takeFirst();
 	}
 }
 
 /**
   * @brief add a DNS query result to the history for this resolver.
   */
-void OpenNICDnsQueryListener::addToHistory(OpenNICDnsQuery* query)
+void OpenNICDnsQueryListener::addToQueries(OpenNICDnsQuery* query)
 {
-	mHistory.prepend(query);
-	pruneHistory();
+	mQueries.prepend(query);
+	pruneQueries();
 }
 
 /**
@@ -86,6 +86,6 @@ void OpenNICDnsQueryListener::addToHistory(OpenNICDnsQuery* query)
   */
 void OpenNICDnsQueryListener::clear()
 {
-	mHistory.clear();
-	mMaxHistoryDepth=MAX_HISTORY_DEPTH;
+	mQueries.clear();
+	mMaxQueryDepth=MAX_QUERY_DEPTH;
 }
