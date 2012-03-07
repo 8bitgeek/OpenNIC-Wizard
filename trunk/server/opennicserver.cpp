@@ -8,7 +8,7 @@
  */
 #include "opennicserver.h"
 #include "opennicsystem.h"
-#include "opennicresolverpoolitem.h"
+#include "opennicresolver.h"
 
 #include <QObject>
 #include <QProcess>
@@ -379,8 +379,8 @@ int OpenNICServer::bootstrapResolvers()
 	}
 	for(int n=0; n < ((resolverCacheSize() <= mResolverPool.count()) ? resolverCacheSize() : mResolverPool.count()); n++)
 	{
-		OpenNICResolverPoolItem item = mResolverPool.at(n);
-		proposed.append(item);
+		OpenNICResolver* resolver = mResolverPool.at(n);
+		proposed.append(resolver);
 	}
 	/** Apply the T1 bootstrap resolvers */
 	log(tr("Randomizing T1 list"));
@@ -396,8 +396,8 @@ int OpenNICServer::bootstrapResolvers()
 	proposed.clear();
 	for(int n=0; n < ((resolverCacheSize() <= mResolverPool.count()) ? resolverCacheSize() : mResolverPool.count()); n++)
 	{
-		OpenNICResolverPoolItem item = mResolverPool.at(n);
-		proposed.append(item);
+		OpenNICResolver* resolver = mResolverPool.at(n);
+		proposed.append(resolver);
 	}
 	if (proposed.count())
 	{
@@ -423,8 +423,8 @@ bool OpenNICServer::shouldReplaceWithProposed(OpenNICResolverPool& proposed)
 		int diffCount=0; /* number of differences */
 		for(int n=0; n < proposed.count(); n++)
 		{
-			OpenNICResolverPoolItem& item = proposed.at(n);
-			if (!mResolverCache.contains(item))
+			OpenNICResolver* resolver = proposed.at(n);
+			if (!mResolverCache.contains(resolver))
 			{
 				++diffCount;
 			}
@@ -472,11 +472,11 @@ bool OpenNICServer::replaceActiveResolvers(OpenNICResolverPool& proposed)
 		for(int n=0; n < proposed.count(); n++)
 		{
 			int exitCode;
-			OpenNICResolverPoolItem& item = proposed.at(n);
-			if ( (exitCode=OpenNICSystem::updateResolver(item.hostAddress(),n,output)) == 0 )
+			OpenNICResolver* resolver = proposed.at(n);
+			if ( (exitCode=OpenNICSystem::updateResolver(resolver->hostAddress(),n,output)) == 0 )
 			{
-				log(" > "+item.toString());
-				mResolverCache.append(item);
+				log(" > "+resolver->toString());
+				mResolverCache.append(resolver);
 			}
 			else
 			{
@@ -524,8 +524,8 @@ int OpenNICServer::updateDNS(int resolverCount)
 		log("Proposing ("+QString::number(resolverCount)+") candidates.");
 		for(int n=0; n < mResolverPool.count() && n < resolverCount; n++)
 		{
-			OpenNICResolverPoolItem& item = mResolverPool.at(n);
-			proposed.append(item);
+			OpenNICResolver* resolver = mResolverPool.at(n);
+			proposed.append(resolver);
 		}
 		/** see if what we are proposing is much different than what we have cach'ed already... */
 		if ( shouldReplaceWithProposed(proposed) )
@@ -553,10 +553,10 @@ bool OpenNICServer::testResolverCache()
 {
 	for(int n=0; n < mResolverCache.count(); n++ )
 	{
-		OpenNICResolverPoolItem& item = mResolverCache.at(n);
-		if ( !item.alive() )
+		OpenNICResolver* resolver = mResolverCache.at(n);
+		if ( !resolver->alive() )
 		{
-			log("** ACTIVE RESOLVER "+item.hostAddress().toString()+"' NOT RESPONDING **");
+			log("** ACTIVE RESOLVER "+resolver->hostAddress().toString()+"' NOT RESPONDING **");
 			return false;
 		}
 	}

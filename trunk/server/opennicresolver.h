@@ -6,8 +6,8 @@
  * can do whatever you want with this stuff. If we meet some day, and you think
  * this stuff is worth it, you can buy me a beer in return.
  */
-#ifndef OPENNICRESOLVERPOOLITEM_H
-#define OPENNICRESOLVERPOOLITEM_H
+#ifndef OPENNICRESOLVER_H
+#define OPENNICRESOLVER_H
 
 #include <QObject>
 #include <QHostAddress>
@@ -20,24 +20,27 @@
 
 #define RESOLVER_SAMPLE_STORAGE_LIMIT		10			/* number of samples to remember for averaging */
 
-class OpenNICResolverPoolItem : public OpenNICDnsQueryListener
+class OpenNICResolver : public OpenNICDnsQueryListener
 {
 	Q_OBJECT
 	public:
-		OpenNICResolverPoolItem(QObject *parent = 0);
-		OpenNICResolverPoolItem(bool active, QObject *parent = 0);
-		OpenNICResolverPoolItem(QHostAddress hostAddress, QString kind="", QObject* parent=NULL);
-		OpenNICResolverPoolItem(const OpenNICResolverPoolItem& other);
-		virtual ~OpenNICResolverPoolItem();
-		OpenNICResolverPoolItem&	copy(const OpenNICResolverPoolItem& other);
-		OpenNICResolverPoolItem&	operator=(const OpenNICResolverPoolItem& other);
-		bool						operator==(OpenNICResolverPoolItem &other);
-		bool						operator!=(OpenNICResolverPoolItem &other);
-		bool						operator>(OpenNICResolverPoolItem &other);
-		bool						operator<(OpenNICResolverPoolItem &other);
-		bool						operator>=(OpenNICResolverPoolItem &other);
-		bool						operator<=(OpenNICResolverPoolItem &other);
-		QHostAddress&				hostAddress()		{return mHostAddress;}
+		OpenNICResolver(QObject *parent = 0);
+		OpenNICResolver(bool active, QObject *parent = 0);
+		OpenNICResolver(QHostAddress hostAddress, QString kind="", QObject* parent=NULL);
+		OpenNICResolver(const OpenNICResolver& other);
+		virtual ~OpenNICResolver();
+		int							incRef();
+		int							decRef();
+		int							refCount();
+		OpenNICResolver&			copy(const OpenNICResolver& other);
+		OpenNICResolver&			operator=(const OpenNICResolver& other);
+		bool						operator==(OpenNICResolver &other);
+		bool						operator!=(OpenNICResolver &other);
+		bool						operator>(OpenNICResolver &other);
+		bool						operator<(OpenNICResolver &other);
+		bool						operator>=(OpenNICResolver &other);
+		bool						operator<=(OpenNICResolver &other);
+		QHostAddress&				hostAddress();
 		int							testCount();
 		int							replyCount();
 		int							timeoutCount();
@@ -49,8 +52,8 @@ class OpenNICResolverPoolItem : public OpenNICDnsQueryListener
 		bool						alive();
 		double						score();
 		void						setScore(double score);
-		QString&					kind()				{return mKind;}
-		void						setKind(QString kind) {mKind=kind;}
+		QString&					kind();
+		void						setKind(QString kind);
 		OpenNICDnsQuery*			mostRecentQuery();
 		QString&					toString();
 	protected slots:
@@ -65,6 +68,7 @@ class OpenNICResolverPoolItem : public OpenNICDnsQueryListener
 	private slots:
 		void						resetQueryTimer();
 	private:
+		int							mRefCount;			/* a count of the number of references */
 		double						mScore;				/* the score realtive to other resolvers in the pool */
 		QHostAddress				mHostAddress;		/* host address wrapper */
 		QString						mKind;				/* the kind of resolver */
@@ -74,4 +78,4 @@ class OpenNICResolverPoolItem : public OpenNICDnsQueryListener
 };
 
 
-#endif // OPENNICRESOLVERPOOLITEM_H
+#endif // OpenNICResolver_H

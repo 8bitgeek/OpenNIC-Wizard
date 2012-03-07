@@ -18,12 +18,12 @@ SOURCES += main.cpp\
 		opennicserver.cpp \
 		qtservice.cpp \
 	opennicdnsquery.cpp \
-	opennicresolverpoolitem.cpp \
     opennicresolverpool.cpp \
     opennicsystem.cpp \
     opennicdomainname.cpp \
 	opennicdomainnamepool.cpp \
-    opennicdnsquerylistener.cpp
+    opennicdnsquerylistener.cpp \
+    opennicresolver.cpp
 
 
 win32::SOURCES += qtservice_win.cpp
@@ -38,12 +38,12 @@ HEADERS  += opennicserver.h \
 		qtunixserversocket.h \
 		qtunixsocket.h \
 	opennicdnsquery.h \
-	opennicresolverpoolitem.h \
     opennicresolverpool.h \
     opennicsystem.h \
     opennicdomainname.h \
 	opennicdomainnamepool.h \
-    opennicdnsquerylistener.h
+    opennicdnsquerylistener.h \
+    opennicresolver.h
 
 RESOURCES += \
 		opennicserver.qrc

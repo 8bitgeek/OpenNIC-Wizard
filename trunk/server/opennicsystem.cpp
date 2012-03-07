@@ -303,7 +303,7 @@ QString OpenNICSystem::getSystemResolverList()
 QString sResolvConf;
 #endif
 
-bool OpenNICSystem::beginUpdateResolvers(QString& output)
+bool OpenNICSystem::beginUpdateResolvers(QString& /* output */)
 {
 	/* on windows nothing to do here */
 	return true;
@@ -333,7 +333,7 @@ int OpenNICSystem::updateResolver(QHostAddress& resolver,int index,QString& outp
 #endif
 }
 
-bool OpenNICSystem::endUpdateResolvers(QString& output)
+bool OpenNICSystem::endUpdateResolvers(QString& /* output */)
 {
 	return true;
 }

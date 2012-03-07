@@ -139,6 +139,7 @@ OpenNICDnsQuery& OpenNICDnsQuery::copy(const OpenNICDnsQuery& other)
 {
 	if ( &other != this )
 	{
+		fprintf(stderr,"copy %d\n",mQueries);
 		mError			= other.mError;
 		mResolver		= other.mResolver;
 		mQueryType		= other.mQueryType;
@@ -233,7 +234,10 @@ void OpenNICDnsQuery::setExpireTime(QDateTime expireTime)
 void OpenNICDnsQuery::terminate()
 {
 	setEndTime(QDateTime::currentDateTime());
-	mUDPSocket.close();
+	if (mUDPSocket.state() == QAbstractSocket::BoundState )
+	{
+		mUDPSocket.close();
+	}
 	if (mExpiryTimer>=0)
 	{
 		killTimer(mExpiryTimer);
