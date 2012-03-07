@@ -8,6 +8,7 @@
  */
 #include "opennicresolver.h"
 #include "opennicsystem.h"
+#include "opennicserver.h"
 
 #define		BIG_LATENCY					100000			/* for uninitialized latencies so they come up at bottom fo a sort */
 #define		RANDOM_INTERVAL_MIN			(10*1000)		/* milliseconds */
@@ -406,20 +407,19 @@ void OpenNICResolver::setScore(double score)
 	mScore=score;
 }
 
-void OpenNICResolver::starting(OpenNICDnsQuery* /* query */)
+void OpenNICResolver::starting(OpenNICDnsQuery* query)
 {
-	//fprintf(stderr,"starting\n");
+	OpenNICServer::log("starting "+query->resolver().toString()+" : "+query->name().toString());
 }
 
-void OpenNICResolver::finished(OpenNICDnsQuery* /* query */)
+void OpenNICResolver::finished(OpenNICDnsQuery* query)
 {
-	//fprintf(stderr,"finished\n");
-	//addToHistory(query);
+	OpenNICServer::log("expired "+query->resolver().toString()+" : "+query->name().toString());
 }
 
 void OpenNICResolver::expired(OpenNICDnsQuery* query)
 {
-	fprintf(stderr,"expired %s : %s\n",query->resolver().toString().toAscii().data(), query->name().toString().toAscii().data());
+	OpenNICServer::log("expired "+query->resolver().toString()+" : "+query->name().toString());
 }
 
 /**
@@ -427,10 +427,8 @@ void OpenNICResolver::expired(OpenNICDnsQuery* query)
   */
 void OpenNICResolver::test()
 {
-	//fprintf(stderr,"test\n");
 	addToQueries(new OpenNICDnsQuery(this,hostAddress(),OpenNICSystem::randomDomain(),QDateTime::currentDateTime().addMSecs(MAX_TIMEOUT))); /* launch a new query */
 	resetQueryTimer();
-
 }
 
 /**
