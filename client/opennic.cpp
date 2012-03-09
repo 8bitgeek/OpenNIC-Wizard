@@ -9,6 +9,7 @@
 #include "opennic.h"
 #include "ui_opennic.h"
 #include "ui_settings.h"
+#include "opennicqueryhistorydialog.h"
 
 #include <QObject>
 #include <QMessageBox>
@@ -82,6 +83,8 @@ OpenNIC::OpenNIC(QWidget *parent)
 	QObject::connect(uiSettings->refreshNow,SIGNAL(clicked()),this,SLOT(updateDNS()));
 	QObject::connect(uiSettings->tabs,SIGNAL(currentChanged(int)),this,SLOT(tabChanged(int)));
 	QObject::connect(uiSettings->saveDomains,SIGNAL(clicked()),this,SLOT(updateDomains()));
+	QObject::connect(uiSettings->resolverPoolTable,SIGNAL(cellClicked(int,int)),this,SLOT(cellClicked(int,int)));
+	QObject::connect(uiSettings->resolverPoolTable,SIGNAL(cellDoubleClicked(int,int)),this,SLOT(cellDoubleClicked(int,int)));
 	setDisabledState();
 }
 
@@ -242,6 +245,18 @@ void OpenNIC::readSettings()
 void OpenNIC::writeSettings()
 {
 	QSettings settings("OpenNIC", "OpenNICClient");
+}
+
+void OpenNIC::cellClicked ( int row, int column )
+{
+	OpenNICQueryHistoryDialog dialog;
+	dialog.exec();
+}
+
+void OpenNIC::cellDoubleClicked ( int row, int column )
+{
+	OpenNICQueryHistoryDialog dialog;
+	dialog.exec();
 }
 
 /**

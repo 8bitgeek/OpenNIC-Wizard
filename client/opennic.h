@@ -53,6 +53,8 @@ class OpenNIC : public QDialog
 		virtual void			closeEvent(QCloseEvent* e);
 
 	private slots:
+		void					cellClicked ( int row, int column );
+		void					cellDoubleClicked ( int row, int column );
 		void					setEnabledState();
 		void					setDisabledState();
 		void					tabChanged(int tab);
