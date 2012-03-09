@@ -76,11 +76,11 @@ OpenNICDnsQueryListener::Status OpenNICDnsQueryListener::status()
 				break;
 			}
 		}
-		if (failures==0)
+		if (failures==0 && successes > 0)
 		{
 			return Green;
 		}
-		if (successes-failures >= (successes/2))
+		if (successes-failures >= 1)
 		{
 			return Yellow;
 		}
@@ -130,3 +130,20 @@ void OpenNICDnsQueryListener::clear()
 	mQueries.clear();
 	mMaxQueryDepth=MAX_QUERY_DEPTH;
 }
+
+void OpenNICDnsQueryListener::starting(OpenNICDnsQuery* query)
+{
+	//OpenNICServer::log("starting "+query->resolver().toString()+" : "+query->name().toString());
+}
+
+void OpenNICDnsQueryListener::finished(OpenNICDnsQuery* query)
+{
+	//OpenNICServer::log("finished "+query->resolver().toString()+" : "+query->name().toString());
+}
+
+void OpenNICDnsQueryListener::expired(OpenNICDnsQuery* query)
+{
+	//OpenNICServer::log("expired "+query->resolver().toString()+" : "+query->name().toString());
+	query->setError(OpenNICDnsQuery::DNS_TIMEOUT);
+}
+

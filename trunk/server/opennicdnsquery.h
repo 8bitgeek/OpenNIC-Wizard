@@ -77,7 +77,7 @@ class OpenNICDnsQuery : public QObject
 		void								terminate(DNSError error);
 		void								setListener(OpenNICDnsQueryListener* listener);
 		void								setResolver(QHostAddress& resolver)		{mResolver = resolver;}
-		void								setError(DNSError& error)				{mError = error;}
+		void								setError(DNSError error)				{mError = error;}
 		void								setQueryType(DNSQueryType& queryType)	{mQueryType = queryType;}
 		void								setExpireTime(QDateTime expireTime);
 		void								setName(OpenNICDomainName& name)		{mName = name;}

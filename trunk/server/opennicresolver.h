@@ -55,6 +55,7 @@ class OpenNICResolver : public OpenNICDnsQueryListener
 		QString&					kind();
 		void						setKind(QString kind);
 		OpenNICDnsQuery*			mostRecentQuery();
+		bool						resolvesNIC(QString nic);
 		QString&					toString();
 	protected slots:
 		virtual void				starting(OpenNICDnsQuery* query);
