@@ -287,7 +287,7 @@ QString& OpenNICResolver::toString()
 	case Green:		mString += "G";		break;
 	}
 	mString += ";";
-	mString += QString("%1").arg(score(),7,'f',3,'0') + ";";
+	mString += QString::number(score()) + ";";
 	mString += kind() + ";";
 	mString += hostAddress().toString() + ";";
 	return mString;

@@ -217,6 +217,7 @@ void OpenNICResolverPool::score()
 		double score;
 		double min,max;
 		latency(min,max);
+		OpenNICServer::log("min="+QString::number(min)+" max="+QString::number(max));
 		/** apply the scores... */
 		for(int n=0; n < nResolvers; n++)
 		{
