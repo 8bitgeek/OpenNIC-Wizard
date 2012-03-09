@@ -415,11 +415,26 @@ int OpenNICServer::bootstrapResolvers()
 }
 
 /**
+  * @brief log the resolver pool text
+  */
+void OpenNICServer::logResolverPool(QString msg, OpenNICResolverPool &pool)
+{
+	log(msg);
+	for(int n=0; n < pool.count(); n++)
+	{
+		OpenNICResolver* resolver = pool.at(n);
+		log(resolver->toString());
+	}
+}
+
+/**
   * @brief determine if the active resolvers should be replaces with those proposed.
   * @return true to replace active resolvers with those proposed, else false
   */
 bool OpenNICServer::shouldReplaceWithProposed(OpenNICResolverPool& proposed)
 {
+	logResolverPool("**PROPOSED**",proposed);
+	logResolverPool("**ACTIVE**",mResolverCache);
 	if ( proposed.count() >= 2 && proposed.count() == mResolverCache.count() )
 	{
 		int diffCount=0; /* number of differences */

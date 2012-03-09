@@ -275,20 +275,22 @@ bool OpenNICResolver::alive()
 
 /**
   * @brief convert to a formatted string
-  * @brief <hostAddress>;<avgLatency>;<testCount>;<replyCount>;<lastReply>;<lastTimeout>;<lastFault>;<kind>;
+  * @brief <status>;<score>;<kind>;<hostAddress>;
   */
 QString& OpenNICResolver::toString()
 {
 	mString.clear();
-	mString += hostAddress().toString() + ";";
-	mString += QString::number((int)averageLatency()) + ";";
-	mString += QString::number(testCount()) + ";";
-	mString += QString::number(replyCount()) + ";";
-	mString += QString::number(timeoutCount()) + ";";
-	mString += lastReply().toString() + ";";
-	mString += lastTimeout().toString() + ";";
-	mString += lastFault() + ";";
+	switch(status())
+	{
+	default:
+	case Red:		mString += "R";		break;
+	case Yellow:	mString += "Y";		break;
+	case Green:		mString += "G";		break;
+	}
+	mString += ";";
+	mString += QString("%1").arg(score(),7,'f',3,'0') + ";";
 	mString += kind() + ";";
+	mString += hostAddress().toString() + ";";
 	return mString;
 }
 
@@ -414,7 +416,7 @@ void OpenNICResolver::starting(OpenNICDnsQuery* query)
 
 void OpenNICResolver::finished(OpenNICDnsQuery* query)
 {
-	OpenNICServer::log("expired "+query->resolver().toString()+" : "+query->name().toString());
+	OpenNICServer::log("finished "+query->resolver().toString()+" : "+query->name().toString());
 }
 
 void OpenNICResolver::expired(OpenNICDnsQuery* query)

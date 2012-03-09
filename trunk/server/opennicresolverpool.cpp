@@ -230,7 +230,7 @@ void OpenNICResolverPool::sort()
 			sorted=true;
 			for(int n=0; n < nCount; n++ )
 			{
-				if ( mResolvers[(a=n)] < mResolvers[(b=(n+1))] )
+				if ( mResolvers[(a=n)]->score() > mResolvers[(b=(n+1))]->score() )
 				{
 					sorted=false;
 					swap(a,b);

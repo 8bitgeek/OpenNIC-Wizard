@@ -36,6 +36,7 @@
 #include <QIODevice>
 #include <QTabWidget>
 #include <QWidget>
+#include <QProgressBar>
 
 #define DEFAULT_RESOLVERS					3
 #define DEFAULT_T1_RESOLVERS				3
@@ -45,10 +46,6 @@
 #define	FAST_REFRESH						(5*1000)
 
 #define inherited QDialog
-
-
-
-
 
 OpenNIC::OpenNIC(QWidget *parent)
 : inherited(parent)
@@ -247,40 +244,81 @@ void OpenNIC::writeSettings()
 }
 
 /**
+  * @brief determin the minimum, maximum, and average scores
+  * @return the average score
+  */
+double OpenNIC::scoreMinMax(QStringList& resolverPool, double& min, double& max)
+{
+	if ( resolverPool.count() > 0 )
+	{
+		double total=0;
+		min=0.0;
+		max=0.0;
+		/* @brief <status>;<score>;<kind>;<hostAddress>; */
+		for(int row=0; row < resolverPool.count(); row++ )
+		{
+			QStringList elements = resolverPool.at(row).split(";");
+			double score = elements.at(1).toDouble();
+			total += score;
+			if (score > max) max = score;
+			if (score < min) min = score;
+		}
+		return total/resolverPool.count();
+	}
+	return 0.0;
+}
+
+/**
   * @brief Updates the resolver pool display.
   */
 void OpenNIC::updateResolverPool(QStringList resolverPool)
 {
-	/* server string  <hostAddress>;<avgLatency>;<testCount>;<replyCount>;<lastReply>;<lastTimeout>;<lastFault>;<kind>; */
+	/* @brief <status>;<score>;<kind>;<hostAddress>; */
 
 	QTableWidget* table = uiSettings->resolverPoolTable;
+	double minScore,maxScore;
+	scoreMinMax(resolverPool, minScore, maxScore);
 	table->setRowCount(resolverPool.count());
 	for(int row=0; row < resolverPool.count(); row++ )
 	{
-		QStringList resolverData = resolverPool.at(row).split(";");
-		QString ip = resolverData.at(0);
-		QString latency = resolverData.at(1);
-		QString testCount = resolverData.at(2);
-		QString replyCount = resolverData.at(3);
-		QString timeoutCount = resolverData.at(4);
-		QString lastReply = resolverData.at(5);
-		QString lastTimeout = resolverData.at(6);
-		QString status = resolverData.at(7);
-		QString kind = resolverData.at(8);
-		table->setItem(row,0,new QTableWidgetItem(kind));
-		table->setItem(row,1,new QTableWidgetItem(ip));
-		table->setItem(row,2,new QTableWidgetItem(latency));
-		table->setItem(row,3,new QTableWidgetItem(status));
-		table->setItem(row,4,new QTableWidgetItem(testCount));
-		table->setItem(row,5,new QTableWidgetItem(replyCount));
-		table->setItem(row,6,new QTableWidgetItem(timeoutCount));
-		table->setItem(row,7,new QTableWidgetItem(lastReply));
-		table->setItem(row,8,new QTableWidgetItem(lastTimeout));
+		QStringList elements = resolverPool.at(row).split(";");
+		QString ip		= elements.at(3);
+		QString kind	= elements.at(2);
+		QString score	= elements.at(1);
+		QString status	= elements.at(0);
+		QString statusIcon;
+		if (status == "R")
+		{
+			status = tr("FAIL");
+			statusIcon = ":/images/status-red.png";
+		}
+		else if (status == "G")
+		{
+			status = tr("OK");
+			statusIcon = ":/images/status-green.png";
+		}
+		else if (status == "Y")
+		{
+			status = tr("WARN");
+			statusIcon = ":/images/status-yellow.png";
+		}
+		table->setItem(row,3,new QTableWidgetItem(ip));
+		table->setItem(row,2,new QTableWidgetItem(kind));
+#if 0
+		table->setItem(row,1,new QTableWidgetItem(score));
+#else
+		QProgressBar* bar = new QProgressBar();
+		bar->setRange((int)(minScore*1000.0),(int)(maxScore*1000.0));
+		bar->setValue((int)(score.toDouble()*1000.0));
+		table->setCellWidget(row,1,bar);
+#endif
+		table->setItem(row,0,new QTableWidgetItem(QIcon(statusIcon),status));
 	}
 	table->resizeColumnsToContents();
 	table->resizeRowsToContents();
 	table->setSortingEnabled(true);
 }
+
 
 void OpenNIC::storeServerPacket(QMap<QString,QVariant>& map)
 {
@@ -299,7 +337,7 @@ void OpenNIC::storeServerPacket(QMap<QString,QVariant>& map)
 			for(int n=0;n < serverResolverCache.count(); n++)
 			{
 				QStringList parts = serverResolverCache.at(n).split(";");
-				localResolverCache.append(parts.at(0));
+				localResolverCache.append(parts.at(3));
 			}
 			QString newText = localResolverCache.join("\n");
 			QString currentText = uiSettings->cache->toPlainText();
