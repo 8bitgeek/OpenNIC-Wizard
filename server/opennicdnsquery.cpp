@@ -184,7 +184,11 @@ void OpenNICDnsQuery::setListener(OpenNICDnsQueryListener *listener)
   */
 quint64 OpenNICDnsQuery::latency()
 {
-	return mStartTime.msecsTo(mEndTime);
+	if (mEndTime>mStartTime)
+	{
+		return mStartTime.msecsTo(mEndTime);
+	}
+	return 0L;
 }
 
 /**
