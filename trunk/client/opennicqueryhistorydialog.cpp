@@ -14,3 +14,8 @@ OpenNICQueryHistoryDialog::OpenNICQueryHistoryDialog(QWidget *parent)
 {
 	ui->setupUi(this);
 }
+
+OpenNICQueryHistoryDialog::~OpenNICQueryHistoryDialog()
+{
+	delete ui;
+}

@@ -22,7 +22,8 @@ class OpenNICQueryHistoryDialog : public QDialog
 {
 	Q_OBJECT
 	public:
-		explicit OpenNICQueryHistoryDialog(QWidget *parent = 0);
+		OpenNICQueryHistoryDialog(QWidget *parent = 0);
+		virtual ~OpenNICQueryHistoryDialog();
 
 	private:
 		Ui::OpenNICQueryHistory*	ui;
