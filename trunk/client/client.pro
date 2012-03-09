@@ -15,9 +15,11 @@ CONFIG += warn_on \
 	debug
 
 SOURCES += main.cpp\
-		opennic.cpp
+		opennic.cpp \
+    opennicqueryhistorydialog.cpp
 
-HEADERS  += opennic.h
+HEADERS  += opennic.h \
+    opennicqueryhistorydialog.h
 
 FORMS    += opennic.ui \
 		settings.ui \
