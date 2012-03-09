@@ -230,10 +230,15 @@ void OpenNICResolverPool::score()
 			{
 				resolverAverageLatency = max;
 			}
+
+			/* perform the scoring */
 			score = max - resolverAverageLatency;
-			if (resolver->kind()=="T1") score /= 1.5;
-			if (resolver->kind()=="T2") score *= 1.5;
-			if (resolver->resolvesNIC("opennic")) score *= 1.5;
+			if (resolver->kind()=="T1")							score /= 1.5;
+			if (resolver->kind()=="T2")							score *= 1.5;
+			if (resolver->resolvesNIC("opennic"))				score *= 1.75;
+			if (resolver->status() == OpenNICResolver::Red)		score /= 2;
+			if (resolver->status() == OpenNICResolver::Yellow)	score /= 1.25;
+			/* store the result */
 			resolver->setScore(score);
 		}
 	}
