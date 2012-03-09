@@ -20,11 +20,10 @@ SOURCES += main.cpp\
 HEADERS  += opennic.h
 
 FORMS    += opennic.ui \
-		settings.ui
+		settings.ui \
+    queries.ui
 
 RESOURCES += \
 		opennic.qrc
 
 win32:LIBS += C:/QtSDK/mingw/lib/libwsock32.a
-
-
