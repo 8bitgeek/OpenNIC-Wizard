@@ -19,12 +19,19 @@ class OpenNICDnsQueryListener : public QObject
 {
     Q_OBJECT
 	public:
+		typedef enum
+		{
+			Red=0,							/* service is down */
+			Yellow,							/* service may be down */
+			Green							/* service is up */
+		} Status;
 		OpenNICDnsQueryListener(QObject *parent = 0);
 		OpenNICDnsQueryListener(const OpenNICDnsQueryListener& other);
 		virtual ~OpenNICDnsQueryListener();
 		OpenNICDnsQueryListener&		copy(const OpenNICDnsQueryListener& other);
 		int								queryDepth()		{return mQueries.count();}
 		int								maxHistoryDepth()	{return mMaxQueryDepth;}
+		Status							status();
 	public slots:
 		virtual void					clear();
 		void							setMaxQueryDepth(int maxQueryDepth);

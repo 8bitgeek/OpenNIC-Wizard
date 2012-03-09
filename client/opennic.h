@@ -73,6 +73,7 @@ class OpenNIC : public QDialog
 		void					tcpError(QAbstractSocket::SocketError socketError);
 		void					tcpHostFound();
 		void					tcpStateChanged(QAbstractSocket::SocketState socketState);
+		double					scoreMinMax(QStringList& resolverPool, double& min, double& max);
 		void					updateResolverPool(QStringList resolverPool);
 		void					iconActivated(QSystemTrayIcon::ActivationReason reason);
 		void					showBalloonMessage(QString title, QString body);

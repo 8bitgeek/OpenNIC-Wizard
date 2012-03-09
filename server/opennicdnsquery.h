@@ -44,12 +44,6 @@ class OpenNICDnsQuery : public QObject
 			DNS_TIMEOUT,					/* Lookup time expired */
 			DNS_ERROR						/* No memory or other error */
 		} DNSError;
-		typedef enum
-		{
-			Red=0,							/* service is down */
-			Yellow,							/* service may be down */
-			Green							/* service is up */
-		} ColourCode;
 		OpenNICDnsQuery(QObject *parent = 0);
 		OpenNICDnsQuery(OpenNICDnsQueryListener* listener, QHostAddress resolver, OpenNICDomainName name, quint32 port = DEFAULT_DNS_PORT, DNSQueryType queryType=DNS_A_RECORD, QObject *parent = 0);
 		OpenNICDnsQuery(OpenNICDnsQueryListener* listener, QHostAddress resolver, OpenNICDomainName name, QDateTime expiryTime, quint32 port = DEFAULT_DNS_PORT, DNSQueryType queryType=DNS_A_RECORD, QObject *parent = 0);

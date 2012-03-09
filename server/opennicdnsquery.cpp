@@ -73,7 +73,7 @@ OpenNICDnsQuery::OpenNICDnsQuery(OpenNICDnsQueryListener* listener, QHostAddress
 
 OpenNICDnsQuery::OpenNICDnsQuery(OpenNICDnsQueryListener* listener, QHostAddress resolver, OpenNICDomainName name, QDateTime expiryTime, quint32 port, DNSQueryType queryType, QObject *parent)
 : inherited(parent)
-, mListener(listener)
+, mListener(NULL)
 , mResolver(resolver)
 , mError(DNS_OK)
 , mQueryType(queryType)
@@ -166,9 +166,9 @@ void OpenNICDnsQuery::setListener(OpenNICDnsQueryListener *listener)
 {
 	if (mListener != NULL)
 	{
-		QObject::connect(this,SIGNAL(expired(OpenNICDnsQuery*)),mListener,SLOT(expired(OpenNICDnsQuery*)));
-		QObject::connect(this,SIGNAL(finished(OpenNICDnsQuery*)),mListener,SLOT(finished(OpenNICDnsQuery*)));
-		QObject::connect(this,SIGNAL(starting(OpenNICDnsQuery*)),mListener,SLOT(starting(OpenNICDnsQuery*)));
+		QObject::disconnect(this,SIGNAL(expired(OpenNICDnsQuery*)),mListener,SLOT(expired(OpenNICDnsQuery*)));
+		QObject::disconnect(this,SIGNAL(finished(OpenNICDnsQuery*)),mListener,SLOT(finished(OpenNICDnsQuery*)));
+		QObject::disconnect(this,SIGNAL(starting(OpenNICDnsQuery*)),mListener,SLOT(starting(OpenNICDnsQuery*)));
 	}
 	mListener = listener;
 	if (mListener != NULL)

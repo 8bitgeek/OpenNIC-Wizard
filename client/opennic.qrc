@@ -1,5 +1,8 @@
 <RCC>
     <qresource prefix="/">
         <file>images/opennic.png</file>
+        <file>images/status-green.png</file>
+        <file>images/status-red.png</file>
+        <file>images/status-yellow.png</file>
     </qresource>
 </RCC>

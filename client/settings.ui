@@ -46,47 +46,22 @@
          </property>
          <column>
           <property name="text">
-           <string>Kind</string>
-          </property>
-         </column>
-         <column>
-          <property name="text">
-           <string>IP Address</string>
-          </property>
-         </column>
-         <column>
-          <property name="text">
-           <string>Latency (msecs)</string>
-          </property>
-         </column>
-         <column>
-          <property name="text">
            <string>Status</string>
           </property>
          </column>
          <column>
           <property name="text">
-           <string># Tests</string>
+           <string>Score</string>
           </property>
          </column>
          <column>
           <property name="text">
-           <string># Replies</string>
+           <string>Kind</string>
           </property>
          </column>
          <column>
           <property name="text">
-           <string># Timeout</string>
-          </property>
-         </column>
-         <column>
-          <property name="text">
-           <string>Last Reply</string>
-          </property>
-         </column>
-         <column>
-          <property name="text">
-           <string>Last Timeout</string>
+           <string>Address</string>
           </property>
          </column>
         </widget>

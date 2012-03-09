@@ -60,6 +60,7 @@ class OpenNICServer : public QObject
 		void					writeSettings();
 
 	private:
+		static void				logResolverPool(QString msg,OpenNICResolverPool& pool);
 		static void				logPurge();
 		bool					shouldReplaceWithProposed(OpenNICResolverPool& proposed);
 		bool					replaceActiveResolvers(OpenNICResolverPool& proposed);
