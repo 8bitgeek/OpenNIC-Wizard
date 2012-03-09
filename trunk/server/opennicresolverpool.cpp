@@ -173,6 +173,9 @@ void OpenNICResolverPool::swap(int a,int b)
 
 /**
   * @brief calculate the average latency
+  * @param min minimum average resolver latency
+  * @param max maximum average resolver latency
+  * @return average resolver latency
   */
 double OpenNICResolverPool::latency(double& min, double& max)
 {
