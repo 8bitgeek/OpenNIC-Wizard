@@ -53,6 +53,8 @@ class OpenNIC : public QDialog
 		virtual void			closeEvent(QCloseEvent* e);
 
 	private slots:
+		void					setEnabledState();
+		void					setDisabledState();
 		void					tabChanged(int tab);
 		void					clicked(QAbstractButton* button);
 		QMap<QString,QVariant>	clientSettingsPacket();
@@ -94,6 +96,7 @@ class OpenNIC : public QDialog
         QString                 mBalloonStatus;             /** status message to apply to ballon */
 		QByteArray				mPacketBytes;
 		QSystemTrayIcon::MessageIcon mBalloonIcon;
+		bool					mActiveState;				/** applet if connected and live or disconeced */
 };
 
 #endif // OPENNIC_H

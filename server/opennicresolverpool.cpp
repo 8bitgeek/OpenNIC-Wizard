@@ -8,6 +8,7 @@
  */
 #include "opennicresolverpool.h"
 #include "opennicsystem.h"
+#include "opennicserver.h"
 
 OpenNICResolverPool::OpenNICResolverPool(QObject *parent)
 : QObject(parent)
@@ -171,26 +172,66 @@ void OpenNICResolverPool::swap(int a,int b)
 }
 
 /**
+  * @brief calculate the average latency
+  */
+double OpenNICResolverPool::latency(double& min, double& max)
+{
+	int nResolvers = mResolvers.count();
+	min=0.0;
+	max=0.0;
+	if (nResolvers > 0 )
+	{
+		double total=0.0;
+		double averageLatency=0.0;
+		for(int n=0; n < nResolvers; n++)
+		{
+			OpenNICResolver* resolver = mResolvers[n];
+			double resolverAverageLatency = resolver->averageLatency();
+			total += resolverAverageLatency;
+			if (n==0)
+			{
+				min = max = resolverAverageLatency;
+			}
+			else
+			{
+				if (resolverAverageLatency < min) min = resolverAverageLatency;
+				if (resolverAverageLatency > max) max = resolverAverageLatency;
+			}
+		}
+		averageLatency = total/(double)nResolvers;
+		return averageLatency;
+	}
+	return 0.0;
+}
+
+/**
   * @brief score the items in the pool
   */
 void OpenNICResolverPool::score()
 {
 	int nResolvers = mResolvers.count();
-	double totalAverageLatency=0.0;
-	double averageLatency=0.0;
-	for(int n=0; n < nResolvers; n++)
+	if (nResolvers > 0 )
 	{
-		OpenNICResolver* resolver = mResolvers[n];
-		totalAverageLatency += resolver->averageLatency();
-	}
-	averageLatency = totalAverageLatency/(double)nResolvers;
-	/** apply the scores... */
-	for(int n=0; n < nResolvers; n++)
-	{
-		OpenNICResolver* resolver = mResolvers[n];
-		double score = averageLatency/resolver->averageLatency();
-		if (resolver->kind()=="T2") score = score * 2;
-		resolver->setScore(score);
+		OpenNICResolver* resolver;
+		double resolverAverageLatency;
+		double score;
+		double min,max;
+		latency(min,max);
+		/** apply the scores... */
+		for(int n=0; n < nResolvers; n++)
+		{
+			resolver = mResolvers[n];
+			resolverAverageLatency = resolver->averageLatency();
+			if (resolverAverageLatency < 0.0)
+			{
+				resolverAverageLatency = max;
+			}
+			score = max - resolverAverageLatency;
+			if (resolver->kind()=="T1") score /= 1.5;
+			if (resolver->kind()=="T2") score *= 1.5;
+			if (resolver->resolvesNIC("opennic")) score *= 1.5;
+			resolver->setScore(score);
+		}
 	}
 }
 
@@ -230,7 +271,7 @@ void OpenNICResolverPool::sort()
 			sorted=true;
 			for(int n=0; n < nCount; n++ )
 			{
-				if ( mResolvers[(a=n)]->score() > mResolvers[(b=(n+1))]->score() )
+				if ( mResolvers[(a=n)]->score() < mResolvers[(b=(n+1))]->score() )
 				{
 					sorted=false;
 					swap(a,b);

@@ -531,32 +531,39 @@ int OpenNICServer::updateDNS(int resolverCount)
 	int rc=0;
 	if ( !mUpdatingDNS )
 	{
-		log("** UPDATE DNS **");
-		OpenNICResolverPool proposed;
 		mUpdatingDNS=true;
-		log("Scoring resolver pool.");
-		mResolverPool.score();
-		log("Sorting resolver pool.");
-		mResolverPool.sort();
-		log("Proposing ("+QString::number(resolverCount)+") candidates.");
-		for(int n=0; n < mResolverPool.count() && n < resolverCount; n++)
+		log("** UPDATE DNS **");
+		if (mResolverPool.count()>0)
 		{
-			OpenNICResolver* resolver = mResolverPool.at(n);
-			proposed.append(resolver);
-		}
-		/** see if what we are proposing is much different than what we have cach'ed already... */
-		if ( shouldReplaceWithProposed(proposed) )
-		{
-			log(tr("Proposal accepted."));
-			if ( !replaceActiveResolvers(proposed) )
+			OpenNICResolverPool proposed;
+			log("Scoring resolver pool.");
+			mResolverPool.score();
+			log("Sorting resolver pool.");
+			mResolverPool.sort();
+			log("Proposing ("+QString::number(resolverCount)+") candidates.");
+			for(int n=0; n < mResolverPool.count() && n < resolverCount; n++)
 			{
-				log(tr("** Warning: A problem occured while activating resolver cache"));
+				OpenNICResolver* resolver = mResolverPool.at(n);
+				proposed.append(resolver);
 			}
-			rc=mResolverCache.count();
+			/** see if what we are proposing is much different than what we have cach'ed already... */
+			if ( shouldReplaceWithProposed(proposed) )
+			{
+				log(tr("Proposal accepted."));
+				if ( !replaceActiveResolvers(proposed) )
+				{
+					log(tr("** Warning: A problem occured while activating resolver cache"));
+				}
+				rc=mResolverCache.count();
+			}
+			else
+			{
+				log(tr("Proposal declined"));
+			}
 		}
 		else
 		{
-			log(tr("Proposal declined"));
+			log(tr("Resolver pool is empty"));
 		}
 		mUpdatingDNS=false;
 	}

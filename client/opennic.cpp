@@ -61,7 +61,7 @@ OpenNIC::OpenNIC(QWidget *parent)
 , mTcpListenPort(0)
 , mInitialized(false)
 , mBalloonIcon(QSystemTrayIcon::Information)
-
+, mActiveState(false)
 {
 	uiSettings->setupUi(this);
 	createActions();
@@ -82,6 +82,7 @@ OpenNIC::OpenNIC(QWidget *parent)
 	QObject::connect(uiSettings->refreshNow,SIGNAL(clicked()),this,SLOT(updateDNS()));
 	QObject::connect(uiSettings->tabs,SIGNAL(currentChanged(int)),this,SLOT(tabChanged(int)));
 	QObject::connect(uiSettings->saveDomains,SIGNAL(clicked()),this,SLOT(updateDomains()));
+	setDisabledState();
 }
 
 OpenNIC::~OpenNIC()
@@ -260,8 +261,15 @@ double OpenNIC::scoreMinMax(QStringList& resolverPool, double& min, double& max)
 			QStringList elements = resolverPool.at(row).split(";");
 			double score = elements.at(1).toDouble();
 			total += score;
-			if (score > max) max = score;
-			if (score < min) min = score;
+			if (row==0)
+			{
+				min = max = score;
+			}
+			else
+			{
+				if (score > max) max = score;
+				if (score < min) min = score;
+			}
 		}
 		return total/resolverPool.count();
 	}
@@ -523,8 +531,32 @@ void OpenNIC::readyRead()
 	}
 }
 
+/**
+  * @brief Make the applet look enabled (active/connected).
+  */
+void OpenNIC::setEnabledState()
+{
+	mActiveState=true;
+	uiSettings->refreshNow->setEnabled(true);
+	uiSettings->buttonBox->setEnabled(true);
+	uiSettings->resolverPool->setEnabled(true);
+}
+
+/**
+  * @brief Make the applet look disabled (inactive/unconnected)
+  */
+void OpenNIC::setDisabledState()
+{
+	mActiveState=false;
+	uiSettings->refreshNow->setEnabled(false);
+	uiSettings->buttonBox->setEnabled(false);
+	uiSettings->resolverPool->setEnabled(false);
+}
+
+
 void OpenNIC::tcpConnected()
 {
+	setEnabledState();
 }
 
 void OpenNIC::tcpDisconnected()
@@ -537,6 +569,7 @@ void OpenNIC::tcpError(QAbstractSocket::SocketError socketError)
 {
 	if ( socketError != QAbstractSocket::RemoteHostClosedError )
 	{
+		setDisabledState();
 		mBalloonStatus = tr( "Failed to connect to OpenNIC service. [" ) + QString::number((int)socketError) + "]";
 		mTcpSocket.close();
 		slowRefresh();

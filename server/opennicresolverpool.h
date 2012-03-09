@@ -46,6 +46,7 @@ class OpenNICResolverPool : public QObject
 		void							sort();
 		void							clear();
 	private:
+		double							latency(double& min, double& max);
 		void							swap(int a,int b);
 		QList<OpenNICResolver*>			mResolvers;
 		QStringList						mStringList;

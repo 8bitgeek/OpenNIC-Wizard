@@ -10,7 +10,6 @@
 #include "opennicsystem.h"
 #include "opennicserver.h"
 
-#define		BIG_LATENCY					100000			/* for uninitialized latencies so they come up at bottom fo a sort */
 #define		RANDOM_INTERVAL_MIN			(10*1000)		/* milliseconds */
 #define		RANDOM_INTERVAL_MAX			((10*60)*1000)	/* milliseconds */
 #define		MAX_TIMEOUT					(10*1000)		/* milliseconds */
@@ -354,7 +353,7 @@ int OpenNICResolver::timeoutCount()
   */
 int OpenNICResolver::lastLatency()
 {
-	int latency=BIG_LATENCY; /* something very big if there are no samples */
+	int latency=-1.0; /* something very big if there are no samples */
 	if ( queries().count() > 0 )
 	{
 		latency = queries()[0]->latency();
@@ -377,7 +376,8 @@ double OpenNICResolver::averageLatency()
 		}
 		return total/nQueries;
 	}
-	return BIG_LATENCY;
+	OpenNICServer::log("No Query History "+hostAddress().toString());
+	return -1.0;
 }
 
 /**
@@ -391,6 +391,23 @@ OpenNICDnsQuery* OpenNICResolver::mostRecentQuery()
 		return query;
 	}
 	return NULL;
+}
+
+/**
+  * @return true if domains within this NIC have been resolved by this resolver
+  */
+bool OpenNICResolver::resolvesNIC(QString nic)
+{
+	int nQueries = queries().count();
+	for(int n=0; n < nQueries; n++)
+	{
+		OpenNICDnsQuery* query = queries().at(n);
+		if (query->name().dnsService() == nic && query->error() == OpenNICDnsQuery::DNS_OK)
+		{
+			return true;
+		}
+	}
+	return false;
 }
 
 /**
@@ -411,17 +428,17 @@ void OpenNICResolver::setScore(double score)
 
 void OpenNICResolver::starting(OpenNICDnsQuery* query)
 {
-	OpenNICServer::log("starting "+query->resolver().toString()+" : "+query->name().toString());
+	inherited::starting(query);
 }
 
 void OpenNICResolver::finished(OpenNICDnsQuery* query)
 {
-	OpenNICServer::log("finished "+query->resolver().toString()+" : "+query->name().toString());
+	inherited::finished(query);
 }
 
 void OpenNICResolver::expired(OpenNICDnsQuery* query)
 {
-	OpenNICServer::log("expired "+query->resolver().toString()+" : "+query->name().toString());
+	inherited::expired(query);
 }
 
 /**

@@ -36,9 +36,9 @@ class OpenNICDnsQueryListener : public QObject
 		virtual void					clear();
 		void							setMaxQueryDepth(int maxQueryDepth);
 	protected slots:
-		virtual void					starting(OpenNICDnsQuery* query) = 0;
-		virtual void					finished(OpenNICDnsQuery* query) = 0;
-		virtual void					expired(OpenNICDnsQuery* query) = 0;
+		virtual void					starting(OpenNICDnsQuery* query);
+		virtual void					finished(OpenNICDnsQuery* query);
+		virtual void					expired(OpenNICDnsQuery* query);
 	protected:
 		virtual	void					pruneQueries();
 		virtual	void					addToQueries(OpenNICDnsQuery* query);
