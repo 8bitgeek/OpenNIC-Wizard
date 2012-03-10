@@ -25,6 +25,7 @@ const QString OpenNICPacket::async_message			= "async_message";			/* an async me
 const QString OpenNICPacket::score_rules			= "score_rules";			/* score rules */
 const QString OpenNICPacket::score_internal			= "score_internal";			/* score internal */
 const QString OpenNICPacket::update_dns				= "update_dns";				/* force update dns now */
+const QString OpenNICPacket::poll_keys				= "poll_keys";				/* poll for key/values */
 
 
 OpenNICPacket::OpenNICPacket(QObject *parent)

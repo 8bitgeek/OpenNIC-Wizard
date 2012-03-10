@@ -10,6 +10,7 @@
 #include "ui_opennic.h"
 #include "ui_settings.h"
 #include "opennicqueryhistorydialog.h"
+#include "opennicpacket.h"
 
 #include <QObject>
 #include <QMessageBox>
@@ -362,8 +363,8 @@ void OpenNIC::dataReady(OpenNICNet* net)
 		i.next();
 		QString key = i.key();
 		QVariant value = i.value();
-		if ( key == "tcp_listen_port" )					mTcpListenPort			=	value.toInt();
-		else if ( key == "resolver_cache" )
+		if ( key == OpenNICPacket::tcp_listen_port )					mTcpListenPort			=	value.toInt();
+		else if ( key == OpenNICPacket::resolver_cache )
 		{
 			QStringList serverResolverCache = value.toStringList();
 			QStringList localResolverCache;
@@ -380,21 +381,21 @@ void OpenNIC::dataReady(OpenNICNet* net)
 				ui->cache->setPlainText(localResolverCache.join("\n"));
 			}
 		}
-		else if ( key == "refresh_timer_period" )
+		else if ( key == OpenNICPacket::refresh_timer_period )
 		{
 			if ( ui->refreshRate->value() !=  value.toInt() )
 			{
 				ui->refreshRate->setValue(value.toInt());
 			}
 		}
-		else if ( key == "resolver_cache_size" )
+		else if ( key == OpenNICPacket::resolver_cache_size )
 		{
 			if ( ui->resolverCount->value() != value.toInt() )
 			{
 				ui->resolverCount->setValue(value.toInt());
 			}
 		}
-		else if ( key == "bootstrap_t1_list" )
+		else if ( key == OpenNICPacket::bootstrap_t1_list )
 		{
 			QString currentText = ui->t1List->toPlainText();
 			QString newText = value.toStringList().join("\n");
@@ -403,7 +404,7 @@ void OpenNIC::dataReady(OpenNICNet* net)
 				ui->t1List->setPlainText(newText);
 			}
 		}
-		else if ( key == "bootstrap_domains" )
+		else if ( key == OpenNICPacket::bootstrap_domains )
 		{
 			QString currentText = ui->domainList->toPlainText();
 			QString newText = value.toStringList().join("\n");
@@ -412,9 +413,9 @@ void OpenNIC::dataReady(OpenNICNet* net)
 				ui->domainList->setPlainText(newText);
 			}
 		}
-		else if ( key == "resolver_pool" )				updateResolverPool(value.toStringList());
-		else if ( key == "system_text" )				ui->systemText->setPlainText(value.toString());
-		else if ( key == "journal_text" )
+		else if ( key == OpenNICPacket::resolver_pool )				updateResolverPool(value.toStringList());
+		else if ( key == OpenNICPacket::system_text )				ui->systemText->setPlainText(value.toString());
+		else if ( key == OpenNICPacket::journal_text )
 		{
 			QStringList journalText = value.toStringList();
 			QListWidget* journal = ui->journalList;
@@ -428,15 +429,15 @@ void OpenNIC::dataReady(OpenNICNet* net)
 			}
 			journal->addItems(journalText);
 		}
-		else if ( key == "async_message" && !value.toString().isEmpty() )
+		else if ( key == OpenNICPacket::async_message && !value.toString().isEmpty() )
 		{
 			QMessageBox::information(this,tr("Sevice Message"),value.toString());
 		}
-		else if ( key == "score_rules" && !value.toString().isEmpty() )
+		else if ( key == OpenNICPacket::score_rules && !value.toString().isEmpty() )
 		{
 			ui->scoreRuleEditor->setPlainText(value.toString());
 		}
-		else if ( key == "score_internal" )
+		else if ( key == OpenNICPacket::score_internal )
 		{
 			ui->useBuiltInScoreRule->setChecked(value.toBool());
 		}
@@ -486,7 +487,7 @@ void OpenNIC::updateDNS()
 {
 	QDataStream stream(&mTcpSocket);
 	QMap<QString,QVariant> clientPacket;
-	clientPacket.insert("update_dns","");
+	clientPacket.insert(OpenNICPacket::update_dns,"");
 	stream << clientPacket;
 	mTcpSocket.flush();
 }
