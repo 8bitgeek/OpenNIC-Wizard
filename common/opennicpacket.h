@@ -34,12 +34,14 @@ class OpenNICPacket : public QObject
 		static const QString	async_message;					/* an async message */
 		static const QString	score_rules;					/* score rules */
 		static const QString	score_internal;					/* score internal */
+		static const QString	update_dns;						/* force dns update now */
 
 		OpenNICPacket(QObject *parent = 0);
 		virtual ~OpenNICPacket();
-		void								set(QString name, QVariant value);
-		QVariant							get(QString name);
-		bool								contains(QString key);
+		void								set(const QString& name, QVariant value);
+		QVariant							get(const QString& name);
+		bool								contains(const QString& key);
+		QMap<QString,QVariant>&				data() {return mData;}
 	signals:
 		void								dataReady();
 	public slots:

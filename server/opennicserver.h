@@ -19,9 +19,10 @@
 #include <QVariant>
 #include <QMutex>
 #include <QList>
-#include "opennicresolverpool.h"
 
-#define	VERSION_STRING				"0.3.rc2"
+#include "opennicversion.h"
+#include "opennicresolverpool.h"
+#include "opennicnet.h"
 
 class OpenNICSession;
 class OpenNICServer : public QObject
@@ -58,7 +59,7 @@ class OpenNICServer : public QObject
 		void					runOnce();
 
 	private slots:
-		void					readyRead();
+		void					dataReady(OpenNICNet* net);
 		void					newConnection();
 		void					readSettings();
 		void					writeSettings();
@@ -76,7 +77,6 @@ class OpenNICServer : public QObject
 		void					refreshResolvers(bool force=false);
 		void					announcePackets();
 		void					purgeDeadSesssions();
-		QByteArray&				makeServerPacket(QByteArray& packet);
 		int						initializeServer();
 		int						updateDNS(int resolver_count);
 		virtual void			timerEvent(QTimerEvent* e);
@@ -85,7 +85,7 @@ class OpenNICServer : public QObject
 		static QStringList		mLog;						/** log history */
 		static QString			mScoreRules;				/** the score rules javascript text */
 		static bool				mScoreInternal;				/** use internal scoring rules? */
-		QList<QTcpSocket*>		mSessions;					/** active sessions */
+		QList<OpenNICNet*>		mSessions;					/** active sessions */
 		OpenNICResolverPool		mResolverPool;				/** the comlpete resolver pool */
 		OpenNICResolverPool		mResolverCache;				/** the active resolver pool */
 		QTcpServer				mServer;					/** the localhost TCP server */

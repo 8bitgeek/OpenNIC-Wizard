@@ -1,11 +1,11 @@
 #-------------------------------------------------
-#-------------------------------------------------
 
 QT       += core network
 
-TARGET = libcommon.a
+TARGET = common
 TEMPLATE = lib
-CONFIG += warn_on \
+CONFIG += staticlib \
+	warn_on \
 	thread \
 	qt \
 	debug
@@ -16,7 +16,8 @@ SOURCES += \
 
 HEADERS  += \ 
     opennicnet.h \
-    opennicpacket.h
+    opennicpacket.h \
+    opennicversion.h
 
 FORMS    += 
 

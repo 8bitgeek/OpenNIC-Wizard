@@ -28,11 +28,35 @@ OpenNICNet::~OpenNICNet()
 }
 
 /**
+  * @brief clear state
+  */
+void OpenNICNet::clear()
+{
+	mTXPacket.clear();
+	mRXPacket.clear();
+}
+
+/**
+  * @return the state of the socket
+  */
+bool OpenNICNet::isLive()
+{
+	return socket()->isOpen() && socket()->isValid();
+}
+
+/**
   * @brief
   */
-void OpenNICNet::send()
+void OpenNICNet::send(bool clear)
 {
-	mTXPacket.send(mSocket);
+	if ( isLive() )
+	{
+		mTXPacket.send(mSocket);
+	}
+	if (clear)
+	{
+		this->clear();
+	}
 }
 
 /**
@@ -50,3 +74,4 @@ void OpenNICNet::dataReady()
 {
 	emit dataReady(this);
 }
+

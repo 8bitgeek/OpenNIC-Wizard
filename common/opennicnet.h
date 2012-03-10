@@ -20,10 +20,13 @@ class OpenNICNet : public QObject
 	public:
 		OpenNICNet(QTcpSocket* socket, QObject *parent = 0);
 		virtual ~OpenNICNet();
+		QTcpSocket*				socket()	{return mSocket;}
 		OpenNICPacket&			rxPacket()	{return mRXPacket;}
 		OpenNICPacket&			txPacket()	{return mTXPacket;}
+		bool					isLive();
 	public slots:
-		void					send();
+		void					clear();
+		void					send(bool clear=false);
 	signals:
 		void					dataReady(OpenNICNet* net);
 	private slots:

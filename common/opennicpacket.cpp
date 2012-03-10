@@ -24,6 +24,7 @@ const QString OpenNICPacket::journal_text			= "journal_text";			/* the journal t
 const QString OpenNICPacket::async_message			= "async_message";			/* an async message */
 const QString OpenNICPacket::score_rules			= "score_rules";			/* score rules */
 const QString OpenNICPacket::score_internal			= "score_internal";			/* score internal */
+const QString OpenNICPacket::update_dns				= "update_dns";				/* force update dns now */
 
 
 OpenNICPacket::OpenNICPacket(QObject *parent)
@@ -33,10 +34,15 @@ OpenNICPacket::OpenNICPacket(QObject *parent)
 {
 }
 
+OpenNICPacket::~OpenNICPacket()
+{
+	clear();
+}
+
 /**
   * @brief set the name value pair of a data record in the packet
   */
-void OpenNICPacket::set(QString key, QVariant value)
+void OpenNICPacket::set(const QString& key, QVariant value)
 {
 	mData.insert(key,value);
 }
@@ -44,7 +50,7 @@ void OpenNICPacket::set(QString key, QVariant value)
 /**
   * @return the value from a key
   */
-QVariant OpenNICPacket::get(QString key)
+QVariant OpenNICPacket::get(const QString& key)
 {
 	QVariant rc;
 	if (contains(key))
@@ -55,11 +61,21 @@ QVariant OpenNICPacket::get(QString key)
 }
 
 /**
+  * @brief determine if the key is contained in teh packet
+  */
+bool OpenNICPacket::contains(const QString& key)
+{
+	return mData.contains(key);
+}
+
+/**
   * @brief clear the packet state
   */
 void OpenNICPacket::clear()
 {
 	mData.clear();
+	mRXState=0;
+	mRXLength=0;
 }
 
 /**
@@ -101,8 +117,11 @@ void OpenNICPacket::send(QTcpSocket* socket)
 {
 	if ( socket->isOpen() && socket->isValid() )
 	{
-		QDataStream stream(socket);
-		stream << mData;
+		QByteArray bytes;
+		QDataStream tcpStream(socket);
+		QDataStream byteStream(&bytes,QIODevice::ReadWrite);
+		byteStream << mData;
+		tcpStream << bytes;
 		socket->flush();
 	}
 }

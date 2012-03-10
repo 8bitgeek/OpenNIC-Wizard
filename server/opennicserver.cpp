@@ -141,11 +141,11 @@ void OpenNICServer::logPurge()
 void OpenNICServer::readSettings()
 {
 	QSettings settings("OpenNIC", "OpenNICService");
-	mTcpListenPort			= settings.value("tcp_listen_port",			DEFAULT_TCP_LISTEN_PORT).toInt();
-	setRefreshPeriod(settings.value("refresh_timer_period",	DEFAULT_REFRESH_TIMER_PERIOD).toInt());
-	setResolverCacheSize(settings.value("resolver_cache_size",DEFAULT_RESOLVER_CACHE_SIZE).toInt());
-	mScoreRules = settings.value("score_rules",DEFAULT_SCORE_RULES).toString();
-	mScoreInternal = settings.value("score_internal", true).toBool();
+	mTcpListenPort			= settings.value(	"tcp_listen_port",			DEFAULT_TCP_LISTEN_PORT).toInt();
+	setRefreshPeriod(		settings.value(		"refresh_timer_period",		DEFAULT_REFRESH_TIMER_PERIOD).toInt());
+	setResolverCacheSize(	settings.value(		"resolver_cache_size",		DEFAULT_RESOLVER_CACHE_SIZE).toInt());
+	mScoreRules				= settings.value(	"score_rules",				DEFAULT_SCORE_RULES).toString();
+	mScoreInternal			= settings.value(	"score_internal",			true).toBool();
 }
 
 /**
@@ -166,11 +166,12 @@ void OpenNICServer::writeSettings()
   */
 void OpenNICServer::newConnection()
 {
-	QTcpSocket* client;
-	while ( (client = mServer.nextPendingConnection()) != NULL )
+	QTcpSocket* socket;
+	while ( (socket = mServer.nextPendingConnection()) != NULL )
 	{
-		QObject::connect(client,SIGNAL(readyRead()),this,SLOT(readyRead()));
-		mSessions.append(client);
+		OpenNICNet* net = new OpenNICNet(socket);
+		QObject::connect(net,SIGNAL(dataReady(OpenNICNet*)),this,SLOT(dataReady(OpenNICNet*)));
+		mSessions.append(net);
 		log(tr("** client session created **"));
 	}
 }
@@ -178,77 +179,68 @@ void OpenNICServer::newConnection()
 /**
   * @brief get here on data available from client
   */
-void OpenNICServer::readyRead()
+void OpenNICServer::dataReady(OpenNICNet* net)
 {
-	mAsyncMessage.clear();
-	for(int n=0; n < mSessions.count(); n++)
+	if ( net->isLive() )
 	{
-		QTcpSocket* session = mSessions[n];
-		if ( session->isOpen() && session->isValid() )
+		QMapIterator<QString, QVariant>i(net->rxPacket().data());
+		while (i.hasNext())
 		{
-			QMap<QString,QVariant> clientPacket;
-			QDataStream stream(session);
-			log("got "+QString::number(stream.device()->bytesAvailable())+" bytes from client");
-			stream >> clientPacket;
-			QMapIterator<QString, QVariant>i(clientPacket);
-			while (i.hasNext())
+			i.next();
+			QString key = i.key();
+			QVariant value = i.value();
+			if ( key == OpenNICPacket::resolver_cache_size )
 			{
-				i.next();
-				QString key = i.key();
-				QVariant value = i.value();
-				if ( key == "resolver_cache_size" )
+				if (resolverCacheSize() != value.toInt())
 				{
-					if (resolverCacheSize() != value.toInt())
-					{
-						mAsyncMessage = tr("Settings Applied");
-					}
-					setResolverCacheSize(value.toInt());
+					mAsyncMessage = tr("Settings Applied");
 				}
-				else if ( key == "refresh_timer_period" )
+				setResolverCacheSize(value.toInt());
+			}
+			else if ( key == OpenNICPacket::refresh_timer_period )
+			{
+				if (refreshPeriod() != value.toInt())
 				{
-					if (refreshPeriod() != value.toInt())
-					{
-						mAsyncMessage = tr("Settings Applied");
-					}
-					setRefreshPeriod(value.toInt());
+					mAsyncMessage = tr("Settings Applied");
 				}
-				else if ( key == "bootstrap_t1_list" )
+				setRefreshPeriod(value.toInt());
+			}
+			else if ( key == OpenNICPacket::bootstrap_t1_list )
+			{
+				if ( OpenNICSystem::saveBootstrapT1List(value.toStringList()) )
 				{
-					if ( OpenNICSystem::saveBootstrapT1List(value.toStringList()) )
-					{
-						mAsyncMessage = tr("Bootstrap T1 List Saved");
-					}
-					else
-					{
-						mAsyncMessage = tr("There was a problem saving the T1 bootstrap list");
-					}
+					mAsyncMessage = tr("Bootstrap T1 List Saved");
 				}
-				else if ( key == "bootstrap_domains" )
+				else
 				{
-					if ( OpenNICSystem::saveTestDomains(value.toStringList()) )
-					{
-						mAsyncMessage = tr("Domain List Saved");
-					}
-					else
-					{
-						mAsyncMessage = tr("There was a problem saving the domains list");
-					}
-				}
-				else if ( key == "update_dns" )
-				{
-					updateDNS(resolverCacheSize());
-				}
-				else if ( key == "score_rules" )
-				{
-					mScoreRules = value.toString();
-				}
-				else if ( key == "score_internal" )
-				{
-					mScoreInternal = value.toBool();
+					mAsyncMessage = tr("There was a problem saving the T1 bootstrap list");
 				}
 			}
-
+			else if ( key == OpenNICPacket::bootstrap_domains )
+			{
+				if ( OpenNICSystem::saveTestDomains(value.toStringList()) )
+				{
+					mAsyncMessage = tr("Domain List Saved");
+				}
+				else
+				{
+					mAsyncMessage = tr("There was a problem saving the domains list");
+				}
+			}
+			else if ( key == OpenNICPacket::update_dns )
+			{
+				updateDNS(resolverCacheSize());
+			}
+			else if ( key == OpenNICPacket::score_rules )
+			{
+				mScoreRules = value.toString();
+			}
+			else if ( key == OpenNICPacket::score_internal )
+			{
+				mScoreInternal = value.toBool();
+			}
 		}
+
 	}
 	writeSettings();
 	if (!mAsyncMessage.isEmpty())
@@ -302,39 +294,14 @@ void OpenNICServer::purgeDeadSesssions()
 	/* get here regularly, purge dead sessions... */
 	for(int n=0; n < mSessions.count(); n++)
 	{
-		QTcpSocket* session = mSessions.at(n);
-		if ( !session->isOpen() || !session->isValid() )
+		OpenNICNet* net = mSessions[n];
+		if ( !net->isLive() )
 		{
 			log("** CLIENT SESSION DISPOSED **");
 			mSessions.takeAt(n);
-			delete session;
+			delete net;
 		}
 	}
-}
-
-/**
-  * @brief Make a server packet
-  * @return a map of key/value pairs
-  */
-QByteArray& OpenNICServer::makeServerPacket(QByteArray& bytes)
-{
-
-	QDataStream stream(&bytes,QIODevice::ReadWrite);
-	QMap<QString,QVariant> packet;
-	packet.insert("tcp_listen_port",			mTcpListenPort);
-	packet.insert("refresh_timer_period",		refreshPeriod());
-	packet.insert("resolver_cache_size",		resolverCacheSize());
-	packet.insert("resolver_pool",				mResolverPool.toStringList());
-	packet.insert("resolver_cache",				mResolverCache.toStringList());
-	packet.insert("bootstrap_t1_list",			OpenNICSystem::getBootstrapT1List());
-	packet.insert("bootstrap_domains",			OpenNICSystem::getTestDomains().toStringList());
-	packet.insert("system_text",				OpenNICSystem::getSystemResolverList());
-	packet.insert("journal_text",				mLog);
-	packet.insert("async_message",				mAsyncMessage);
-	packet.insert("score_rules",				mScoreRules);
-	packet.insert("score_internal",				mScoreInternal);
-	stream << packet;
-	return bytes;
 }
 
 /**
@@ -344,17 +311,25 @@ void OpenNICServer::announcePackets()
 {
 	if ( mSessions.count() )
 	{
-		QByteArray packet;
-		makeServerPacket(packet);
 		for(int n=0; n < mSessions.count(); n++)
 		{
-			QTcpSocket* session = mSessions[n];
-			if ( session->isOpen() && session->isValid() )
+			OpenNICNet* net = mSessions[n];
+			if ( net->isLive() )
 			{
-				QDataStream stream(session);
-				stream << packet;
-				session->flush();
-				//log("sent "+QString::number(packet.length())+" bytes.");
+
+				net->txPacket().set(OpenNICPacket::tcp_listen_port,			mTcpListenPort);
+				net->txPacket().set(OpenNICPacket::refresh_timer_period,	refreshPeriod());
+				net->txPacket().set(OpenNICPacket::resolver_cache_size,		resolverCacheSize());
+				net->txPacket().set(OpenNICPacket::resolver_pool,			mResolverPool.toStringList());
+				net->txPacket().set(OpenNICPacket::resolver_cache,			mResolverCache.toStringList());
+				net->txPacket().set(OpenNICPacket::bootstrap_t1_list,		OpenNICSystem::getBootstrapT1List());
+				net->txPacket().set(OpenNICPacket::bootstrap_domains,		OpenNICSystem::getTestDomains().toStringList());
+				net->txPacket().set(OpenNICPacket::system_text,				OpenNICSystem::getSystemResolverList());
+				net->txPacket().set(OpenNICPacket::journal_text,			mLog);
+				net->txPacket().set(OpenNICPacket::async_message,			mAsyncMessage);
+				net->txPacket().set(OpenNICPacket::score_rules,				mScoreRules);
+				net->txPacket().set(OpenNICPacket::score_internal,			mScoreInternal);
+				net->send(true);
 			}
 		}
 		logPurge();
