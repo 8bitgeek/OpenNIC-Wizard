@@ -1,8 +1,4 @@
 #-------------------------------------------------
-#
-# Project created by QtCreator 2012-02-21T22:22:50
-#
-#-------------------------------------------------
 
 QT       += core gui network
 
@@ -18,8 +14,11 @@ SOURCES += main.cpp\
 		opennic.cpp \
     opennicqueryhistorydialog.cpp
 
+INCLUDEPATH += ../common
+
 HEADERS  += opennic.h \
-    opennicqueryhistorydialog.h
+	opennicqueryhistorydialog.h
+
 
 FORMS    += opennic.ui \
 		settings.ui \
@@ -28,4 +27,5 @@ FORMS    += opennic.ui \
 RESOURCES += \
 		opennic.qrc
 
+LIBS += ../common/libcommon.a
 win32:LIBS += C:/QtSDK/mingw/lib/libwsock32.a

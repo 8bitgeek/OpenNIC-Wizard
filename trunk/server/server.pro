@@ -1,8 +1,4 @@
 #-------------------------------------------------
-#
-# Project created by QtCreator 2012-02-21T22:22:50
-#
-#-------------------------------------------------
 
 QT  += core network script
 
@@ -32,6 +28,8 @@ unix::SOURCES += qtservice_unix.cpp \
 		qtunixserversocket.cpp \
 		qtunixsocket.cpp
 
+INCLUDEPATH += ../common
+
 HEADERS  += opennicserver.h \
 		qtservice.h \
 		qtservice_p.h \
@@ -48,4 +46,5 @@ HEADERS  += opennicserver.h \
 RESOURCES += \
 		opennicserver.qrc
 
+LIBS += ../common/libcommon.a
 win32:LIBS += C:/QtSDK/mingw/lib/libwsock32.a

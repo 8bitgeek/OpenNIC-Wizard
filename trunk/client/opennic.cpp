@@ -72,12 +72,13 @@ OpenNIC::OpenNIC(QWidget *parent)
 	mTcpSocket.close();
 	mBalloonStatus = tr("Initializing...");
 	mRefreshTimer = startTimer(DEFAULT_REFRESH);
+	mLocalNet = new OpenNICNet(&mTcpSocket);
+	QObject::connect(mLocalNet,SIGNAL(dataReady(OpenNICNet*)),this,SLOT(dataReady(OpenNICNet*)));
 	QObject::connect(&mTcpSocket,SIGNAL(connected()),this,SLOT(tcpConnected()));
 	QObject::connect(&mTcpSocket,SIGNAL(disconnected()),this,SLOT(tcpDisconnected()));
 	QObject::connect(&mTcpSocket,SIGNAL(error(QAbstractSocket::SocketError)),this,SLOT(tcpError(QAbstractSocket::SocketError)));
 	QObject::connect(&mTcpSocket,SIGNAL(stateChanged(QAbstractSocket::SocketState)),this,SLOT(tcpStateChanged(QAbstractSocket::SocketState)));
 	QObject::connect(&mTcpSocket,SIGNAL(hostFound()),this,SLOT(tcpHostFound()));
-	QObject::connect(&mTcpSocket,SIGNAL(readyRead()),this,SLOT(readyRead()));
 	QObject::connect(this,SIGNAL(accepted()),this,SLOT(update()));
 	QObject::connect(ui->saveT1List,SIGNAL(clicked()),this,SLOT(updateT1List()));
 	QObject::connect(ui->buttonBox,SIGNAL(clicked(QAbstractButton*)),this,SLOT(clicked(QAbstractButton*)));
@@ -350,10 +351,12 @@ void OpenNIC::updateResolverPool(QStringList resolverPool)
 	table->sortByColumn(1,Qt::DescendingOrder);
 }
 
-
-void OpenNIC::storeServerPacket(QMap<QString,QVariant>& map)
+/**
+  * @brief get here when receiver data is ready...
+  */
+void OpenNIC::dataReady(OpenNICNet* net)
 {
-	QMapIterator<QString, QVariant>i(map);
+	QMapIterator<QString, QVariant>i(net->rxPacket().data());
 	while (i.hasNext())
 	{
 		i.next();
@@ -441,33 +444,15 @@ void OpenNIC::storeServerPacket(QMap<QString,QVariant>& map)
 }
 
 /**
-  * @brief Map client status
-  * @return a map of key/value pairs
-  */
-QMap<QString,QVariant> OpenNIC::clientSettingsPacket()
-{
-	QMap<QString,QVariant> map;
-	map.insert("refresh_timer_period", ui->refreshRate->value());
-	map.insert("resolver_cache_size", ui->resolverCount->value());
-	if (mScoreRulesTextChanged)
-	{
-		map.insert("score_rules",ui->scoreRuleEditor->toPlainText());
-		mScoreRulesTextChanged=false;
-	}
-	map.insert("score_internal",ui->useBuiltInScoreRule->isChecked());
-	return map;
-}
-
-/**
   * @brief Update the service
   */
 void OpenNIC::update()
 {
-	QDataStream stream(&mTcpSocket);
-	QMap<QString,QVariant> clientPacket;
-	clientPacket = clientSettingsPacket();
-	stream << clientPacket;
-	mTcpSocket.flush();
+	mLocalNet->txPacket().set(OpenNICPacket::refresh_timer_period,	ui->refreshRate->value());
+	mLocalNet->txPacket().set(OpenNICPacket::resolver_cache_size,	ui->resolverCount->value());
+	mLocalNet->txPacket().set(OpenNICPacket::score_rules,			ui->scoreRuleEditor->toPlainText());
+	mLocalNet->txPacket().set(OpenNICPacket::score_internal,		ui->useBuiltInScoreRule->isChecked());
+	mLocalNet->send(true);
 }
 
 /**
@@ -477,12 +462,8 @@ void OpenNIC::updateT1List()
 {
 	if ( QMessageBox::question(this,tr("Confirm"),tr("Are you sure you wish to overwrite the T1 bootstrap file?"),QMessageBox::Yes,QMessageBox::No) == QMessageBox::Yes)
 	{
-		QDataStream stream(&mTcpSocket);
-		QMap<QString,QVariant> clientPacket;
-		QString t1Text = ui->t1List->toPlainText();
-		clientPacket.insert("bootstrap_t1_list",t1Text.split("\n"));
-		stream << clientPacket;
-		mTcpSocket.flush();
+		mLocalNet->txPacket().set(OpenNICPacket::bootstrap_t1_list,	ui->t1List->toPlainText().split("\n"));
+		mLocalNet->send(true);
 	}
 }
 
@@ -493,12 +474,8 @@ void OpenNIC::updateDomains()
 {
 	if ( QMessageBox::question(this,tr("Confirm"),tr("Are you sure you wish to overwrite the domains bootstrap file?"),QMessageBox::Yes,QMessageBox::No) == QMessageBox::Yes)
 	{
-		QDataStream stream(&mTcpSocket);
-		QMap<QString,QVariant> clientPacket;
-		QString domainsText = ui->domainList->toPlainText();
-		clientPacket.insert("bootstrap_domains",domainsText.split("\n"));
-		stream << clientPacket;
-		mTcpSocket.flush();
+		mLocalNet->txPacket().set(OpenNICPacket::bootstrap_domains,	ui->domainList->toPlainText().split("\n"));
+		mLocalNet->send(true);
 	}
 }
 
@@ -527,46 +504,6 @@ void OpenNIC::connectToService()
 	}
 }
 
-/**
-  * @brief get here when data is available from the server.
-  */
-void OpenNIC::readyRead()
-{
-	QByteArray chunk;
-	QDataStream stream(&mTcpSocket);
-	switch(mPacketState)
-	{
-	case 0:
-		mPacketBytes.clear();
-		stream >> mPacketLength;
-		if (mPacketLength == 0xFFFFFFFF)
-		{
-			return;
-		}
-		mPacketState=1;
-	case 1:
-		chunk = stream.device()->readAll();
-		mPacketBytes.append(chunk);
-		if (mPacketBytes.length()<(int)mPacketLength)
-		{
-			return;
-		}
-		mPacketState=0;
-		break;
-	}
-	QMap<QString,QVariant> serverPacket;
-	QDataStream byteStream(&mPacketBytes,QIODevice::ReadOnly);
-	byteStream >> serverPacket;
-	if (!serverPacket.isEmpty() )
-	{
-		mBalloonStatus="";
-		storeServerPacket(serverPacket);
-	}
-	if ( !mTcpSocket.isValid() || !mTcpSocket.isOpen() )
-	{
-		mBalloonStatus=tr("OpenNIC Service unexpectedly closed");
-	}
-}
 
 /**
   * @brief Make the applet look enabled (active/connected).

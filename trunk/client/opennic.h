@@ -23,7 +23,8 @@
 #include <QTcpSocket>
 #include <QAbstractButton>
 
-#define	VERSION_STRING	"0.3.rc2"
+#include "opennicversion.h"
+#include "opennicnet.h"
 
 namespace Ui
 {
@@ -53,6 +54,7 @@ class OpenNIC : public QDialog
 		virtual void			closeEvent(QCloseEvent* e);
 
 	private slots:
+		void					dataReady(OpenNICNet* net);
 		void					scoreRuleEditorTextChanged();
 		void					cellClicked ( int row, int column );
 		void					cellDoubleClicked ( int row, int column );
@@ -60,12 +62,10 @@ class OpenNIC : public QDialog
 		void					setDisabledState();
 		void					tabChanged(int tab);
 		void					clicked(QAbstractButton* button);
-		QMap<QString,QVariant>	clientSettingsPacket();
 		void					update();
 		void					updateT1List();
 		void					updateDomains();
 		void					updateDNS();
-		void					readyRead();
 		void					readSettings();
 		void					writeSettings();
 		void					settings();
@@ -95,12 +95,12 @@ class OpenNIC : public QDialog
 		quint32					mPacketLength;
 		int						mTcpListenPort;				/** the TCP listen port */
 		bool					mInitialized;				/** server variables are initialized? */
-		QTcpSocket				mTcpSocket;
         QString                 mBalloonStatus;             /** status message to apply to ballon */
-		QByteArray				mPacketBytes;
 		QSystemTrayIcon::MessageIcon mBalloonIcon;
 		bool					mActiveState;				/** applet if connected and live or disconeced */
 		bool					mScoreRulesTextChanged;
+		QTcpSocket				mTcpSocket;
+		OpenNICNet*				mLocalNet;					/** lochost comm */
 };
 
 #endif // OPENNIC_H
