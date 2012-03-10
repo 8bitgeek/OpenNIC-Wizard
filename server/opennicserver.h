@@ -47,6 +47,10 @@ class OpenNICServer : public QObject
 		void					setResolverCacheSize(int size);
 
 		static void				log(QString msg);
+
+		static QString&			scoreRules()	{return mScoreRules;}
+		static bool				scoreInternal()	{return mScoreInternal;}
+
 	signals:
 		void					quit();
 
@@ -78,10 +82,12 @@ class OpenNICServer : public QObject
 		virtual void			timerEvent(QTimerEvent* e);
 
 	private:
+		static QStringList		mLog;						/** log history */
+		static QString			mScoreRules;				/** the score rules javascript text */
+		static bool				mScoreInternal;				/** use internal scoring rules? */
 		QList<QTcpSocket*>		mSessions;					/** active sessions */
 		OpenNICResolverPool		mResolverPool;				/** the comlpete resolver pool */
 		OpenNICResolverPool		mResolverCache;				/** the active resolver pool */
-		static QStringList		mLog;						/** log history */
 		QTcpServer				mServer;					/** the localhost TCP server */
 		int						mRefreshTimerPeriod;		/** the refresh timer period in minutes */
 		int						mResolverCacheSize;			/** the number of resolvers to keep in the cache (and apply to the O/S) */

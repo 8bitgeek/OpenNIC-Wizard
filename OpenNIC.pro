@@ -14,5 +14,6 @@ CONFIG += warn_on \
 	uitools \
 	debug
 
-SUBDIRS = server \
+SUBDIRS = common \
+		server \
 		client

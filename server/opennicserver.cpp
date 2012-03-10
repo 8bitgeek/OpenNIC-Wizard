@@ -31,8 +31,11 @@
 #define MAX_LOG_LINES							100			/* max lines to keep in log cache */
 #define BOOTSTRAP_TIMER							(15*1000)	/* boostrap timer interva */
 #define BOOTSTRAP_TICKS							12			/* number of bootstrap ticks */
+#define DEFAULT_SCORE_RULES						"function score() {\n return 0.0;\n}\n"
 
-QStringList		OpenNICServer::mLog;	/* the log text */
+QStringList		OpenNICServer::mLog;					/* the log text */
+QString			OpenNICServer::mScoreRules;				/* the score rules javascript text */
+bool			OpenNICServer::mScoreInternal=true;		/* use internal scoring rules? */
 
 #define inherited QObject
 
@@ -141,6 +144,8 @@ void OpenNICServer::readSettings()
 	mTcpListenPort			= settings.value("tcp_listen_port",			DEFAULT_TCP_LISTEN_PORT).toInt();
 	setRefreshPeriod(settings.value("refresh_timer_period",	DEFAULT_REFRESH_TIMER_PERIOD).toInt());
 	setResolverCacheSize(settings.value("resolver_cache_size",DEFAULT_RESOLVER_CACHE_SIZE).toInt());
+	mScoreRules = settings.value("score_rules",DEFAULT_SCORE_RULES).toString();
+	mScoreInternal = settings.value("score_internal", true).toBool();
 }
 
 /**
@@ -152,6 +157,8 @@ void OpenNICServer::writeSettings()
 	settings.setValue("tcp_listen_port",			mTcpListenPort);
 	settings.setValue("refresh_timer_period",		refreshPeriod());
 	settings.setValue("resolver_cache_size",		resolverCacheSize());
+	settings.setValue("score_rules",				mScoreRules);
+	settings.setValue(("score_internal"),			mScoreInternal);
 }
 
 /**
@@ -230,6 +237,14 @@ void OpenNICServer::readyRead()
 				else if ( key == "update_dns" )
 				{
 					updateDNS(resolverCacheSize());
+				}
+				else if ( key == "score_rules" )
+				{
+					mScoreRules = value.toString();
+				}
+				else if ( key == "score_internal" )
+				{
+					mScoreInternal = value.toBool();
 				}
 			}
 
@@ -316,6 +331,8 @@ QByteArray& OpenNICServer::makeServerPacket(QByteArray& bytes)
 	packet.insert("system_text",				OpenNICSystem::getSystemResolverList());
 	packet.insert("journal_text",				mLog);
 	packet.insert("async_message",				mAsyncMessage);
+	packet.insert("score_rules",				mScoreRules);
+	packet.insert("score_internal",				mScoreInternal);
 	stream << packet;
 	return bytes;
 }

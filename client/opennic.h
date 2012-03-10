@@ -53,6 +53,7 @@ class OpenNIC : public QDialog
 		virtual void			closeEvent(QCloseEvent* e);
 
 	private slots:
+		void					scoreRuleEditorTextChanged();
 		void					cellClicked ( int row, int column );
 		void					cellDoubleClicked ( int row, int column );
 		void					setEnabledState();
@@ -88,7 +89,7 @@ class OpenNIC : public QDialog
 		QAction*				mActionQuit;
 		QSystemTrayIcon*		mTrayIcon;
 		QMenu*					mTrayIconMenu;
-		Ui::OpenNICSettings*	uiSettings;
+		Ui::OpenNICSettings*	ui;
 		int						mRefreshTimer;
 		int						mPacketState;				/** 0 expecting, 1 receiving, 2 completed. */
 		quint32					mPacketLength;
@@ -99,6 +100,7 @@ class OpenNIC : public QDialog
 		QByteArray				mPacketBytes;
 		QSystemTrayIcon::MessageIcon mBalloonIcon;
 		bool					mActiveState;				/** applet if connected and live or disconeced */
+		bool					mScoreRulesTextChanged;
 };
 
 #endif // OPENNIC_H

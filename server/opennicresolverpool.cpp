@@ -9,6 +9,7 @@
 #include "opennicresolverpool.h"
 #include "opennicsystem.h"
 #include "opennicserver.h"
+#include <QScriptValue>
 
 OpenNICResolverPool::OpenNICResolverPool(QObject *parent)
 : QObject(parent)
@@ -208,6 +209,45 @@ double OpenNICResolverPool::latency(double& min, double& max)
 }
 
 /**
+  * @brief score the resolver using the internal rules
+  * @return a score
+  */
+double OpenNICResolverPool::scoreResolverInternal(OpenNICResolver* resolver, double /* averagePoolLatency */, double /* minPoolLatency */, double maxPoolLatency )
+{
+	/* perform the scoring */
+	double resolverAverageLatency = resolver->averageLatency();
+	if (resolverAverageLatency < 0.0)
+	{
+		resolverAverageLatency = maxPoolLatency;
+	}
+	double score = (maxPoolLatency - resolverAverageLatency);
+	if (resolver->kind()=="T1")							score /= 1.5;
+	if (resolver->kind()=="T2")							score *= 1.5;
+	if (resolver->resolvesNIC("opennic"))				score *= 1.75;
+	if (resolver->status() == OpenNICResolver::Red)		score /= 2;
+	if (resolver->status() == OpenNICResolver::Yellow)	score /= 1.25;
+	/* return the result */
+	return score;
+}
+
+/**
+  * @brief score the resolver using the internal rules
+  * @return a score
+  */
+double OpenNICResolverPool::scoreResolverScript(OpenNICResolver* resolver, double averagePoolLatency, double minPoolLatency, double maxPoolLatency )
+{
+	mScriptEngine.globalObject().setProperty("averagePoolLatency",averagePoolLatency);
+	mScriptEngine.globalObject().setProperty("minPoolLatency",minPoolLatency);
+	mScriptEngine.globalObject().setProperty("maxPoolLatency",maxPoolLatency);
+	mScriptEngine.globalObject().setProperty("resolverAverageLatency",resolver->averageLatency());
+	mScriptEngine.globalObject().setProperty("resolverKind",resolver->kind());
+	mScriptEngine.globalObject().setProperty("resolverStatus",resolver->status());
+	QScriptValue result = mScriptEngine.evaluate(OpenNICServer::scoreRules());
+	return result.toNumber();
+}
+
+
+/**
   * @brief score the items in the pool
   */
 void OpenNICResolverPool::score()
@@ -219,7 +259,7 @@ void OpenNICResolverPool::score()
 		double resolverAverageLatency;
 		double score;
 		double min,max;
-		latency(min,max);
+		double averagePoolLatency = latency(min,max);
 		OpenNICServer::log("min="+QString::number(min)+" max="+QString::number(max));
 		/** apply the scores... */
 		for(int n=0; n < nResolvers; n++)
@@ -230,14 +270,14 @@ void OpenNICResolverPool::score()
 			{
 				resolverAverageLatency = max;
 			}
-
-			/* perform the scoring */
-			score = max - resolverAverageLatency;
-			if (resolver->kind()=="T1")							score /= 1.5;
-			if (resolver->kind()=="T2")							score *= 1.5;
-			if (resolver->resolvesNIC("opennic"))				score *= 1.75;
-			if (resolver->status() == OpenNICResolver::Red)		score /= 2;
-			if (resolver->status() == OpenNICResolver::Yellow)	score /= 1.25;
+			if (OpenNICServer::scoreInternal())
+			{
+				score = scoreResolverInternal(resolver,averagePoolLatency,min,max);
+			}
+			else
+			{
+				score = scoreResolverScript(resolver,averagePoolLatency,min,max);
+			}
 			/* store the result */
 			resolver->setScore(score);
 		}
