@@ -13,6 +13,7 @@
 #include <QList>
 #include <QStringList>
 #include <QTimerEvent>
+#include <QScriptEngine>
 #include "opennicresolver.h"
 
 class OpenNICResolverPool : public QObject
@@ -47,9 +48,12 @@ class OpenNICResolverPool : public QObject
 		void							clear();
 	private:
 		double							latency(double& min, double& max);
+		double							scoreResolverInternal(OpenNICResolver* resolver, double averagePoolLatency, double minPoolLatency, double maxPoolLatency );
+		double							scoreResolverScript(OpenNICResolver* resolver, double averagePoolLatency, double minPoolLatency, double maxPoolLatency );
 		void							swap(int a,int b);
 		QList<OpenNICResolver*>			mResolvers;
 		QStringList						mStringList;
+		QScriptEngine					mScriptEngine;
 };
 
 

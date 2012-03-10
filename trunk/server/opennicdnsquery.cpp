@@ -394,17 +394,11 @@ void OpenNICDnsQuery::processDatagram(QByteArray& datagram)
 					this->addr().setAddress(sAddr);
 					terminate(DNS_OK);
 				}
-				else
-				{
-					terminate(DNS_ERROR);
-				}
-			}
-			else
-			{
-				terminate(DNS_ERROR);
 			}
 		}
 	}
+
+	terminate(DNS_ERROR);
 }
 
 /**

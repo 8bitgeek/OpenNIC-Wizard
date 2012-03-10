@@ -55,7 +55,7 @@ OpenNIC::OpenNIC(QWidget *parent)
 , mActionQuit(NULL)
 , mTrayIcon(NULL)
 , mTrayIconMenu(NULL)
-, uiSettings(new Ui::OpenNICSettings)
+, ui(new Ui::OpenNICSettings)
 , mRefreshTimer(0)
 , mPacketState(0)
 , mPacketLength(0)
@@ -63,8 +63,9 @@ OpenNIC::OpenNIC(QWidget *parent)
 , mInitialized(false)
 , mBalloonIcon(QSystemTrayIcon::Information)
 , mActiveState(false)
+, mScoreRulesTextChanged(false)
 {
-	uiSettings->setupUi(this);
+	ui->setupUi(this);
 	createActions();
 	createTrayIcon();
 	QObject::connect(this,SIGNAL(accepted()),this,SLOT(writeSettings()));
@@ -78,19 +79,20 @@ OpenNIC::OpenNIC(QWidget *parent)
 	QObject::connect(&mTcpSocket,SIGNAL(hostFound()),this,SLOT(tcpHostFound()));
 	QObject::connect(&mTcpSocket,SIGNAL(readyRead()),this,SLOT(readyRead()));
 	QObject::connect(this,SIGNAL(accepted()),this,SLOT(update()));
-	QObject::connect(uiSettings->saveT1List,SIGNAL(clicked()),this,SLOT(updateT1List()));
-	QObject::connect(uiSettings->buttonBox,SIGNAL(clicked(QAbstractButton*)),this,SLOT(clicked(QAbstractButton*)));
-	QObject::connect(uiSettings->refreshNow,SIGNAL(clicked()),this,SLOT(updateDNS()));
-	QObject::connect(uiSettings->tabs,SIGNAL(currentChanged(int)),this,SLOT(tabChanged(int)));
-	QObject::connect(uiSettings->saveDomains,SIGNAL(clicked()),this,SLOT(updateDomains()));
-	QObject::connect(uiSettings->resolverPoolTable,SIGNAL(cellClicked(int,int)),this,SLOT(cellClicked(int,int)));
-	QObject::connect(uiSettings->resolverPoolTable,SIGNAL(cellDoubleClicked(int,int)),this,SLOT(cellDoubleClicked(int,int)));
+	QObject::connect(ui->saveT1List,SIGNAL(clicked()),this,SLOT(updateT1List()));
+	QObject::connect(ui->buttonBox,SIGNAL(clicked(QAbstractButton*)),this,SLOT(clicked(QAbstractButton*)));
+	QObject::connect(ui->refreshNow,SIGNAL(clicked()),this,SLOT(updateDNS()));
+	QObject::connect(ui->tabs,SIGNAL(currentChanged(int)),this,SLOT(tabChanged(int)));
+	QObject::connect(ui->saveDomains,SIGNAL(clicked()),this,SLOT(updateDomains()));
+	QObject::connect(ui->resolverPoolTable,SIGNAL(cellClicked(int,int)),this,SLOT(cellClicked(int,int)));
+	QObject::connect(ui->resolverPoolTable,SIGNAL(cellDoubleClicked(int,int)),this,SLOT(cellDoubleClicked(int,int)));
+	QObject::connect(ui->scoreRuleEditor,SIGNAL(textChanged()),this,SLOT(scoreRuleEditorTextChanged()));
 	setDisabledState();
 }
 
 OpenNIC::~OpenNIC()
 {
-	delete uiSettings;
+	delete ui;
 }
 
 void OpenNIC::slowRefresh()
@@ -129,7 +131,7 @@ void OpenNIC::iconActivated(QSystemTrayIcon::ActivationReason reason)
 		if ( mBalloonStatus.isEmpty() )
 		{
 			mBalloonIcon = QSystemTrayIcon::Information;
-			showBalloonMessage( tr( "OpenNIC Resolvers" ), uiSettings->cache->toPlainText() );
+			showBalloonMessage( tr( "OpenNIC Resolvers" ), ui->cache->toPlainText() );
 		}
 		else
 		{
@@ -201,7 +203,7 @@ void OpenNIC::maybeQuit()
   */
 void OpenNIC::clicked(QAbstractButton* button)
 {
-	if ( uiSettings->buttonBox->buttonRole(button) == QDialogButtonBox::ApplyRole)
+	if ( ui->buttonBox->buttonRole(button) == QDialogButtonBox::ApplyRole)
 	{
 		update();
 	}
@@ -212,14 +214,14 @@ void OpenNIC::clicked(QAbstractButton* button)
   */
 void OpenNIC::tabChanged(int tab)
 {
-	QDialogButtonBox* buttonBox = uiSettings->buttonBox;
+	QDialogButtonBox* buttonBox = ui->buttonBox;
 	QList<QAbstractButton *> buttons = buttonBox->buttons();
 	for(int n=0; n < buttons.count(); n++)
 	{
 		QAbstractButton* button = buttons.at(n);
 		if (buttonBox->buttonRole(button) == QDialogButtonBox::ApplyRole || buttonBox->buttonRole(button) == QDialogButtonBox::AcceptRole)
 		{
-			if ( tab == 1 )
+			if ( tab == 1 || tab == 5 )
 			{
 				button->setEnabled(true);
 			}
@@ -257,6 +259,11 @@ void OpenNIC::cellDoubleClicked ( int row, int column )
 {
 	OpenNICQueryHistoryDialog dialog;
 	dialog.exec();
+}
+
+void OpenNIC::scoreRuleEditorTextChanged()
+{
+	mScoreRulesTextChanged=true;
 }
 
 /**
@@ -298,7 +305,7 @@ void OpenNIC::updateResolverPool(QStringList resolverPool)
 {
 	/* @brief <status>;<score>;<kind>;<hostAddress>; */
 
-	QTableWidget* table = uiSettings->resolverPoolTable;
+	QTableWidget* table = ui->resolverPoolTable;
 	double minScore,maxScore;
 	scoreMinMax(resolverPool, minScore, maxScore);
 	table->setRowCount(resolverPool.count());
@@ -340,6 +347,7 @@ void OpenNIC::updateResolverPool(QStringList resolverPool)
 	table->resizeColumnsToContents();
 	table->resizeRowsToContents();
 	table->setSortingEnabled(true);
+	table->sortByColumn(1,Qt::DescendingOrder);
 }
 
 
@@ -363,51 +371,51 @@ void OpenNIC::storeServerPacket(QMap<QString,QVariant>& map)
 				localResolverCache.append(parts.at(3));
 			}
 			QString newText = localResolverCache.join("\n");
-			QString currentText = uiSettings->cache->toPlainText();
+			QString currentText = ui->cache->toPlainText();
 			if ( newText != currentText )
 			{
-				uiSettings->cache->setPlainText(localResolverCache.join("\n"));
+				ui->cache->setPlainText(localResolverCache.join("\n"));
 			}
 		}
 		else if ( key == "refresh_timer_period" )
 		{
-			if ( uiSettings->refreshRate->value() !=  value.toInt() )
+			if ( ui->refreshRate->value() !=  value.toInt() )
 			{
-				uiSettings->refreshRate->setValue(value.toInt());
+				ui->refreshRate->setValue(value.toInt());
 			}
 		}
 		else if ( key == "resolver_cache_size" )
 		{
-			if ( uiSettings->resolverCount->value() != value.toInt() )
+			if ( ui->resolverCount->value() != value.toInt() )
 			{
-				uiSettings->resolverCount->setValue(value.toInt());
+				ui->resolverCount->setValue(value.toInt());
 			}
 		}
 		else if ( key == "bootstrap_t1_list" )
 		{
-			QString currentText = uiSettings->t1List->toPlainText();
+			QString currentText = ui->t1List->toPlainText();
 			QString newText = value.toStringList().join("\n");
 			if ( currentText != newText )
 			{
-				uiSettings->t1List->setPlainText(newText);
+				ui->t1List->setPlainText(newText);
 			}
 		}
 		else if ( key == "bootstrap_domains" )
 		{
-			QString currentText = uiSettings->domainList->toPlainText();
+			QString currentText = ui->domainList->toPlainText();
 			QString newText = value.toStringList().join("\n");
 			if ( currentText != newText )
 			{
-				uiSettings->domainList->setPlainText(newText);
+				ui->domainList->setPlainText(newText);
 			}
 		}
 		else if ( key == "resolver_pool" )				updateResolverPool(value.toStringList());
-		else if ( key == "system_text" )				uiSettings->systemText->setPlainText(value.toString());
+		else if ( key == "system_text" )				ui->systemText->setPlainText(value.toString());
 		else if ( key == "journal_text" )
 		{
 			QStringList journalText = value.toStringList();
-			QListWidget* journal = uiSettings->journalList;
-			while(journal->count()>150)
+			QListWidget* journal = ui->journalList;
+			while(journal->count()>200)
 			{
 				QListWidgetItem* item = journal->takeItem(0);
 				if ( item != NULL )
@@ -421,6 +429,14 @@ void OpenNIC::storeServerPacket(QMap<QString,QVariant>& map)
 		{
 			QMessageBox::information(this,tr("Sevice Message"),value.toString());
 		}
+		else if ( key == "score_rules" && !value.toString().isEmpty() )
+		{
+			ui->scoreRuleEditor->setPlainText(value.toString());
+		}
+		else if ( key == "score_internal" )
+		{
+			ui->useBuiltInScoreRule->setChecked(value.toBool());
+		}
 	}
 }
 
@@ -431,8 +447,14 @@ void OpenNIC::storeServerPacket(QMap<QString,QVariant>& map)
 QMap<QString,QVariant> OpenNIC::clientSettingsPacket()
 {
 	QMap<QString,QVariant> map;
-	map.insert("refresh_timer_period", uiSettings->refreshRate->value());
-	map.insert("resolver_cache_size", uiSettings->resolverCount->value());
+	map.insert("refresh_timer_period", ui->refreshRate->value());
+	map.insert("resolver_cache_size", ui->resolverCount->value());
+	if (mScoreRulesTextChanged)
+	{
+		map.insert("score_rules",ui->scoreRuleEditor->toPlainText());
+		mScoreRulesTextChanged=false;
+	}
+	map.insert("score_internal",ui->useBuiltInScoreRule->isChecked());
 	return map;
 }
 
@@ -457,7 +479,7 @@ void OpenNIC::updateT1List()
 	{
 		QDataStream stream(&mTcpSocket);
 		QMap<QString,QVariant> clientPacket;
-		QString t1Text = uiSettings->t1List->toPlainText();
+		QString t1Text = ui->t1List->toPlainText();
 		clientPacket.insert("bootstrap_t1_list",t1Text.split("\n"));
 		stream << clientPacket;
 		mTcpSocket.flush();
@@ -473,7 +495,7 @@ void OpenNIC::updateDomains()
 	{
 		QDataStream stream(&mTcpSocket);
 		QMap<QString,QVariant> clientPacket;
-		QString domainsText = uiSettings->domainList->toPlainText();
+		QString domainsText = ui->domainList->toPlainText();
 		clientPacket.insert("bootstrap_domains",domainsText.split("\n"));
 		stream << clientPacket;
 		mTcpSocket.flush();
@@ -552,9 +574,10 @@ void OpenNIC::readyRead()
 void OpenNIC::setEnabledState()
 {
 	mActiveState=true;
-	uiSettings->refreshNow->setEnabled(true);
-	uiSettings->buttonBox->setEnabled(true);
-	uiSettings->resolverPool->setEnabled(true);
+	ui->refreshNow->setEnabled(true);
+	ui->buttonBox->setEnabled(true);
+	ui->resolverPool->setEnabled(true);
+	ui->scoreRuleEditor->setEnabled(true);
 }
 
 /**
@@ -563,9 +586,10 @@ void OpenNIC::setEnabledState()
 void OpenNIC::setDisabledState()
 {
 	mActiveState=false;
-	uiSettings->refreshNow->setEnabled(false);
-	uiSettings->buttonBox->setEnabled(false);
-	uiSettings->resolverPool->setEnabled(false);
+	ui->refreshNow->setEnabled(false);
+	ui->buttonBox->setEnabled(false);
+	ui->resolverPool->setEnabled(false);
+	ui->scoreRuleEditor->setEnabled(false);
 }
 
 
