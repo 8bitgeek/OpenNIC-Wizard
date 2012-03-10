@@ -28,6 +28,7 @@ class OpenNICNet : public QObject
 		void					clear();
 		void					send(bool clear=false);
 	signals:
+		void					pollKeyValue(QString& key, QVariant& value, bool& valid);
 		void					dataReady(OpenNICNet* net);
 	private slots:
 		void					readyRead();

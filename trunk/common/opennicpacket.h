@@ -35,6 +35,7 @@ class OpenNICPacket : public QObject
 		static const QString	score_rules;					/* score rules */
 		static const QString	score_internal;					/* score internal */
 		static const QString	update_dns;						/* force dns update now */
+		static const QString	poll_keys;						/* poll for variables */
 
 		OpenNICPacket(QObject *parent = 0);
 		virtual ~OpenNICPacket();
