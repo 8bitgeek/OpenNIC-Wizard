@@ -121,7 +121,7 @@ OpenNICDnsQuery::~OpenNICDnsQuery()
 	{
 		mUDPSocket.close();
 	}
-	fprintf(stderr,"q=%d\n",mQueries);
+	//fprintf(stderr,"q=%d\n",mQueries);
 }
 
 /**

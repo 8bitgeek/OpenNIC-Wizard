@@ -23,6 +23,7 @@
 #include <QTcpSocket>
 #include <QAbstractButton>
 
+#include "opennicqueryhistorydialog.h"
 #include "opennicversion.h"
 #include "opennicnet.h"
 
@@ -104,6 +105,7 @@ class OpenNIC : public QDialog
 		bool					mScoreRulesTextChanged;
 		QTcpSocket				mTcpSocket;
 		OpenNICNet*				mLocalNet;					/** lochost comm */
+		QList<OpenNICQueryHistoryDialog*> mHistoryDialogs;
 };
 
 #endif // OPENNIC_H
