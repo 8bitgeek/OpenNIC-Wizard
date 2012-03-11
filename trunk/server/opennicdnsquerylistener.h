@@ -13,7 +13,7 @@
 
 #include "opennicdnsquery.h"
 
-#define		MAX_QUERY_DEPTH			30				/* the default maximum history depth */
+#define		MAX_QUERY_DEPTH			10				/* the default maximum history depth */
 
 class OpenNICDnsQueryListener : public QObject
 {
@@ -32,6 +32,7 @@ class OpenNICDnsQueryListener : public QObject
 		int								queryDepth()		{return mQueries.count();}
 		int								maxHistoryDepth()	{return mMaxQueryDepth;}
 		Status							status();
+		QList<OpenNICDnsQuery*>&		queries()			{return mQueries;}
 	public slots:
 		virtual void					clear();
 		void							setMaxQueryDepth(int maxQueryDepth);
@@ -42,7 +43,6 @@ class OpenNICDnsQueryListener : public QObject
 	protected:
 		virtual	void					pruneQueries();
 		virtual	void					addToQueries(OpenNICDnsQuery* query);
-		QList<OpenNICDnsQuery*>&		queries()			{return mQueries;}
 	private:
 		QList<OpenNICDnsQuery*>			mQueries;			/* maintain a recent history */
 		int								mMaxQueryDepth;		/* the maximum depth of history */

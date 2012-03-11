@@ -47,6 +47,7 @@ class OpenNIC : public QDialog
 		void					quit();
 
 	protected:
+		QString					cellClickToAddress(int row, int column);
 		void					storeServerPacket(QMap<QString,QVariant>& map);
 		void					createTrayIcon();
 		void					createActions();

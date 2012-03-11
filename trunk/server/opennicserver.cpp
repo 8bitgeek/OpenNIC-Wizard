@@ -31,7 +31,20 @@
 #define MAX_LOG_LINES							100			/* max lines to keep in log cache */
 #define BOOTSTRAP_TIMER							(15*1000)	/* boostrap timer interva */
 #define BOOTSTRAP_TICKS							12			/* number of bootstrap ticks */
-#define DEFAULT_SCORE_RULES						"function score() {\n return 0.0;\n}\n"
+
+
+#define DEFAULT_SCORE_RULES	"function calculateScore() {\n" \
+							"    float score;\n" \
+							"    maxPoolLatency - resolverAverageLatency;" \
+							"    if (resolverKind == \"T1\")	score /= 1.5;" \
+							"    if (resolverKind == \"T2\")	score *= 1.5;" \
+							"    if (resolverStatus == \"R\")	score /= 2.0;" \
+							"    if (resolverStatus == \"Y\")	score /= 1.25;" \
+							"    return score;" \
+							"}\n" \
+							"\n" \
+							"return calculateScore();\n" \
+							"\n"
 
 QStringList		OpenNICServer::mLog;					/* the log text */
 QString			OpenNICServer::mScoreRules;				/* the score rules javascript text */
@@ -261,6 +274,14 @@ void OpenNICServer::dataReady(OpenNICNet* net)
 			{
 				mScoreInternal = value.toBool();
 			}
+			else if (key == OpenNICPacket::resolver_history)
+			{
+				QString address = value.toString();
+				log(tr("reply history '")+address+"'");
+				net->txPacket().set(OpenNICPacket::resolver_history,mResolverPool.toStringList(address));
+				net->send(true);
+			}
+
 		}
 
 	}

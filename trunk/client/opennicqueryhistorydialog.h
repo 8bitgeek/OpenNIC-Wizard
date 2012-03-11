@@ -9,8 +9,12 @@
 #ifndef OPENNICQUERYHISTORYDIALOG_H
 #define OPENNICQUERYHISTORYDIALOG_H
 
-#include <QDialog>
+#include "opennicnet.h"
 
+#include <QWidget>
+#include <QDialog>
+#include <QString>
+#include <QStringList>
 
 namespace Ui
 {
@@ -22,11 +26,19 @@ class OpenNICQueryHistoryDialog : public QDialog
 {
 	Q_OBJECT
 	public:
-		OpenNICQueryHistoryDialog(QWidget *parent = 0);
+		OpenNICQueryHistoryDialog(OpenNICNet* net, QString address, QWidget *parent = 0);
 		virtual ~OpenNICQueryHistoryDialog();
-
+	protected:
+		virtual void				timerEvent(QTimerEvent* e);
+	private slots:
+		void						dataReady(OpenNICNet* net);
+		void						history(QStringList queries);
+		void						poll(QString address);
 	private:
 		Ui::OpenNICQueryHistory*	ui;
+		OpenNICNet*					mNet;
+		QString						mAddress;
+		int							mTimer;
 
 };
 

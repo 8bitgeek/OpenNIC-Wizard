@@ -251,16 +251,25 @@ void OpenNIC::writeSettings()
 	QSettings settings("OpenNIC", "OpenNICClient");
 }
 
-void OpenNIC::cellClicked ( int row, int column )
+/**
+  * @brief convert a cell click to an IP address
+  */
+QString OpenNIC::cellClickToAddress(int row, int /* col */)
 {
-	OpenNICQueryHistoryDialog dialog;
+	QTableWidget* table = ui->resolverPoolTable;
+	QTableWidgetItem* item = table->item(row,3);
+	return item->text();
+}
+
+void OpenNIC::cellClicked ( int row, int col )
+{
+	OpenNICQueryHistoryDialog dialog(mLocalNet,cellClickToAddress(row,col));
 	dialog.exec();
 }
 
-void OpenNIC::cellDoubleClicked ( int row, int column )
+void OpenNIC::cellDoubleClicked ( int row, int col )
 {
-	OpenNICQueryHistoryDialog dialog;
-	dialog.exec();
+	cellClicked(row,col);
 }
 
 void OpenNIC::scoreRuleEditorTextChanged()
@@ -396,6 +405,7 @@ void OpenNIC::pollPeriodicKeys()
 
 /**
   * @brief get here when receiver data is ready...
+  * @param net the network connection
   */
 void OpenNIC::dataReady(OpenNICNet* net)
 {

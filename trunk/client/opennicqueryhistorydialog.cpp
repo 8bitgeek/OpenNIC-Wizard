@@ -9,14 +9,82 @@
 #include "opennicqueryhistorydialog.h"
 #include "ui_queries.h"
 
-OpenNICQueryHistoryDialog::OpenNICQueryHistoryDialog(QWidget *parent)
+#include <QTableWidget>
+#include <QTableWidgetItem>
+
+OpenNICQueryHistoryDialog::OpenNICQueryHistoryDialog(OpenNICNet* net, QString address, QWidget *parent)
 : QDialog(parent)
 , ui(new Ui::OpenNICQueryHistory)
+, mNet(net)
+, mAddress(address)
 {
 	ui->setupUi(this);
+	QObject::connect(mNet,SIGNAL(dataReady(OpenNICNet*)),this,SLOT(dataReady(OpenNICNet*)));
+	mTimer = startTimer(1000*5);
+	poll(mAddress);
 }
 
 OpenNICQueryHistoryDialog::~OpenNICQueryHistoryDialog()
 {
 	delete ui;
 }
+
+/**
+  * @brief poll for query records
+  */
+void OpenNICQueryHistoryDialog::poll(QString address)
+{
+	if (mNet->isLive() )
+	{
+		mNet->txPacket().set(OpenNICPacket::resolver_history,address);
+		mNet->send(true);
+	}
+}
+
+/**
+  * @brief get here on reply
+  */
+void OpenNICQueryHistoryDialog::dataReady(OpenNICNet* net)
+{
+	QMapIterator<QString, QVariant>i(net->rxPacket().data());
+	while (i.hasNext())
+	{
+		i.next();
+		QString key = i.key();
+		QVariant value = i.value();
+		if ( key == OpenNICPacket::resolver_history )
+		{
+			history(value.toStringList());
+		}
+	}
+}
+
+/**
+  * @brief apply query records <resolver>;<domain>;<nic>;<latency>;<error>;<type>;<start>;<end>;
+  */
+void OpenNICQueryHistoryDialog::history(QStringList queries)
+{
+	QTableWidget* queryHistory = ui->queryHistory;
+	queryHistory->setRowCount(queries.count());
+	for(int row=0; row < queries.count(); row++)
+	{
+		QStringList columns = queries[row].split(";");
+		for(int col=0; col < columns.count(); col++)
+		{
+			queryHistory->setItem(row,col,new QTableWidgetItem(columns[col]));
+		}
+	}
+}
+
+/**
+  * @brief timer
+  */
+void OpenNICQueryHistoryDialog::timerEvent(QTimerEvent *e)
+{
+	if (e->timerId() == mTimer)
+	{
+		poll(mAddress);
+	}
+}
+
+

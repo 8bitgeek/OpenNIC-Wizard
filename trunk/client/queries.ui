@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Resolver Query History</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="0">
@@ -21,15 +21,10 @@
      </property>
      <layout class="QGridLayout" name="gridLayout_2">
       <item row="0" column="0">
-       <widget class="QTableWidget" name="tableWidget">
+       <widget class="QTableWidget" name="queryHistory">
         <column>
          <property name="text">
-          <string>Latency</string>
-         </property>
-        </column>
-        <column>
-         <property name="text">
-          <string>Status</string>
+          <string>Resolver</string>
          </property>
         </column>
         <column>
@@ -44,12 +39,27 @@
         </column>
         <column>
          <property name="text">
-          <string>Start</string>
+          <string>Latency</string>
          </property>
         </column>
         <column>
          <property name="text">
-          <string>End</string>
+          <string>Error</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Type</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Start Time</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>End Time</string>
          </property>
         </column>
        </widget>

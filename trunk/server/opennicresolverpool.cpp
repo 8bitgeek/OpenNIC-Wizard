@@ -14,6 +14,7 @@
 OpenNICResolverPool::OpenNICResolverPool(QObject *parent)
 : QObject(parent)
 {
+	QObject::connect(&mScriptEngine,SIGNAL(signalHandlerException(QScriptValue)),this,SLOT(signalHandlerException(QScriptValue)));
 }
 
 /**
@@ -44,17 +45,38 @@ OpenNICResolverPool& OpenNICResolverPool::copy(OpenNICResolverPool& other)
 /**
   * @brief export to a tring list format
   */
-QStringList& OpenNICResolverPool::toStringList()
+QStringList OpenNICResolverPool::toStringList()
 {
-	mStringList.clear();
+	QStringList rc;
 	for(int n=0; n < mResolvers.count(); n++)
 	{
 		OpenNICResolver* resolver = mResolvers[n];
 		QString itemString = resolver->toString();
-		mStringList.append(itemString);
+		rc.append(itemString);
 	}
-	return mStringList;
+	return rc;
 }
+
+
+/**
+  * @brief export to a tring list format
+  *
+  */
+QStringList OpenNICResolverPool::toStringList(QString select)
+{
+	QStringList rc;
+	int idx = indexOf(QHostAddress(select));
+	if ( idx >= 0 )
+	{
+		OpenNICResolver* resolver = at(idx);
+		for(int n=0; n < resolver->queries().count(); n++)
+		{
+			rc << resolver->queries().at(n)->toString();
+		}
+	}
+	return rc;
+}
+
 
 OpenNICResolverPool& OpenNICResolverPool::operator<<(const QStringList& strings)
 {
@@ -207,6 +229,15 @@ double OpenNICResolverPool::latency(double& min, double& max)
 	}
 	return 0.0;
 }
+
+/**
+  * @brief script exception handler
+  */
+void OpenNICResolverPool::signalHandlerException(const QScriptValue& exception)
+{
+	OpenNICServer::log(exception.toString());
+}
+
 
 /**
   * @brief score the resolver using the internal rules

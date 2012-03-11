@@ -66,7 +66,7 @@ OpenNICDnsQueryListener::Status OpenNICDnsQueryListener::status()
 				++successes;
 				break;
 			case OpenNICDnsQuery::DNS_DOES_NOT_EXIST:
-				++successes;
+				++failures;
 				break;
 			case OpenNICDnsQuery::DNS_TIMEOUT:
 				++failures;
@@ -110,7 +110,7 @@ void OpenNICDnsQueryListener::pruneQueries()
 	/* prune... */
 	while(mQueries.count()>0 && mQueries.count()>maxHistoryDepth())
 	{
-		delete mQueries.takeFirst();
+		delete mQueries.takeLast();
 	}
 }
 
