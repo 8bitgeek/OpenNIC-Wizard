@@ -20,6 +20,8 @@ OpenNICQueryHistoryDialog::OpenNICQueryHistoryDialog(OpenNICNet* net, QString ad
 {
 	ui->setupUi(this);
 	QObject::connect(mNet,SIGNAL(dataReady(OpenNICNet*)),this,SLOT(dataReady(OpenNICNet*)));
+	setWindowIcon( QIcon( ":/images/opennic.png" ) );
+	setWindowTitle( tr("OpenNIC Resolver ")+address );
 	mTimer = startTimer(1000*5);
 	poll(mAddress);
 }
@@ -64,16 +66,18 @@ void OpenNICQueryHistoryDialog::dataReady(OpenNICNet* net)
   */
 void OpenNICQueryHistoryDialog::history(QStringList queries)
 {
-	QTableWidget* queryHistory = ui->queryHistory;
-	queryHistory->setRowCount(queries.count());
+	QTableWidget* table = ui->queryHistory;
+	table->setRowCount(queries.count());
 	for(int row=0; row < queries.count(); row++)
 	{
 		QStringList columns = queries[row].split(";");
 		for(int col=0; col < columns.count(); col++)
 		{
-			queryHistory->setItem(row,col,new QTableWidgetItem(columns[col]));
+			table->setItem(row,col,new QTableWidgetItem(columns[col]));
 		}
 	}
+	table->resizeColumnsToContents();
+	table->resizeRowsToContents();
 }
 
 /**

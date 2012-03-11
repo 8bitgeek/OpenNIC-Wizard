@@ -134,17 +134,17 @@ void OpenNICDnsQueryListener::clear()
 
 void OpenNICDnsQueryListener::starting(OpenNICDnsQuery* query)
 {
-	OpenNICServer::log("starting "+query->resolver().toString()+" : "+query->name().toString());
+	//OpenNICServer::log("starting "+query->resolver().toString()+" : "+query->name().toString());
 }
 
 void OpenNICDnsQueryListener::finished(OpenNICDnsQuery* query)
 {
-	OpenNICServer::log("finished "+query->resolver().toString()+" : "+query->name().toString());
+	//OpenNICServer::log("finished "+query->resolver().toString()+" : "+query->name().toString());
 }
 
 void OpenNICDnsQueryListener::expired(OpenNICDnsQuery* query)
 {
-	OpenNICServer::log("expired "+query->resolver().toString()+" : "+query->name().toString());
+	//OpenNICServer::log("expired "+query->resolver().toString()+" : "+query->name().toString());
 	query->setError(OpenNICDnsQuery::DNS_TIMEOUT);
 }
 

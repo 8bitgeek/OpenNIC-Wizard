@@ -410,6 +410,7 @@ void OpenNIC::pollPeriodicKeys()
 void OpenNIC::dataReady(OpenNICNet* net)
 {
 	QMapIterator<QString, QVariant>i(net->rxPacket().data());
+	mBalloonStatus.clear();
 	while (i.hasNext())
 	{
 		i.next();
@@ -585,6 +586,7 @@ void OpenNIC::setDisabledState()
 
 void OpenNIC::tcpConnected()
 {
+	mBalloonStatus=tr("Connecting...");
 	setEnabledState();
 	pollAllKeys();
 }
