@@ -59,6 +59,7 @@ class OpenNICServer : public QObject
 		void					runOnce();
 
 	private slots:
+		void					pollKeyValue(QString& key, QVariant& value, bool& valid);
 		void					dataReady(OpenNICNet* net);
 		void					newConnection();
 		void					readSettings();
@@ -75,7 +76,6 @@ class OpenNICServer : public QObject
 		void					coldBoot();
 		int						bootstrapResolvers();
 		void					refreshResolvers(bool force=false);
-		void					announcePackets();
 		void					purgeDeadSesssions();
 		int						initializeServer();
 		int						updateDNS(int resolver_count);

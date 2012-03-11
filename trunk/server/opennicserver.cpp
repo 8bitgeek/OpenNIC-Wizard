@@ -170,10 +170,32 @@ void OpenNICServer::newConnection()
 	while ( (socket = mServer.nextPendingConnection()) != NULL )
 	{
 		OpenNICNet* net = new OpenNICNet(socket);
-		QObject::connect(net,SIGNAL(dataReady(OpenNICNet*)),this,SLOT(dataReady(OpenNICNet*)));
+		QObject::connect(net,SIGNAL(dataReady(OpenNICNet*)),this,SLOT(dataReady(OpenNICNet*)),Qt::DirectConnection);
+		QObject::connect(net,SIGNAL(pollKeyValue(QString&,QVariant&,bool&)),this,SLOT(pollKeyValue(QString&,QVariant&,bool&)),Qt::DirectConnection);
 		mSessions.append(net);
 		log(tr("** client session created **"));
 	}
+}
+
+/**
+  * @brief The other end is asking for data.
+  */
+void OpenNICServer::pollKeyValue(QString& key, QVariant& value, bool& valid)
+{
+	valid = true;
+	if (key == OpenNICPacket::tcp_listen_port)				value = mTcpListenPort;
+	else if (key == OpenNICPacket::refresh_timer_period)	value = refreshPeriod();
+	else if (key == OpenNICPacket::resolver_cache_size)		value = resolverCacheSize();
+	else if (key == OpenNICPacket::resolver_pool)			value = mResolverPool.toStringList();
+	else if (key == OpenNICPacket::resolver_cache)			value = mResolverCache.toStringList();
+	else if (key == OpenNICPacket::bootstrap_t1_list)		value = OpenNICSystem::getBootstrapT1List();
+	else if (key == OpenNICPacket::bootstrap_domains)		value = OpenNICSystem::getTestDomains().toStringList();
+	else if (key == OpenNICPacket::system_text)				value = OpenNICSystem::getSystemResolverList();
+	else if (key == OpenNICPacket::journal_text)			value = mLog;
+	else if (key == OpenNICPacket::async_message)			value = mAsyncMessage;
+	else if (key == OpenNICPacket::score_rules)				value = mScoreRules;
+	else if (key == OpenNICPacket::score_internal)			value = mScoreInternal;
+	else valid = false;
 }
 
 /**
@@ -245,7 +267,8 @@ void OpenNICServer::dataReady(OpenNICNet* net)
 	writeSettings();
 	if (!mAsyncMessage.isEmpty())
 	{
-		announcePackets();
+		net->txPacket().set(OpenNICPacket::async_message,mAsyncMessage);
+		net->send(true);
 	}
 }
 
@@ -301,39 +324,6 @@ void OpenNICServer::purgeDeadSesssions()
 			mSessions.takeAt(n);
 			delete net;
 		}
-	}
-}
-
-/**
-  * @brief announce packets to sessions
-  */
-void OpenNICServer::announcePackets()
-{
-	if ( mSessions.count() )
-	{
-		for(int n=0; n < mSessions.count(); n++)
-		{
-			OpenNICNet* net = mSessions[n];
-			if ( net->isLive() )
-			{
-
-				net->txPacket().set(OpenNICPacket::tcp_listen_port,			mTcpListenPort);
-				net->txPacket().set(OpenNICPacket::refresh_timer_period,	refreshPeriod());
-				net->txPacket().set(OpenNICPacket::resolver_cache_size,		resolverCacheSize());
-				net->txPacket().set(OpenNICPacket::resolver_pool,			mResolverPool.toStringList());
-				net->txPacket().set(OpenNICPacket::resolver_cache,			mResolverCache.toStringList());
-				net->txPacket().set(OpenNICPacket::bootstrap_t1_list,		OpenNICSystem::getBootstrapT1List());
-				net->txPacket().set(OpenNICPacket::bootstrap_domains,		OpenNICSystem::getTestDomains().toStringList());
-				net->txPacket().set(OpenNICPacket::system_text,				OpenNICSystem::getSystemResolverList());
-				net->txPacket().set(OpenNICPacket::journal_text,			mLog);
-				net->txPacket().set(OpenNICPacket::async_message,			mAsyncMessage);
-				net->txPacket().set(OpenNICPacket::score_rules,				mScoreRules);
-				net->txPacket().set(OpenNICPacket::score_internal,			mScoreInternal);
-				net->send(true);
-			}
-		}
-		logPurge();
-		mAsyncMessage.clear();
 	}
 }
 
@@ -607,9 +597,8 @@ void OpenNICServer::runOnce()
 	refreshResolvers();										/* try to be smart */
 	if (mSessions.count())
 	{
-		purgeDeadSesssions();									/* free up closed gui sessions */
-		announcePackets();										/* tell gui sessions what they need to know */
-		pruneLog();												/* don't let the log get out of hand */
+		purgeDeadSesssions();								/* free up closed gui sessions */
+		pruneLog();											/* don't let the log get out of hand */
 	}
 }
 
