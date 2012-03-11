@@ -27,6 +27,7 @@ class OpenNICPacket : public QObject
 		static const QString	resolver_cache_size;			/* the resolver cache size */
 		static const QString	resolver_pool;					/* the resolver pool */
 		static const QString	resolver_cache;					/* the resolver cache */
+		static const QString	resolver_history;				/* the resolver query history records */
 		static const QString	bootstrap_t1_list;				/* the bootstrap t1 liost */
 		static const QString	bootstrap_domains;				/* the bootstrap domains */
 		static const QString	system_text;					/* the system text */

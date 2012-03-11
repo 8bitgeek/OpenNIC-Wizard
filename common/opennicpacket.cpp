@@ -17,6 +17,7 @@ const QString OpenNICPacket::refresh_timer_period	= "refresh_timer_period";	/* t
 const QString OpenNICPacket::resolver_cache_size	= "resolver_cache_size";	/* the resolver cache size */
 const QString OpenNICPacket::resolver_pool			= "resolver_pool";			/* the resolver pool */
 const QString OpenNICPacket::resolver_cache			= "resolver_cache";			/* the resolver cache */
+const QString OpenNICPacket::resolver_history		= "resolver_history";		/* the resolver history records */
 const QString OpenNICPacket::bootstrap_t1_list		= "bootstrap_t1_list";		/* the bootstrap t1 liost */
 const QString OpenNICPacket::bootstrap_domains		= "bootstrap_domains";		/* the bootstrap domains */
 const QString OpenNICPacket::system_text			= "system_text";			/* the system text */

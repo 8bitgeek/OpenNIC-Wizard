@@ -160,6 +160,66 @@ OpenNICDnsQuery& OpenNICDnsQuery::copy(const OpenNICDnsQuery& other)
 }
 
 /**
+  * @brief convert to string <resolver>;<domain>;<nic>;<latency>;<error>;<type>;<start>;<end>;
+  */
+QString OpenNICDnsQuery::toString()
+{
+	QString rc;
+	rc += resolver().toString()			+ ";";
+	rc += name().domainName()			+ ";";
+	rc += name().dnsService()			+ ";";
+	rc += QString::number(latency())	+ ";";
+	rc += errorText()					+ ";";
+	rc += queryTypeText()				+ ";";
+	rc += startTime().toString("yyMMdd-hh:mm:ss.zzz")	+ ";";
+	rc += endTime().toString("yyMMdd-hh:mm:ss.zzz")		+ ";";
+	return rc;
+}
+
+/**
+  * @brief query text
+  */
+QString OpenNICDnsQuery::queryTypeText()
+{
+	QString rc;
+	switch(queryType())
+	{
+	case DNS_A_RECORD:			/* Lookup IP adress for host */
+		rc = "DNS_A_RECORD";
+		break;
+	case DNS_MX_RECORD:			/* Lookup MX for domain */
+		rc = "DNS_MX_RECORD";
+		break;
+	}
+	return rc;
+}
+
+/**
+  * @brief get the error string
+  */
+QString OpenNICDnsQuery::errorText()
+{
+	QString rc;
+	switch(error())
+	{
+	case DNS_OK:				/* No error */
+		rc = "DNS_OK";
+		break;
+	case DNS_DOES_NOT_EXIST:	/* Error: adress does not exist */
+		rc = "DNS_DOES_NOT_EXIST";
+		break;
+	case DNS_TIMEOUT:			/* Lookup time expired */
+		rc = "DNS_TIMEOUT";
+		break;
+	default:
+	case DNS_ERROR:				/* No memory or other error */
+		rc = "DNS_ERROR";
+		break;
+	}
+	return rc;
+}
+
+/**
   * @brief set the listener
   */
 void OpenNICDnsQuery::setListener(OpenNICDnsQueryListener *listener)
@@ -398,7 +458,7 @@ void OpenNICDnsQuery::processDatagram(QByteArray& datagram)
 		}
 	}
 
-	terminate(DNS_ERROR);
+	//terminate(DNS_ERROR);
 }
 
 /**

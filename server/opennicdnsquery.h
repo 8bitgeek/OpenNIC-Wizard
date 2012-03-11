@@ -56,7 +56,9 @@ class OpenNICDnsQuery : public QObject
 		quint64								latency();
 		QHostAddress&						resolver()								{return mResolver;}
 		DNSError							error()									{return mError;}
+		QString								errorText();
 		DNSQueryType						queryType()								{return mQueryType;}
+		QString								queryTypeText();
 		QDateTime&							startTime()								{return mStartTime;}
 		QDateTime&							endTime()								{return mEndTime;}
 		QDateTime&							expireTime()							{return mExpireTime;}
@@ -64,6 +66,7 @@ class OpenNICDnsQuery : public QObject
 		QHostAddress&						addr()									{return mAddr;}
 		QString&							mxName()								{return mMxName;}
 		quint32								port()									{return mPort;}
+		QString								toString();
 		static int							queries()								{return mQueries;}
 	signals:
 		void								starting(OpenNICDnsQuery* query);
