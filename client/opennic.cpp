@@ -353,6 +353,48 @@ void OpenNIC::updateResolverPool(QStringList resolverPool)
 }
 
 /**
+  * @brief Initialize variables. Do this once after connecting with the server to initialize all the values
+  * @brief concerned with cerver variables.
+*/
+void OpenNIC::pollAllKeys()
+{
+	if (mLocalNet->isLive() )
+	{
+		QStringList keys;
+		keys << OpenNICPacket::tcp_listen_port;
+		keys << OpenNICPacket::refresh_timer_period;
+		keys << OpenNICPacket::resolver_cache_size;
+		keys << OpenNICPacket::resolver_cache;
+		keys << OpenNICPacket::resolver_pool;
+		keys << OpenNICPacket::bootstrap_t1_list;
+		keys << OpenNICPacket::bootstrap_domains;
+		keys << OpenNICPacket::system_text;
+		keys << OpenNICPacket::journal_text;
+		keys << OpenNICPacket::score_rules;
+		keys << OpenNICPacket::score_internal;
+		mLocalNet->txPacket().set(OpenNICPacket::poll_keys,keys);
+		mLocalNet->send(true);
+	}
+}
+
+/**
+  * @brief Poll for periodic keys
+  */
+void OpenNIC::pollPeriodicKeys()
+{
+	if (mLocalNet->isLive() )
+	{
+		QStringList keys;
+		keys << OpenNICPacket::resolver_pool;
+		keys << OpenNICPacket::resolver_cache;
+		keys << OpenNICPacket::system_text;
+		keys << OpenNICPacket::journal_text;
+		mLocalNet->txPacket().set(OpenNICPacket::poll_keys,keys);
+		mLocalNet->send(true);
+	}
+}
+
+/**
   * @brief get here when receiver data is ready...
   */
 void OpenNIC::dataReady(OpenNICNet* net)
@@ -534,6 +576,7 @@ void OpenNIC::setDisabledState()
 void OpenNIC::tcpConnected()
 {
 	setEnabledState();
+	pollAllKeys();
 }
 
 void OpenNIC::tcpDisconnected()
@@ -583,6 +626,7 @@ void OpenNIC::timerEvent(QTimerEvent* e)
 	{
         connectToService();
 		mTrayIcon->show();
+		pollPeriodicKeys();
 	}
 	else
 	{
