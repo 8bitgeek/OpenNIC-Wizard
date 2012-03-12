@@ -153,7 +153,7 @@ void OpenNICServer::logPurge()
   */
 void OpenNICServer::readSettings()
 {
-	QSettings settings("OpenNIC", "OpenNICService");
+	QSettings settings(QSettings::IniFormat, QSettings::SystemScope, "OpenNIC", "OpenNICService");
 	mTcpListenPort			= settings.value(	"tcp_listen_port",			DEFAULT_TCP_LISTEN_PORT).toInt();
 	setRefreshPeriod(		settings.value(		"refresh_timer_period",		DEFAULT_REFRESH_TIMER_PERIOD).toInt());
 	setResolverCacheSize(	settings.value(		"resolver_cache_size",		DEFAULT_RESOLVER_CACHE_SIZE).toInt());
@@ -166,7 +166,7 @@ void OpenNICServer::readSettings()
   */
 void OpenNICServer::writeSettings()
 {
-	QSettings settings("OpenNIC", "OpenNICService");
+	QSettings settings(QSettings::IniFormat, QSettings::SystemScope, "OpenNIC", "OpenNICService");
 	settings.setValue("tcp_listen_port",			mTcpListenPort);
 	settings.setValue("refresh_timer_period",		refreshPeriod());
 	settings.setValue("resolver_cache_size",		resolverCacheSize());
@@ -277,7 +277,7 @@ void OpenNICServer::dataReady(OpenNICNet* net)
 			else if (key == OpenNICPacket::resolver_history)
 			{
 				QString address = value.toString();
-				log(tr("reply history '")+address+"'");
+				//log(tr("reply history '")+address+"'");
 				net->txPacket().set(OpenNICPacket::resolver_history,mResolverPool.toStringList(address));
 				net->send(true);
 			}
