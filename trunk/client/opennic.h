@@ -56,6 +56,7 @@ class OpenNIC : public QDialog
 		virtual void			closeEvent(QCloseEvent* e);
 
 	private slots:
+		void					closing(OpenNICQueryHistoryDialog* dialog);
 		void					pollAllKeys();
 		void					pollPeriodicKeys();
 		void					dataReady(OpenNICNet* net);

@@ -95,6 +95,11 @@ OpenNIC::OpenNIC(QWidget *parent)
 OpenNIC::~OpenNIC()
 {
 	delete ui;
+	for(int n=0; n < mHistoryDialogs.count(); n++)
+	{
+		delete mHistoryDialogs.at(n);
+	}
+	mHistoryDialogs.clear();
 }
 
 void OpenNIC::slowRefresh()
@@ -263,8 +268,19 @@ QString OpenNIC::cellClickToAddress(int row, int /* col */)
 
 void OpenNIC::cellClicked ( int row, int col )
 {
-	OpenNICQueryHistoryDialog dialog(mLocalNet,cellClickToAddress(row,col));
-	dialog.exec();
+	OpenNICQueryHistoryDialog* dialog = new OpenNICQueryHistoryDialog(mLocalNet,cellClickToAddress(row,col));
+	mHistoryDialogs.append(dialog);
+	QObject::connect(dialog,SIGNAL(closing(OpenNICQueryHistoryDialog*)),this,SLOT(closing(OpenNICQueryHistoryDialog*)));
+	dialog->show();
+}
+
+void OpenNIC::closing(OpenNICQueryHistoryDialog *dialog)
+{
+	int idx = mHistoryDialogs.indexOf(dialog);
+	if ( idx >=0 )
+	{
+		delete mHistoryDialogs.takeAt(idx);
+	}
 }
 
 void OpenNIC::cellDoubleClicked ( int row, int col )
@@ -550,7 +566,7 @@ void OpenNIC::updateDNS()
   */
 void OpenNIC::connectToService()
 {
-	if ( !mTcpSocket.isValid() || !mTcpSocket.isOpen() )
+	if ( !mLocalNet->isLive() )
 	{
 		mTcpSocket.close();
 		QHostAddress localhost(QHostAddress::LocalHost);

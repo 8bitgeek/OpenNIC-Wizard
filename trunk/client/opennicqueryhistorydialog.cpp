@@ -20,6 +20,7 @@ OpenNICQueryHistoryDialog::OpenNICQueryHistoryDialog(OpenNICNet* net, QString ad
 {
 	ui->setupUi(this);
 	QObject::connect(mNet,SIGNAL(dataReady(OpenNICNet*)),this,SLOT(dataReady(OpenNICNet*)));
+	QObject::connect(this,SIGNAL(finished(int)),this,SLOT(close(int)));
 	setWindowIcon( QIcon( ":/images/opennic.png" ) );
 	setWindowTitle( tr("OpenNIC Resolver ")+address );
 	mTimer = startTimer(1000*5);
@@ -44,6 +45,23 @@ void OpenNICQueryHistoryDialog::poll(QString address)
 }
 
 /**
+  * @brief is mine?
+  */
+bool OpenNICQueryHistoryDialog::isMine(QStringList& data)
+{
+	if (data.count() > 0)
+	{
+		QString row = data[0];
+		QStringList columns = row.split(";");
+		if (columns[0] == mAddress)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+/**
   * @brief get here on reply
   */
 void OpenNICQueryHistoryDialog::dataReady(OpenNICNet* net)
@@ -56,7 +74,11 @@ void OpenNICQueryHistoryDialog::dataReady(OpenNICNet* net)
 		QVariant value = i.value();
 		if ( key == OpenNICPacket::resolver_history )
 		{
-			history(value.toStringList());
+			QStringList data = value.toStringList();
+			if (isMine(data))
+			{
+				history(data);
+			}
 		}
 	}
 }
@@ -64,7 +86,7 @@ void OpenNICQueryHistoryDialog::dataReady(OpenNICNet* net)
 /**
   * @brief apply query records <resolver>;<domain>;<nic>;<latency>;<error>;<type>;<start>;<end>;
   */
-void OpenNICQueryHistoryDialog::history(QStringList queries)
+void OpenNICQueryHistoryDialog::history(QStringList& queries)
 {
 	QTableWidget* table = ui->queryHistory;
 	table->setRowCount(queries.count());
@@ -83,7 +105,7 @@ void OpenNICQueryHistoryDialog::history(QStringList queries)
 /**
   * @brief timer
   */
-void OpenNICQueryHistoryDialog::timerEvent(QTimerEvent *e)
+void OpenNICQueryHistoryDialog::timerEvent(QTimerEvent* e)
 {
 	if (e->timerId() == mTimer)
 	{
@@ -91,4 +113,19 @@ void OpenNICQueryHistoryDialog::timerEvent(QTimerEvent *e)
 	}
 }
 
+/**
+  * @brief close
+  */
+void OpenNICQueryHistoryDialog::closeEvent(QCloseEvent* e)
+{
+	emit closing(this);
+}
+
+/**
+  * @brief close
+  */
+void OpenNICQueryHistoryDialog::close(int result)
+{
+	emit closing(this);
+}
 
