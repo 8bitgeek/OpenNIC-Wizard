@@ -41,6 +41,7 @@ void OpenNICQueryHistoryDialog::poll(QString address)
 	{
 		mNet->txPacket().set(OpenNICPacket::resolver_history,address);
 		mNet->send(true);
+		setCursor(Qt::BusyCursor);
 	}
 }
 
@@ -77,6 +78,7 @@ void OpenNICQueryHistoryDialog::dataReady(OpenNICNet* net)
 			QStringList data = value.toStringList();
 			if (isMine(data))
 			{
+				setCursor(Qt::ArrowCursor);
 				history(data);
 			}
 		}
