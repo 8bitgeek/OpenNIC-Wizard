@@ -28,11 +28,16 @@ class OpenNICQueryHistoryDialog : public QDialog
 	public:
 		OpenNICQueryHistoryDialog(OpenNICNet* net, QString address, QWidget *parent = 0);
 		virtual ~OpenNICQueryHistoryDialog();
+	signals:
+		void						closing(OpenNICQueryHistoryDialog* dialog);
 	protected:
+		virtual bool				isMine(QStringList& data);
+		virtual void				closeEvent(QCloseEvent* e);
 		virtual void				timerEvent(QTimerEvent* e);
 	private slots:
+		void						close(int resule);
 		void						dataReady(OpenNICNet* net);
-		void						history(QStringList queries);
+		void						history(QStringList& queries);
 		void						poll(QString address);
 	private:
 		Ui::OpenNICQueryHistory*	ui;
