@@ -62,6 +62,7 @@ Source: {#MyOpenNICBuild}\server\debug\OpenNICServer.exe; DestDir: {app}; Flags:
 Source: {#MyQtLib}\QtCored4.dll; DestDir: "{app}"; Flags: ignoreversion
 Source: {#MyQtLib}\QtGuid4.dll; DestDir: "{app}"; Flags: ignoreversion
 Source: {#MyQtLib}\QtNetworkd4.dll; DestDir: "{app}"; Flags: ignoreversion
+Source: {#MyQtLib}\QtScriptd4.dll; DestDir: "{app}"; Flags: ignoreversion
 
 Source: {#MyOpenNICSource}\server\dig\install\bindevt.dll; DestDir: "{app}"; Flags: ignoreversion
 Source: {#MyOpenNICSource}\server\dig\install\dig.exe; DestDir: "{app}"; Flags: ignoreversion
