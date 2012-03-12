@@ -245,7 +245,7 @@ void OpenNIC::tabChanged(int tab)
   */
 void OpenNIC::readSettings()
 {
-	QSettings settings("OpenNIC", "OpenNICClient");
+	QSettings settings(QSettings::IniFormat, QSettings::SystemScope, "OpenNIC", "OpenNICClient");
 }
 
 /**
@@ -253,7 +253,7 @@ void OpenNIC::readSettings()
   */
 void OpenNIC::writeSettings()
 {
-	QSettings settings("OpenNIC", "OpenNICClient");
+	QSettings settings(QSettings::IniFormat, QSettings::SystemScope, "OpenNIC", "OpenNICClient");
 }
 
 /**
@@ -274,12 +274,13 @@ void OpenNIC::cellClicked ( int row, int col )
 	dialog->show();
 }
 
-void OpenNIC::closing(OpenNICQueryHistoryDialog *dialog)
+void OpenNIC::closing(OpenNICQueryHistoryDialog* dialog)
 {
 	int idx = mHistoryDialogs.indexOf(dialog);
 	if ( idx >=0 )
 	{
-		delete mHistoryDialogs.takeAt(idx);
+		mHistoryDialogs.takeAt(idx);
+		dialog->deleteLater();
 	}
 }
 
