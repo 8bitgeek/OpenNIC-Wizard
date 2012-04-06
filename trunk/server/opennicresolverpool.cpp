@@ -337,32 +337,6 @@ void OpenNICResolverPool::randomize()
 }
 
 /**
-  * @brief Perform the sort.
-  */
-void SortWidget::sort()
-{
-	if (data().count() > 1 )
-	{
-		int a,b;
-		int deltaA;
-		mPass=0;
-		for(a=0; a < data().count()-1; a++)
-		{
-			++mPass;
-			deltaA=a;
-			for(b=a+1; b < data().count(); b++)
-			{
-				if ( compare(deltaA,b) > 0 )
-				{
-					deltaA=b;
-				}
-			}
-			swap(a,deltaA);
-		}
-	}
-}
-
-/**
   * @brief sort the pool
   */
 void OpenNICResolverPool::sort()
