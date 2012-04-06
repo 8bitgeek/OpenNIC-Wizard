@@ -12,12 +12,14 @@ CONFIG += staticlib \
 
 SOURCES += \ 
     opennicnet.cpp \
-    opennicpacket.cpp
+    opennicpacket.cpp \
+    opennicsettings.cpp
 
 HEADERS  += \ 
     opennicnet.h \
     opennicpacket.h \
-    opennicversion.h
+    opennicversion.h \
+    opennicsettings.h
 
 FORMS    += 
 
