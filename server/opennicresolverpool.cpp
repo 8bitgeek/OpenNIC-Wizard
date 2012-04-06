@@ -345,11 +345,10 @@ void OpenNICResolverPool::sort()
 	{
 		int a,b;
 		int deltaA;
-		int nCount = count()-1;
-		for(a=0; a < nCount; a++)
+		for(a=0; a < count()-1; a++)
 		{
 			deltaA=a;
-			for(b=a+1; b < data().count(); b++)
+			for(b=a+1; b < count(); b++)
 			{
 				if ( mResolvers[deltaA]->score() < mResolvers[b]->score() )
 				{
