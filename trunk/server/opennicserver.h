@@ -79,6 +79,7 @@ class OpenNICServer : public QObject
 		void					purgeDeadSesssions();
 		int						initializeServer();
 		int						updateDNS(int resolver_count);
+		void					delay(int seconds);
 		virtual void			timerEvent(QTimerEvent* e);
 
 	private:
@@ -94,12 +95,15 @@ class OpenNICServer : public QObject
 		bool					mEnabled;					/** service status */
 		int						mRefreshTimer;
 		int						mFastTimer;
+		int						mSecondTimer;				/** counts seconds */
+		quint64					mSeconds;
 		bool					mResolversInitialized;      /** resolvers have been initialized */
 		int						mTcpListenPort;				/** the TCP listen port */
 		bool					mUpdatingDNS;				/** in the processof updating the DNS */
 		QString					mAsyncMessage;
 		int						mBootstrapTimer;			/** short running HF timer for bootstrap */
 		int						mBootstrapTicks;			/** number of botstrap ticks */
+		bool					mInColdBoot;				/** Still cold booting */
 };
 
 #endif // OPENNICSERVER_H
