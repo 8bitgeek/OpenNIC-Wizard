@@ -57,17 +57,20 @@ OpenNICServer::OpenNICServer(QObject *parent)
 , mRefreshTimerPeriod(0)
 , mResolverCacheSize(0)
 , mEnabled(true)
+, mSeconds(0)
 , mRefreshTimer(-1)
 , mFastTimer(-1)
 , mResolversInitialized(false)
 , mTcpListenPort(DEFAULT_TCP_LISTEN_PORT)
 , mUpdatingDNS(false)
 , mBootstrapTicks(0)
+, mInColdBoot(false)
 {
 	readSettings();
 	initializeServer();
 	mFastTimer = startTimer(1000*DEFAULT_FAST_TIMER);
 	mBootstrapTimer = startTimer(BOOTSTRAP_TIMER);
+	mSecondTimer = startTimer(1000);
 }
 
 OpenNICServer::~OpenNICServer()
@@ -353,14 +356,27 @@ void OpenNICServer::purgeDeadSesssions()
   */
 void OpenNICServer::coldBoot()
 {
-	log("** COLD BOOT **");
-	log(copyright());
-	log(license());
-	readSettings();
-	bootstrapResolvers();
-	if ( mResolversInitialized )
+	if ( !mInColdBoot )
 	{
-		initializeServer();
+		mInColdBoot=true;
+		log("** COLD BOOT **");
+		log(copyright());
+		log(license());
+		readSettings();
+		while(!mResolversInitialized)
+		{
+			bootstrapResolvers();
+			if ( mResolversInitialized )
+			{
+				initializeServer();
+			}
+			else
+			{
+				log("** COLD BOOT FAILED - RETRY IN 5 SECONDS **");
+				delay(5);
+			}
+		}
+		mInColdBoot=false;
 	}
 }
 
@@ -624,6 +640,19 @@ void OpenNICServer::runOnce()
 }
 
 /**
+ * @brief Delay for some seconds
+ */
+void OpenNICServer::delay(int seconds)
+{
+	QEventLoop loop;
+	mSeconds=0L;
+	while(seconds>mSeconds)
+	{
+		loop.processEvents();
+	}
+}
+
+/**
   * @brief get here on timed events.
   */
 void OpenNICServer::timerEvent(QTimerEvent* e)
@@ -644,6 +673,10 @@ void OpenNICServer::timerEvent(QTimerEvent* e)
 	else if ( e->timerId() == mRefreshTimer )				/* get here once in a while, a slow timer... */
 	{
 		refreshResolvers(true);								/* force a resolver cache refresh */
+	}
+	else if ( e->timerId() == mSecondTimer )
+	{
+		++mSeconds;
 	}
 	else
 	{
