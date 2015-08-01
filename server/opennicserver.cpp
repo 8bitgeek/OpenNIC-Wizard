@@ -1,10 +1,20 @@
 /*
- * Copyright (c) 2012 Mike Sharkey <michael_sharkey@firstclass.com>
+ *   This file is a part of OpenNIC Wizard
+ *   Copyright (C) 2012-2015  Mike Sharkey <mike@8bitgeek.net>
  *
- * "THE BEER-WARE LICENSE" (Revision 42):
- * Mike Sharkey wrote this file. As long as you retain this notice you
- * can do whatever you want with this stuff. If we meet some day, and you think
- * this stuff is worth it, you can buy me a beer in return.
+ *   This program is free software; you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation; either version 2 of the License, or
+ *   (at your option) any later version.
+ *
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License along
+ *   with this program; if not, write to the Free Software Foundation, Inc.,
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 #include "opennicserver.h"
 #include "opennicsystem.h"
@@ -125,7 +135,7 @@ void OpenNICServer::log(QString msg)
 {
 	QString str = QDateTime::currentDateTime().toString("yyMMddhhmmss")+"|"+msg;
 	mLog << str;
-	fprintf(stderr,"%s\n",str.toAscii().data());
+    fprintf(stderr,"%s\n",str.toLocal8Bit().data());
 	while(mLog.count() > MAX_LOG_LINES)
 	{
 		mLog.takeAt(0);
@@ -313,7 +323,7 @@ int OpenNICServer::initializeServer()
 		}
 		else
 		{
-			fprintf(stderr,"%s\n",mServer.errorString().trimmed().toAscii().data());
+            fprintf(stderr,"%s\n",mServer.errorString().trimmed().toLocal8Bit().data());
 		}
 	}
 	return 0;
@@ -321,15 +331,27 @@ int OpenNICServer::initializeServer()
 
 QString OpenNICServer::copyright()
 {
-	return "OpenNICServer V"+QString(VERSION_STRING)+ tr( " (c) 2012 Mike Sharkey <michael_sharkey@firstclass.com>" );
+    return "OpenNICServer V"+QString(VERSION_STRING)+ tr( " (c) 2012-2015 Mike Sharkey <mike@8bitgeek.net>" );
 }
 
 QString OpenNICServer::license()
 {
-	return QString( 	tr( "LICENSE\n\"THE BEER-WARE LICENSE\" (Revision 42):\n"
-						"Mike Sharkey wrote this thing. As long as you retain this notice you\n"
-						"can do whatever you want with this stuff. If we meet some day, and you think\n"
-						"this stuff is worth it, you can buy me a beer in return." )
+    return QString( 	tr( "OpenNIC Wizard\n"
+                            "Copyright (C) 2012-2015 Mike Sharkey <mike@8bitgeek.net>\n"
+                            "\n"
+                            "This program is free software; you can redistribute it and/or modify\n"
+                            "it under the terms of the GNU General Public License as published by\n"
+                            "the Free Software Foundation; either version 2 of the License, or\n"
+                            "(at your option) any later version.\n"
+                            "\n"
+                            "This program is distributed in the hope that it will be useful,\n"
+                            "but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
+                            "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
+                            "GNU General Public License for more details.\n"
+                            "\n"
+                            "You should have received a copy of the GNU General Public License along\n"
+                            "with this program; if not, write to the Free Software Foundation, Inc.,\n"
+                            "51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.\n" )
 					   );
 }
 

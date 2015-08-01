@@ -1,10 +1,20 @@
 /*
- * Copyright (c) 2012 Mike Sharkey <michael_sharkey@firstclass.com>
+ *   This file is a part of OpenNIC Wizard
+ *   Copyright (C) 2012-2015  Mike Sharkey <mike@8bitgeek.net>
  *
- * "THE BEER-WARE LICENSE" (Revision 42):
- * Mike Sharkey wrote this file. As long as you retain this notice you
- * can do whatever you want with this stuff. If we meet some day, and you think
- * this stuff is worth it, you can buy me a beer in return.
+ *   This program is free software; you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation; either version 2 of the License, or
+ *   (at your option) any later version.
+ *
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License along
+ *   with this program; if not, write to the Free Software Foundation, Inc.,
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 #include "opennicsystem.h"
 
@@ -70,7 +80,7 @@ bool OpenNICSystem::writeStringListToFile(QString filename,QStringList list)
 		{
 			for(int n=0; n < list.count(); n++)
 			{
-				QByteArray line = list.at(n).toAscii();
+                QByteArray line = list.at(n).toLocal8Bit();
 				line += '\n';
 				file.write(line);
 			}
@@ -325,7 +335,7 @@ int OpenNICSystem::updateResolver(QHostAddress& resolver,int index,QString& outp
 	if ( (index==1) ? file.open(QIODevice::ReadWrite|QIODevice::Truncate) : file.open(QIODevice::ReadWrite|QIODevice::Append) )
 	{
 		QString line("nameserver "+resolver.toString()+"\n");
-		file.write(line.toAscii());
+        file.write(line.toLocal8Bit());
 		file.close();
 		output=resolver.toString();
 	}
