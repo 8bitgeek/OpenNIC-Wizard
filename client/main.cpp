@@ -16,7 +16,7 @@
  *   with this program; if not, write to the Free Software Foundation, Inc.,
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-#include <QGuiApplication>
+#include <QApplication>
 #include "opennic.h"
 
 #include <QSystemTrayIcon>
@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
 	int rc=0;
 	qsrand(QDateTime::currentDateTime().toTime_t()); /* seed random numbers */
 	Q_INIT_RESOURCE(opennic);
-    QGuiApplication a(argc, argv);
+    QApplication a(argc, argv);
 	a.setQuitOnLastWindowClosed(false);
 	if ( !QSystemTrayIcon::isSystemTrayAvailable() )
 	{
@@ -37,10 +37,11 @@ int main(int argc, char *argv[])
 	}
 	else
 	{
-		OpenNIC on;
-		QObject::connect(&on,SIGNAL(quit()),&a,SLOT(quit()));
-		on.connectToService();
+        OpenNIC* on = new OpenNIC;
+        QObject::connect(on,SIGNAL(quit()),&a,SLOT(quit()));
+        on->connectToService();
 		rc = a.exec();
+        delete on;
 	}
 	Q_CLEANUP_RESOURCE(opennic);
 	return rc;
