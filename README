@@ -17,7 +17,9 @@ To start using OpenNIC today, use OpenNIC Wizard. Simply run the installer and y
 
 -------------------------------------
 
-Windows Install:
+Microsoft Windows:
+
+Installer: https://github.com/8bitgeek/OpenNIC-Wizard/blob/master/OpenNIC%20Wizard%200.3.rc2.exe?raw=true
 
 1) Run the installer and at the end, allow the installer to launch OpenNIC Wizard.
 
