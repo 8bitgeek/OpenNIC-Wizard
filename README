@@ -8,7 +8,7 @@ OpenNIC provides resolution to all ICANN domains as well as OpenNIC's own TLDs:
 
 Join us as we create a new surfing experience. OpenNIC domain registrations are free of charge -- simply register your domain, agree to the terms of the specific TLD you're registering with, and point your domain to whatever online services you have to offer.
 
-##Features
+Features
   - OpenNIC service continually seeks DNS resolvers with best response times
   - No-pain approach to setting up your PC to work with OpenNIC
   - Task tray applet for observing and optionally tweeking the configuration
@@ -16,19 +16,17 @@ Join us as we create a new surfing experience. OpenNIC domain registrations are 
 To start using OpenNIC today, use OpenNIC Wizard. Simply run the installer and you're instantly using OpenNIC resolve
 
 -------------------------------------
-##OpenNIC Wizard
 
-##Windows Install:
+Windows Install:
 
-1) Run the installer and allow the installer to launch th application.
+1) Run the installer and at the end, allow the installer to launch OpenNIC Wizard.
 
-2) Wait for the initialization progress dielog to complete.
+2) Wait for the initialization progress dialog to complete.
 
-3) Task Tray Icon should appear shortly.
+3) The OpenNIC Wizard Task Tray Icon should appear shortly.
 
-4) Right click on task tray icon to access controls.
+4) Right click on OpenNIC Wizard task tray icon to access controls.
 
-5) Left click on task tray icon to see current resolver cache.
+5) Left click on the OpenNIC Wizard task tray icon to see current resolver cache.
 
-The OpenNIC Wizard Task Tray applet should appear from now on each time you restart.
-
+The OpenNIC Wizard Task Tray applet should appear from now on at each restart.
