@@ -44,8 +44,7 @@
 
 
 #define DEFAULT_SCORE_RULES	"function calculateScore() {\n" \
-							"    float score;\n" \
-							"    maxPoolLatency - resolverAverageLatency;" \
+                            "    float score=maxPoolLatency - resolverAverageLatency;" \
 							"    if (resolverKind == \"T1\")	score /= 1.5;" \
 							"    if (resolverKind == \"T2\")	score *= 1.5;" \
 							"    if (resolverStatus == \"R\")	score /= 2.0;" \
