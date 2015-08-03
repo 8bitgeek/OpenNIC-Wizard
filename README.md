@@ -1,4 +1,4 @@
-##About The OpenNIC project
+##About The OpenNIC Project
 
 "The OpenNIC Project" is an organization of dedicated volunteers who run an 
 alternative DNS network. OpenNIC is owned and operated by the OpenNIC community. 
