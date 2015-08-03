@@ -431,7 +431,11 @@ int OpenNICServer::bootstrapResolvers()
 	replaceActiveResolvers(proposed);
 	/** get the T2 resolvers */
 	log(tr("Fetching T2 resolvers"));
-	bootstrapList = OpenNICSystem::getBootstrapT2List();
+    bootstrapList.clear();
+    for(int tries=0; bootstrapList.isEmpty() && tries < 5; tries++)
+    {
+        bootstrapList = OpenNICSystem::getBootstrapT2List();
+    }
 	mResolverPool.fromIPList(bootstrapList,"T2");
 	log(tr("Randomizing T2 Resolvers"));
 	mResolverPool.randomize();
