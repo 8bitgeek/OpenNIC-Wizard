@@ -11,13 +11,13 @@
 
 ; !!! Inno Include seems to be broken !!
 ; #include "opennic-include.iss"
-#if 0
+#if 1
 ; My Windows 7 64-bit configuration
-#define MyOutputDir       "C:\Users\mike\Documents"
-#define MyOpenNICSource   "C:\Users\mike\Documents\OpenNIC\trunk"
-#define MyOpenNICBuild    "C:\Users\mike\Documents\OpenNIC\OpenNIC-build-desktop_Debug"
-#define MyQtLib           "C:\QtSDK\Desktop\Qt\4.8.0\mingw\bin"
-#define MyMingwBin        "C:\QtSDK\mingw\bin"
+#define MyOutputDir       "C:\Users\mike\Documents\GitHub"
+#define MyOpenNICSource   "C:\Users\mike\Documents\GitHub\OpenNIC-Wizard"
+#define MyOpenNICBuild    "C:\Users\mike\Documents\GitHub\OpenNIC-Wizard\OpenNIC-build-desktop_Debug"
+#define MyQtLib           "C:\Qt\4.8.4\mingw\bin"
+#define MyMingwBin        "C:\MinGW\bin"
 #else
 ; My Windows XP 32-bit configuration
 #define MyOutputDir       "C:\Documents and Settings\Mike\My Documents"
@@ -31,7 +31,7 @@
 ; NOTE: The value of AppId uniquely identifies this application.
 ; Do not use the same AppId value in installers for other applications.
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
-AppId={{1D9BA5F4-E722-4670-804D-4BED7B4A26DA}
+AppId={1D9BA5F4-E722-4670-804D-4BED7B4A26DA}
 PrivilegesRequired=admin
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
