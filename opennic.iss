@@ -13,10 +13,10 @@
 ; #include "opennic-include.iss"
 #if 1
 ; My Windows 7 64-bit configuration
-#define MyOutputDir       "C:\Users\mike\Documents\GitHub"
-#define MyOpenNICSource   "C:\Users\mike\Documents\GitHub\OpenNIC-Wizard"
-#define MyOpenNICBuild    "C:\Users\mike\Documents\GitHub\OpenNIC-Wizard\OpenNIC-build-desktop_Debug"
-#define MyQtLib           "C:\Qt\4.8.4\mingw\bin"
+#define MyOutputDir       "C:\Users\Mike\Documents\GitHub"
+#define MyOpenNICSource   "C:\Users\Mike\Documents\GitHub\OpenNIC-Wizard"
+#define MyOpenNICBuild    "C:\Users\Mike\Documents\GitHub\OpenNIC-build-desktop_Debug"
+#define MyQtLib           "C:\Qt\4.8.4\bin"
 #define MyMingwBin        "C:\MinGW\bin"
 #else
 ; My Windows XP 32-bit configuration
@@ -31,7 +31,7 @@
 ; NOTE: The value of AppId uniquely identifies this application.
 ; Do not use the same AppId value in installers for other applications.
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
-AppId={1D9BA5F4-E722-4670-804D-4BED7B4A26DA}
+AppId={{1D9BA5F4-E722-4670-804D-4BED7B4A26DA}
 PrivilegesRequired=admin
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
@@ -75,7 +75,7 @@ Source: {#MyOpenNICSource}\server\dig\install\libisccfg.dll; DestDir: "{app}"; F
 Source: {#MyOpenNICSource}\server\dig\install\liblwres.dll; DestDir: "{app}"; Flags: ignoreversion
 Source: {#MyOpenNICSource}\unins000.exe.manifest; DestDir: "{app}"; Flags: ignoreversion
 Source: {#MyOpenNICSource}\COPYING; DestDir: "{app}"; Flags: ignoreversion
-Source: {#MyOpenNICSource}\README; DestDir: "{app}"; Flags: ignoreversion
+Source: {#MyOpenNICSource}\README.md; DestDir: "{app}"; Flags: ignoreversion
 Source: {#MyOpenNICSource}\server\bootstrap.t1; DestDir: {app}; Flags: ignoreversion; 
 Source: {#MyOpenNICSource}\server\bootstrap.domains; DestDir: {app}; Flags: ignoreversion; 
 Source: {#MyOpenNICSource}\server\OpenNICServer.exe.manifest; DestDir: {app}; Flags: ignoreversion; 
