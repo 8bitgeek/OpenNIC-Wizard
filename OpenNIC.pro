@@ -16,13 +16,14 @@
 #    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 
-QT += core gui network widgets uitools
+QT += core gui network widgets
 
 TARGET = OpenNIC
 TEMPLATE = subdirs
 CONFIG += warn_on \
 	thread \
 	qt \
+        uitools \
         debug
 
 SUBDIRS = common \

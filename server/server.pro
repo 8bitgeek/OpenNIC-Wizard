@@ -16,13 +16,14 @@
 #    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 
-QT  += core network script uitools widgets
+QT  += core network script widgets
 
 TARGET = OpenNICServer
 TEMPLATE = app
 CONFIG += warn_on \
 	thread \
 	qt \
+        uitools \
 	debug
 
 SOURCES += main.cpp\
