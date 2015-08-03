@@ -19,7 +19,8 @@ To start using OpenNIC today, use OpenNIC Wizard. Simply run the installer and y
 
 Microsoft Windows:
 
-Installer: https://github.com/8bitgeek/OpenNIC-Wizard/blob/master/OpenNIC%20Wizard%200.3.rc2.exe?raw=true
+Version 0.3RC2 Installer: 
+  https://github.com/8bitgeek/OpenNIC-Wizard/blob/master/OpenNIC%20Wizard%200.3.rc2.exe?raw=true
 
 1) Run the installer and at the end, allow the installer to launch OpenNIC Wizard.
 
@@ -33,6 +34,6 @@ Installer: https://github.com/8bitgeek/OpenNIC-Wizard/blob/master/OpenNIC%20Wiza
 
 The OpenNIC Wizard Task Tray applet should appear from now on at each restart.
 
-NOTE: It has been observed on Windows 8.1 that after the OpenNIC Wizard Task Tray Applet is launched
-      by the installer, that it may continue to say "Connecting...". 
+NOTE: It has been observed on Windows 8.1 that after the OpenNIC Wizard Task Tray Applet
+      is launched by the installer, that it may continue to say "Connecting...". 
       Restarting the system should resolve this issue. 
