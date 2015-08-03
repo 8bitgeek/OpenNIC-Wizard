@@ -1,3 +1,5 @@
+##About OpenNIC
+
 OpenNIC (a.k.a. "The OpenNIC Project") is an organization of dedicated volunteers 
 who run an alternative DNS network. OpenNIC is owned and operated by the OpenNIC 
 community. 
@@ -21,6 +23,10 @@ Join us as we create a new surfing experience. OpenNIC domain registrations are 
   - Task tray applet for observing and optionally tweeking the configuration
 
 To start using OpenNIC today, use OpenNIC Wizard. Simply run the installer and you're instantly using OpenNIC resolve
+
+##Screen Captures
+
+http://www.8bitgeek.net/public/index.php?cmd=smarty&id=14_len
 
 -------------------------------------
 
