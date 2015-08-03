@@ -1,6 +1,13 @@
-OpenNIC (a.k.a. "The OpenNIC Project") is an organization of dedicated volunteers who run an alternative DNS network. OpenNIC is owned and operated by the OpenNIC community. Membership is open to all who share an interest in keeping DNS free for all users. Our goal is to provide you with quick and reliable DNS services and access to domains not administered by ICANN.
+OpenNIC (a.k.a. "The OpenNIC Project") is an organization of dedicated volunteers 
+who run an alternative DNS network. OpenNIC is owned and operated by the OpenNIC 
+community. 
 
-More information about The OpenNIC Project can be found at http://www.opennicproject.org/
+Membership is open to all who share an interest in keeping DNS free for all users. 
+
+The goal of OpenNIC is to provide you with quick and reliable DNS services and access
+to domains not administered by ICANN.
+
+More information about The OpenNIC Project can be found at http://www.opennicproject.org
 
 OpenNIC provides resolution to all ICANN domains as well as OpenNIC's own TLDs:
 
@@ -17,9 +24,8 @@ To start using OpenNIC today, use OpenNIC Wizard. Simply run the installer and y
 
 -------------------------------------
 
-##Microsoft Windows:
-
-##Version 0.3RC2 Installer: 
+##Microsoft Windows XP,7,8,10 Installer
+###OpenNic Wizard Version 0.3RC2: 
   https://github.com/8bitgeek/OpenNIC-Wizard/blob/master/OpenNIC%20Wizard%200.3.rc2.exe?raw=true
 
   - Run the installer and at the end, allow the installer to launch OpenNIC Wizard.
