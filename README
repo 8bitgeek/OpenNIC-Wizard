@@ -32,3 +32,7 @@ Installer: https://github.com/8bitgeek/OpenNIC-Wizard/blob/master/OpenNIC%20Wiza
 5) Left click on the OpenNIC Wizard task tray icon to see current resolver cache.
 
 The OpenNIC Wizard Task Tray applet should appear from now on at each restart.
+
+NOTE: It has been observed on Windows 8.1 that after the OpenNIC Wizard Task Tray Applet is launched
+      by the installer, that it may continue to say "Connecting...". 
+      Restarting the system should resolve this issue. 
