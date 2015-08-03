@@ -8,7 +8,7 @@ OpenNIC provides resolution to all ICANN domains as well as OpenNIC's own TLDs:
 
 Join us as we create a new surfing experience. OpenNIC domain registrations are free of charge -- simply register your domain, agree to the terms of the specific TLD you're registering with, and point your domain to whatever online services you have to offer.
 
-Features
+##Features
   - OpenNIC service continually seeks DNS resolvers with best response times
   - No-pain approach to setting up your PC to work with OpenNIC
   - Task tray applet for observing and optionally tweeking the configuration
@@ -17,23 +17,23 @@ To start using OpenNIC today, use OpenNIC Wizard. Simply run the installer and y
 
 -------------------------------------
 
-Microsoft Windows:
+##Microsoft Windows:
 
-Version 0.3RC2 Installer: 
+##Version 0.3RC2 Installer: 
   https://github.com/8bitgeek/OpenNIC-Wizard/blob/master/OpenNIC%20Wizard%200.3.rc2.exe?raw=true
 
-1) Run the installer and at the end, allow the installer to launch OpenNIC Wizard.
+  - Run the installer and at the end, allow the installer to launch OpenNIC Wizard.
 
-2) Wait for the initialization progress dialog to complete.
+  - Wait for the initialization progress dialog to complete.
 
-3) The OpenNIC Wizard Task Tray Icon should appear shortly.
+  - The OpenNIC Wizard Task Tray Icon should appear shortly.
 
-4) Right click on OpenNIC Wizard task tray icon to access controls.
+  - Right click on OpenNIC Wizard task tray icon to access controls.
 
-5) Left click on the OpenNIC Wizard task tray icon to see current resolver cache.
+  - Left click on the OpenNIC Wizard task tray icon to see current resolver cache.
 
-The OpenNIC Wizard Task Tray applet should appear from now on at each restart.
+  - The OpenNIC Wizard Task Tray applet should appear from now on at each restart.
 
-NOTE: It has been observed on Windows 8.1 that after the OpenNIC Wizard Task Tray Applet
+**NOTE:** It has been observed on Windows 8.1 that after the OpenNIC Wizard Task Tray Applet
       is launched by the installer, that it may continue to say "Connecting...". 
       Restarting the system should resolve this issue. 
