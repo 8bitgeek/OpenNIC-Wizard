@@ -45,7 +45,7 @@ http://www.8bitgeek.net/public/index.php?cmd=smarty&id=14_len
 
 **NOTE:** OpenNIC Wizard is split into two parts, a so called 'client', and a so called 'server'.
       The 'server' performs the bulk of the functionality, while the 'client' performs the
-      user interface function. On Windows(tm), tOpenNICServer.exe runs as a service with elevated
+      user interface function. On Windows(tm), OpenNICServer.exe runs as a service with elevated
       privilages, while OpenNIC.exe runs as a task-tray applet. The two communicate over a 
       client/server style protocol over a local-domain socket on port 19803.
 
