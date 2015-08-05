@@ -43,6 +43,12 @@ http://www.8bitgeek.net/public/index.php?cmd=smarty&id=14_len
 
   - The OpenNIC Wizard Task Tray applet should appear from now on at each restart.
 
+**NOTE:** OpenNIC Wizard is split into two parts, a so called 'client', and a so called 'server'.
+      The 'server' performs the bulk of the functionality, while the 'client' performs the
+      user interface function. On Windows(tm), OpenNICServer.exe runs as a service with elevated
+      privilages, while OpenNIC.exe runs as a task-tray applet. The two communicate over a 
+      client/server style protocol over a local-domain socket on port 19803.
+
 **NOTE:** It has been observed on Windows 8.1 that after the OpenNIC Wizard Task Tray Applet
       is launched by the installer, that it may continue to say "Connecting...". 
       Restarting the system should resolve this issue. 
