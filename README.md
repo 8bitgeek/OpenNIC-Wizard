@@ -30,8 +30,6 @@ http://www.8bitgeek.net/public/index.php?cmd=smarty&id=14_len
 ##Microsoft Windows XP,7,8,10 Installer
 ###OpenNic Wizard Version 0.3RC2: 
   https://github.com/8bitgeek/OpenNIC-Wizard/blob/master/OpenNIC%20Wizard%200.3.rc2.exe?raw=true
-###OpenNic Wizard Version 0.4RC1: 
-  https://github.com/8bitgeek/OpenNIC-Wizard/blob/master/OpenNIC%20Wizard%200.4.rc1.exe?raw=true
 
   - Run the installer and at the end, allow the installer to launch OpenNIC Wizard.
 
