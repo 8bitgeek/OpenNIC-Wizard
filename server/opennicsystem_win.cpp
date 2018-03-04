@@ -10,13 +10,7 @@
  * ----------------------------------------------------------------------------
  */
 #include "opennicsystem.h"
-#if defined(Q_OS_WIN32)
-    #include "opennicsystem_win.h"
-#elif defined(Q_OS_LINUX)
-    #include "opennicsystem_linux.h"
-#else
-    #error "Unsupported O/S"
-#endif
+
 #include <QObject>
 #include <QMessageBox>
 #include <QProcess>
@@ -30,6 +24,9 @@
 #include <QFile>
 #include <QIODevice>
 #include <QDateTime>
+
+#define OPENNIC_T1_BOOTSTRAP		"bootstrap.t1"
+#define	OPENNIC_DOMAINS_BOOTSTRAP	"bootstrap.domains"
 
 OpenNICDomainNamePool OpenNICSystem::mTestDomains;
 
@@ -233,19 +230,11 @@ OpenNICDomainName OpenNICSystem::randomDomain()
 	return domains.at(n);
 }
 
-/**
- * @brief OpenNICSystem::beginUpdateResolvers perform an prepatory
- * work required before updating resolvers at the O/S level.
- * @param output Return for textual output from the operations.
- * @return true on success, else fail.
- */
+#if defined(Q_OS_WIN32)
 bool OpenNICSystem::beginUpdateResolvers(QString& output)
 {
-    #if defined(Q_OS_WIN32)
-        return OpenNICSystem_Win::beginUpdateResolvers(output);
-    #elif defined(Q_OS_LINUX)
-        return OpenNICSystem_Linux::beginUpdateResolvers(output);
-    #endif
+	/* on windows nothing to do here */
+	return true;
 }
 
 /**
@@ -255,26 +244,33 @@ bool OpenNICSystem::beginUpdateResolvers(QString& output)
   */
 int OpenNICSystem::updateResolver(QHostAddress& resolver,int index,QString& output)
 {
-    #if defined(Q_OS_WIN32)
-        return OpenNICSystem_Win::updateResolver(resolver,index,output);
-    #elif defined(Q_OS_LINUX)
-        return OpenNICSystem_Linux::updateResolver(resolver,index,output);
-    #endif
+	int rc;
+	QEventLoop loop;
+	QString program = "netsh";
+	QStringList arguments;
+	if ( ++index == 1 ) /* on windows(tm) index starts at 1 */
+	{
+		arguments << "interface" << "ip" << "set" << "dns" << "Local Area Connection" << "static" << resolver.toString();
+	}
+	else
+	{
+		arguments << "interface" << "ip" << "add" << "dns" << "Local Area Connection" << resolver.toString() << "index="+QString::number(index);
+	}
+	QProcess* process = new QProcess();
+	process->start(program, arguments);
+	while (process->waitForFinished(10000))
+	{
+		loop.processEvents();
+	}
+	output = process->readAllStandardOutput().trimmed() + "\n";
+	rc = process->exitCode();
+	delete process;
+	return rc;
 }
 
-/**
- * @brief OpenNICSystem::beginUpdateResolvers perform an termination
- * work required before updating resolvers at the O/S level.
- * @param output Return for textual output from the operations.
- * @return true on success, else fail.
- */
 bool OpenNICSystem::endUpdateResolvers(QString& output)
 {
-    #if defined(Q_OS_WIN32)
-        return OpenNICSystem_Win::endUpdateResolvers(output);
-    #elif defined(Q_OS_LINUX)
-        return OpenNICSystem_Linux::endUpdateResolvers(output);
-    #endif
+	return true;
 }
 
 /**
@@ -282,14 +278,89 @@ bool OpenNICSystem::endUpdateResolvers(QString& output)
   */
 QString OpenNICSystem::getSystemResolverList()
 {
-    #if defined(Q_OS_WIN32)
-        return OpenNICSystem_Win::getSystemResolverList();
-    #elif defined(Q_OS_LINUX)
-        return OpenNICSystem_Linux::getSystemResolverList();
-    #endif
+	QByteArray output;
+	QEventLoop loop;
+	QString program = "netsh";
+	QStringList arguments;
+	arguments << "interface" << "ip" << "show" << "config" << "Local Area Connection";
+	QProcess* process = new QProcess();
+	process->start(program, arguments);
+	while (process->waitForFinished(10000))
+	{
+		loop.processEvents();
+	}
+	output = process->readAllStandardOutput();
+	delete process;
+	if (output.trimmed().isEmpty())
+	{
+		return "Could not obtain system resolver list.";
+	}
+	return output;
 }
 
+#elif defined(Q_OS_UNIX)
 
+//#define SIMULATE 1
+
+#ifdef SIMULATE
+QString sResolvConf;
+#endif
+
+bool OpenNICSystem::beginUpdateResolvers(QString& /* output */)
+{
+	/* on windows nothing to do here */
+	return true;
+}
+
+/**
+  * @brief Add a dns entry to the system's list of DNS resolvers.
+  * @param resolver The IP address of teh resolver to add to the system
+  * @param index resolver sequence (1..n)
+  */
+int OpenNICSystem::updateResolver(QHostAddress& resolver,int index,QString& output)
+{
+#ifdef SIMULATE
+		if (index == 1) sResolvConf.clear();
+		sResolvConf += "nameserver "+resolver.toString()+"\n";
+		output=resolver.toString();
+#else
+	QFile file("/etc/resolv.conf");
+	if ( (index==1) ? file.open(QIODevice::ReadWrite|QIODevice::Truncate) : file.open(QIODevice::ReadWrite|QIODevice::Append) )
+	{
+		QString line("nameserver "+resolver.toString()+"\n");
+        file.write(line.toLocal8Bit());
+		file.close();
+		output=resolver.toString();
+	}
+	return 0;
+#endif
+}
+
+bool OpenNICSystem::endUpdateResolvers(QString& /* output */)
+{
+	return true;
+}
+
+/**
+  * @brief Get the text which will show the current DNS resolver settings.
+  */
+QString OpenNICSystem::getSystemResolverList()
+{
+#ifdef SIMULATE
+	return sResolvConf;
+#else
+	QFile file("/etc/resolv.conf");
+	if ( file.open(QIODevice::ReadOnly) )
+	{
+		QString text(file.readAll());
+		file.close();
+		return text;
+	}
+	return "Could not obtain system resolver list.";
+#endif
+}
+
+#endif
 
 
 

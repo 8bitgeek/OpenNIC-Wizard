@@ -1,20 +1,13 @@
 /*
- *   This file is a part of OpenNIC Wizard
- *   Copyright (C) 2012-2015  Mike Sharkey <mike@8bitgeek.net>
- *
- *   This program is free software; you can redistribute it and/or modify
- *   it under the terms of the GNU General Public License as published by
- *   the Free Software Foundation; either version 2 of the License, or
- *   (at your option) any later version.
- *
- *   This program is distributed in the hope that it will be useful,
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *   GNU General Public License for more details.
- *
- *   You should have received a copy of the GNU General Public License along
- *   with this program; if not, write to the Free Software Foundation, Inc.,
- *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * This file is a part of OpenNIC Wizard
+ * Copywrong (c) 2012-2018 Mike Sharkey
+ * ----------------------------------------------------------------------------
+ * "THE BEER-WARE LICENSE" (Revision 1776):
+ * <mike@8bitgeek.net> wrote this file.
+ * As long as you retain this notice you can do whatever you want with this
+ * stuff. If we meet some day, and you think this stuff is worth it,
+ * you can buy me a beer in return. ~ Mike Sharkey
+ * ----------------------------------------------------------------------------
  */
 #include "opennic.h"
 #include "ui_opennic.h"
@@ -646,22 +639,16 @@ void OpenNIC::tcpStateChanged(QAbstractSocket::SocketState /* socketState */)
 
 void OpenNIC::about()
 {
-	QMessageBox::about(this,tr( "About OpenNIC" ), QString("OpenNIC Version ")+QString(VERSION_STRING)+
-                       "Copyright (C) 2012-2015 Mike Sharkey <mike@8bitgeek.net>\n"
-                       "\n"
-                       "This program is free software; you can redistribute it and/or modify\n"
-                       "it under the terms of the GNU General Public License as published by\n"
-                       "the Free Software Foundation; either version 2 of the License, or\n"
-                       "(at your option) any later version.\n"
-                       "\n"
-                       "This program is distributed in the hope that it will be useful,\n"
-                       "but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
-                       "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
-                       "GNU General Public License for more details.\n"
-                       "\n"
-                       "You should have received a copy of the GNU General Public License along\n"
-                       "with this program; if not, write to the Free Software Foundation, Inc.,\n"
-                       "51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.\n"
+    QMessageBox::about(this,tr( "About OpenNIC Wizard" ), QString("OpenNIC Wizard Version ")+QString(VERSION_STRING)+
+                        "This file is a part of OpenNIC Wizard\n"
+                        "Copywrong (c) 2012-2018 Mike Sharkey\n"
+                        "----------------------------------------------------------------------------\n"
+                        "\"THE BEER-WARE LICENSE\" (Revision 1776):\n"
+                        "<mike@8bitgeek.net> wrote this file.\n"
+                        "As long as you retain this notice you can do whatever you want with this\n"
+                        "stuff. If we meet some day, and you think this stuff is worth it,\n"
+                        "you can buy me a beer in return. ~ Mike Sharkey\n"
+                        "----------------------------------------------------------------------------\n"
 					   );
 }
 
