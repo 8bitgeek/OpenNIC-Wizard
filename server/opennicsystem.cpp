@@ -10,13 +10,6 @@
  * ----------------------------------------------------------------------------
  */
 #include "opennicsystem.h"
-#if defined(Q_OS_WIN32)
-    #include "opennicsystem_win.h"
-#elif defined(Q_OS_LINUX)
-    #include "opennicsystem_linux.h"
-#else
-    #error "Unsupported O/S"
-#endif
 #include <QObject>
 #include <QMessageBox>
 #include <QProcess>
@@ -30,8 +23,20 @@
 #include <QFile>
 #include <QIODevice>
 #include <QDateTime>
+#include <QNetworkConfigurationManager>
 
-OpenNICDomainNamePool OpenNICSystem::mTestDomains;
+OpenNICSystem* OpenNICSystem::mInstance=NULL;
+
+OpenNICSystem::OpenNICSystem()
+{
+    while(mInstance); /* FIXME - singleton trap */
+    mInstance = this;
+}
+
+OpenNICSystem::~OpenNICSystem()
+{
+    mInstance=NULL;
+}
 
 /**
   * @brief file copy
@@ -234,63 +239,14 @@ OpenNICDomainName OpenNICSystem::randomDomain()
 }
 
 /**
- * @brief OpenNICSystem::beginUpdateResolvers perform an prepatory
- * work required before updating resolvers at the O/S level.
- * @param output Return for textual output from the operations.
- * @return true on success, else fail.
+ * @brief OpenNICSystem_Linux::interfaces
+ * @return List of interfaces.
  */
-bool OpenNICSystem::beginUpdateResolvers(QString& output)
+QList<QNetworkConfiguration> OpenNICSystem::interfaces()
 {
-    #if defined(Q_OS_WIN32)
-        return OpenNICSystem_Win::beginUpdateResolvers(output);
-    #elif defined(Q_OS_LINUX)
-        return OpenNICSystem_Linux::beginUpdateResolvers(output);
-    #endif
+    QList<QNetworkConfiguration> rc;
+    QNetworkConfigurationManager manager;
+    rc = manager.allConfigurations();
+    return rc;
 }
-
-/**
-  * @brief Add a dns entry to the system's list of DNS resolvers.
-  * @param resolver The IP address of teh resolver to add to the system
-  * @param index resolver sequence (1..n)
-  */
-int OpenNICSystem::updateResolver(QHostAddress& resolver,int index,QString& output)
-{
-    #if defined(Q_OS_WIN32)
-        return OpenNICSystem_Win::updateResolver(resolver,index,output);
-    #elif defined(Q_OS_LINUX)
-        return OpenNICSystem_Linux::updateResolver(resolver,index,output);
-    #endif
-}
-
-/**
- * @brief OpenNICSystem::beginUpdateResolvers perform an termination
- * work required before updating resolvers at the O/S level.
- * @param output Return for textual output from the operations.
- * @return true on success, else fail.
- */
-bool OpenNICSystem::endUpdateResolvers(QString& output)
-{
-    #if defined(Q_OS_WIN32)
-        return OpenNICSystem_Win::endUpdateResolvers(output);
-    #elif defined(Q_OS_LINUX)
-        return OpenNICSystem_Linux::endUpdateResolvers(output);
-    #endif
-}
-
-/**
-  * @brief Get the text which will show the current DNS resolver settings.
-  */
-QString OpenNICSystem::getSystemResolverList()
-{
-    #if defined(Q_OS_WIN32)
-        return OpenNICSystem_Win::getSystemResolverList();
-    #elif defined(Q_OS_LINUX)
-        return OpenNICSystem_Linux::getSystemResolverList();
-    #endif
-}
-
-
-
-
-
 

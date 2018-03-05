@@ -26,9 +26,7 @@ SOURCES += main.cpp\
         opennicdomainname.cpp \
         opennicdomainnamepool.cpp \
         opennicdnsquerylistener.cpp \
-        opennicresolver.cpp \
-        opennicsystem_win.cpp \
-        opennicsystem_linux.cpp
+        opennicresolver.cpp
 
 
 win32::SOURCES += qtservice_win.cpp \

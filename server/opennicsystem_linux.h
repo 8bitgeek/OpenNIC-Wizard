@@ -13,19 +13,18 @@
 #define OPENNICSYSTEM_LINUX_H
 
 #include <opennicsystem.h>
-#include <QStringList>
 
-class OpenNICSystem_Linux
+class OpenNICSystem_Linux : public OpenNICSystem
 {
 	public:
-        static QString					getSystemResolverList();
-        static bool						beginUpdateResolvers(QString& output);
-		static int						updateResolver(QHostAddress& dns,int index, QString& output);
-        static bool						endUpdateResolvers(QString& output);
-    private:
-        static QStringList              interfaces();
+        OpenNICSystem();
+        virtual ~OpenNICSystem();
 
-        QStringList                     mInterfaces;
+        virtual QString getSystemResolverList();
+        virtual bool    beginUpdateResolvers(QString& output);
+        virtual int     updateResolver(QHostAddress& dns,int index, QString& output);
+        virtual bool    endUpdateResolvers(QString& output);
+    private:
 };
 
 #endif // OPENNICSYSTEM_LINUX_H

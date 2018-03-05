@@ -20,12 +20,11 @@
 #include <QFile>
 #include <QIODevice>
 #include <QDateTime>
+#include <QNetworkConfigurationManager>
 
 #ifdef SIMULATE
 QString sResolvConf;
 #endif
-
-QStringList OpenNICSystem_Linux::mInterfaces;
 
 /**
  * @brief OpenNICSystem_Linux::beginUpdateResolvers

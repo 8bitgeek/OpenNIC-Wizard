@@ -330,8 +330,8 @@ void OpenNICResolverPool::randomize()
 			// get un-equal a, b....
 			do
 			{
-				a = OpenNICSystem::random(0,count()-1);
-				b = OpenNICSystem::random(0,count()-1);
+                a = OpenNICSystem::instance()->random(0,count()-1);
+                b = OpenNICSystem::instance()->random(0,count()-1);
 			} while (a==b);
 			swap(a,b);
 		}

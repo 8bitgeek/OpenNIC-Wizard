@@ -206,9 +206,9 @@ void OpenNICServer::pollKeyValue(QString& key, QVariant& value, bool& valid)
 	else if (key == OpenNICPacket::resolver_cache_size)		value = resolverCacheSize();
 	else if (key == OpenNICPacket::resolver_pool)			value = mResolverPool.toStringList();
 	else if (key == OpenNICPacket::resolver_cache)			value = mResolverCache.toStringList();
-	else if (key == OpenNICPacket::bootstrap_t1_list)		value = OpenNICSystem::getBootstrapT1List();
-	else if (key == OpenNICPacket::bootstrap_domains)		value = OpenNICSystem::getTestDomains().toStringList();
-	else if (key == OpenNICPacket::system_text)				value = OpenNICSystem::getSystemResolverList();
+    else if (key == OpenNICPacket::bootstrap_t1_list)		value = OpenNICSystem::instance()->getBootstrapT1List();
+    else if (key == OpenNICPacket::bootstrap_domains)		value = OpenNICSystem::instance()->getTestDomains().toStringList();
+    else if (key == OpenNICPacket::system_text)				value = OpenNICSystem::instance()->getSystemResolverList();
 	else if (key == OpenNICPacket::journal_text)			value = mLog;
 	else if (key == OpenNICPacket::async_message)			value = mAsyncMessage;
 	else if (key == OpenNICPacket::score_rules)				value = mScoreRules;
@@ -247,7 +247,7 @@ void OpenNICServer::dataReady(OpenNICNet* net)
 			}
 			else if ( key == OpenNICPacket::bootstrap_t1_list )
 			{
-				if ( OpenNICSystem::saveBootstrapT1List(value.toStringList()) )
+                if ( OpenNICSystem::instance()->saveBootstrapT1List(value.toStringList()) )
 				{
 					mAsyncMessage = tr("Bootstrap T1 List Saved");
 				}
@@ -258,7 +258,7 @@ void OpenNICServer::dataReady(OpenNICNet* net)
 			}
 			else if ( key == OpenNICPacket::bootstrap_domains )
 			{
-				if ( OpenNICSystem::saveTestDomains(value.toStringList()) )
+                if ( OpenNICSystem::instance()->saveTestDomains(value.toStringList()) )
 				{
 					mAsyncMessage = tr("Domain List Saved");
 				}
@@ -396,7 +396,7 @@ int OpenNICServer::bootstrapResolvers()
 {
 	mResolversInitialized=false;
 	/** get the bootstrap resolvers... */
-	QStringList bootstrapList = OpenNICSystem::getBootstrapT1List();
+    QStringList bootstrapList = OpenNICSystem::instance()->getBootstrapT1List();
 	OpenNICResolverPool proposed;
 	mResolverPool.clear();
 	mResolverPool.fromIPList(bootstrapList,"T1");
@@ -421,7 +421,7 @@ int OpenNICServer::bootstrapResolvers()
     bootstrapList.clear();
     for(int tries=0; bootstrapList.isEmpty() && tries < 5; tries++)
     {
-        bootstrapList = OpenNICSystem::getBootstrapT2List();
+        bootstrapList = OpenNICSystem::instance()->getBootstrapT2List();
     }
 	mResolverPool.fromIPList(bootstrapList,"T2");
 	log(tr("Randomizing T2 Resolvers"));
@@ -515,13 +515,13 @@ bool OpenNICServer::replaceActiveResolvers(OpenNICResolverPool& proposed)
 	mResolverCache.clear();
 	proposed.sort();
 	log("Begin applying updated resolver cache of ("+QString::number(proposed.count())+") items...");
-	if ( OpenNICSystem::beginUpdateResolvers(output) )
+    if ( OpenNICSystem::instance()->beginUpdateResolvers(output) )
 	{
 		for(int n=0; n < proposed.count(); n++)
 		{
 			int exitCode;
 			OpenNICResolver* resolver = proposed.at(n);
-			if ( (exitCode=OpenNICSystem::updateResolver(resolver->hostAddress(),n,output)) == 0 )
+            if ( (exitCode=OpenNICSystem::instance()->updateResolver(resolver->hostAddress(),n,output)) == 0 )
 			{
 				log(" > "+resolver->toString());
 				mResolverCache.append(resolver);
@@ -533,7 +533,7 @@ bool OpenNICServer::replaceActiveResolvers(OpenNICResolverPool& proposed)
 				applied=false;
 			}
 		}
-		if ( !OpenNICSystem::endUpdateResolvers(output) )
+        if ( !OpenNICSystem::instance()->endUpdateResolvers(output) )
 		{
 			log("** Operating system failed to commit resolver cache changes **");
 			log(tr("** Operating syetem said: ")+output);

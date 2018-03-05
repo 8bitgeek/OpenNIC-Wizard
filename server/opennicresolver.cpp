@@ -449,7 +449,7 @@ void OpenNICResolver::expired(OpenNICDnsQuery* query)
   */
 void OpenNICResolver::test()
 {
-	addToQueries(new OpenNICDnsQuery(this,hostAddress(),OpenNICSystem::randomDomain(),QDateTime::currentDateTime().addMSecs(MAX_TIMEOUT))); /* launch a new query */
+    addToQueries(new OpenNICDnsQuery(this,hostAddress(),OpenNICSystem::instance()->randomDomain(),QDateTime::currentDateTime().addMSecs(MAX_TIMEOUT))); /* launch a new query */
 	resetQueryTimer();
 }
 
@@ -465,11 +465,11 @@ void OpenNICResolver::resetQueryTimer()
 	}
 	if (mBootstrapTicks++ < BOOTSTRAP_TIMER_TICKS)
 	{
-		mQueryIntervalTimer = startTimer(OpenNICSystem::random(RANDOM_INTERVAL_MIN/4,RANDOM_INTERVAL_MAX/8));
+        mQueryIntervalTimer = startTimer(OpenNICSystem::instance()->random(RANDOM_INTERVAL_MIN/4,RANDOM_INTERVAL_MAX/8));
 	}
 	else
 	{
-		mQueryIntervalTimer = startTimer(OpenNICSystem::random(RANDOM_INTERVAL_MIN,RANDOM_INTERVAL_MAX));
+        mQueryIntervalTimer = startTimer(OpenNICSystem::instance()->random(RANDOM_INTERVAL_MIN,RANDOM_INTERVAL_MAX));
 	}
 }
 
