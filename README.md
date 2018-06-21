@@ -1,3 +1,5 @@
+June 20th, 2018: Just a quick note to appologize for my lack of maintenance on this project. I see recently there have been several forks. Any of those fork maintainers, if you have questions, I'll try to answer as best I can, I've just been unable to give this project the attention it deserves in recent years.
+
 ##About The OpenNIC Project
 
 "The OpenNIC Project" is an organization of dedicated volunteers who run an 
