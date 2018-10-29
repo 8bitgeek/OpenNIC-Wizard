@@ -1,6 +1,6 @@
 June 20th, 2018: Just a quick note to appologize for my lack of maintenance on this project. I see recently there have been several forks. Any of those fork maintainers, if you have questions, I'll try to answer as best I can, I've just been unable to give this project the attention it deserves in recent years.
 
-##About The OpenNIC Project
+## About The OpenNIC Project
 
 "The OpenNIC Project" is an organization of dedicated volunteers who run an 
 alternative DNS network. OpenNIC is owned and operated by the OpenNIC community. 
@@ -16,21 +16,21 @@ OpenNIC provides resolution to all ICANN domains as well as OpenNIC's own TLDs:
 
 .geek, .free, .bbs, .parody, .oss, .indy, .fur, .ing, .micro, .dyn and .gopher
 
-##OpenNIC Wizard Features
+## OpenNIC Wizard Features
   - OpenNIC Wizard service continually seeks DNS resolvers with best response times
   - No-pain approach to setting up your PC to work with The OpenNIC Project
   - OpenNIC Wizard Task tray applet for observing and optionally tweeking the configuration
   - To start using The OpenNIC Project today, use OpenNIC Wizard. 
   - Simply run the installer and you're instantly using OpenNIC resolve
 
-##Screen Captures
+## Screen Captures
 
 http://www.8bitgeek.net/public/index.php?cmd=smarty&id=14_len
 
 -------------------------------------
 
-##Microsoft Windows XP,7,8,10 Installer
-###OpenNic Wizard Version 0.3RC2: 
+## Microsoft Windows XP,7,8,10 Installer
+### OpenNic Wizard Version 0.3RC2: 
   https://github.com/8bitgeek/OpenNIC-Wizard/blob/master/OpenNIC%20Wizard%200.3.rc2.exe?raw=true
 
   - Run the installer and at the end, allow the installer to launch OpenNIC Wizard.
