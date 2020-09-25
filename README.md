@@ -1,4 +1,3 @@
-June 20th, 2018: Just a quick note to appologize for my lack of maintenance on this project. I see recently there have been several forks. Any of those fork maintainers, if you have questions, I'll try to answer as best I can, I've just been unable to give this project the attention it deserves in recent years.
 
 ##About The OpenNIC Project
 
@@ -26,31 +25,3 @@ OpenNIC provides resolution to all ICANN domains as well as OpenNIC's own TLDs:
 ##Screen Captures
 
 http://www.8bitgeek.net/public/index.php?cmd=smarty&id=14_len
-
--------------------------------------
-
-##Microsoft Windows XP,7,8,10 Installer
-###OpenNic Wizard Version 0.3RC2: 
-  https://github.com/8bitgeek/OpenNIC-Wizard/blob/master/OpenNIC%20Wizard%200.3.rc2.exe?raw=true
-
-  - Run the installer and at the end, allow the installer to launch OpenNIC Wizard.
-
-  - Wait for the initialization progress dialog to complete.
-
-  - The OpenNIC Wizard Task Tray Icon should appear shortly.
-
-  - Right click on OpenNIC Wizard task tray icon to access controls.
-
-  - Left click on the OpenNIC Wizard task tray icon to see current resolver cache.
-
-  - The OpenNIC Wizard Task Tray applet should appear from now on at each restart.
-
-**NOTE:** OpenNIC Wizard is split into two parts, a so called 'client', and a so called 'server'.
-      The 'server' performs the bulk of the functionality, while the 'client' performs the
-      user interface function. On Windows(tm), OpenNICServer.exe runs as a service with elevated
-      privilages, while OpenNIC.exe runs as a task-tray applet. The two communicate over a 
-      client/server style protocol over a local-domain socket on port 19803.
-
-**NOTE:** It has been observed on Windows 8.1 that after the OpenNIC Wizard Task Tray Applet
-      is launched by the installer, that it may continue to say "Connecting...". 
-      Restarting the system should resolve this issue. 
