@@ -29,6 +29,7 @@ OpenNIC provides resolution to all ICANN domains as well as OpenNIC's own TLDs:
 ```
 git clone https://github.com/8bitgeek/OpenNIC-Wizard.git
 cd OpenNIC-Wizard
+qmake
 make
 ```
 
