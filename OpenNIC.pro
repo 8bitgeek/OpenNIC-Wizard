@@ -20,3 +20,5 @@ CONFIG += warn_on \
 SUBDIRS = common \
 		server \
 		client
+
+CFLAGS += -Wno-implicit-fallthrough

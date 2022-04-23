@@ -17,14 +17,12 @@
 class OpenNICSystem_Linux : public OpenNICSystem
 {
 	public:
-        OpenNICSystem();
-        virtual ~OpenNICSystem();
-
         virtual QString getSystemResolverList();
-        virtual bool    beginUpdateResolvers(QString& output);
+        virtual  bool    beginUpdateResolvers(QString& output);
         virtual int     updateResolver(QHostAddress& dns,int index, QString& output);
         virtual bool    endUpdateResolvers(QString& output);
     private:
+        QList<QNetworkConfiguration> mInterfaces;
 };
 
 #endif // OPENNICSYSTEM_LINUX_H
