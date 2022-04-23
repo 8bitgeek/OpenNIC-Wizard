@@ -42,6 +42,11 @@ The T1 bootstrap file (server/bootstrap.t1) should be kept up to date with the c
 
 ```
 
-
 ## Screen Captures
+
+
+![OpenNIC State](www/opennic-wizard1.jpeg)
+  
+
+![OpenNIC Log](www/opennic-wizard2.jpeg)
 
