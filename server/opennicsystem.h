@@ -36,7 +36,7 @@ class OpenNICSystem
         OpenNICSystem();
         virtual ~OpenNICSystem();
 
-        static OpenNICSystem*   instance();
+        static OpenNICSystem*   instance() {return mInstance;}
 
         int						random(int low, int high) {return (qrand()%((high+1)-low)+low);}
         bool					backup(QString filename);
@@ -49,10 +49,11 @@ class OpenNICSystem
         OpenNICDomainNamePool   getTestDomains();
         OpenNICDomainName		randomDomain();
 
-        virtual QString         getSystemResolverList();
-        virtual bool            beginUpdateResolvers(QString& output);
-        virtual int             updateResolver(QHostAddress& dns,int index, QString& output);
-        virtual bool            endUpdateResolvers(QString& output);
+        virtual QString         getSystemResolverList()=0;
+        virtual bool            beginUpdateResolvers(QString& output)=0;
+        virtual int             updateResolver(QHostAddress& dns,int index, QString& output)=0;
+        virtual bool            endUpdateResolvers(QString& output)=0;
+
     protected:
         QList<QNetworkConfiguration>    interfaces();
     private:

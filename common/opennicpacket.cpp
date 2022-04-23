@@ -100,6 +100,7 @@ void OpenNICPacket::recv(QTcpSocket* socket)
 			return;
 		}
 		mRXState=1;
+		/* fall through... */
 	case 1:
 		chunk = stream.device()->readAll();
 		mRXData.append(chunk);
