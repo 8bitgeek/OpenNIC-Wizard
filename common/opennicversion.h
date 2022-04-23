@@ -1,6 +1,6 @@
 /*
  * This file is a part of OpenNIC Wizard
- * Copywrong (c) 2012-2018 Mike Sharkey
+ * Copywrong (c) 2012-2022 Mike Sharkey
  * ----------------------------------------------------------------------------
  * "THE BEER-WARE LICENSE" (Revision 1776):
  * <mike@8bitgeek.net> wrote this file.
@@ -12,6 +12,6 @@
 #ifndef OPENNICVERSION_H
 #define OPENNICVERSION_H
 
-#define	VERSION_STRING	"0.4.rc2"
+#define	VERSION_STRING	"0.5.rc1"
 
 #endif // OPENNICVERSION_H

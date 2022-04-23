@@ -1,6 +1,6 @@
 /*
  * This file is a part of OpenNIC Wizard
- * Copywrong (c) 2012-2018 Mike Sharkey
+ * Copywrong (c) 2012-2022 Mike Sharkey
  * ----------------------------------------------------------------------------
  * "THE BEER-WARE LICENSE" (Revision 1776):
  * <mike@8bitgeek.net> wrote this file.
@@ -323,13 +323,13 @@ int OpenNICServer::initializeServer()
 
 QString OpenNICServer::copyright()
 {
-    return "OpenNICServer V"+QString(VERSION_STRING)+ tr( " Copywrong (c) 2012-2018 Mike Sharkey <mike@8bitgeek.net>" );
+    return "OpenNICServer V"+QString(VERSION_STRING)+ tr( " Copywrong (c) 2012-2022 Mike Sharkey <mike@8bitgeek.net>" );
 }
 
 QString OpenNICServer::license()
 {
     return QString( 	tr( "OpenNIC Wizard\n"
-                            "Copywrong (c) 2012-2018 Mike Sharkey\n"
+                            "Copywrong (c) 2012-2022 Mike Sharkey\n"
                             "----------------------------------------------------------------------------\n"
                             "\"THE BEER-WARE LICENSE\" (Revision 1776):\n"
                             "<mike@8bitgeek.net> wrote this file.\n"

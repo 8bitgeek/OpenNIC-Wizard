@@ -1,6 +1,6 @@
 /*
  * This file is a part of OpenNIC Wizard
- * Copywrong (c) 2012-2018 Mike Sharkey
+ * Copywrong (c) 2012-2022 Mike Sharkey
  * ----------------------------------------------------------------------------
  * "THE BEER-WARE LICENSE" (Revision 1776):
  * <mike@8bitgeek.net> wrote this file.
@@ -641,7 +641,7 @@ void OpenNIC::about()
 {
     QMessageBox::about(this,tr( "About OpenNIC Wizard" ), QString("OpenNIC Wizard Version ")+QString(VERSION_STRING)+
                         "This file is a part of OpenNIC Wizard\n"
-                        "Copywrong (c) 2012-2018 Mike Sharkey\n"
+                        "Copywrong (c) 2012-2022 Mike Sharkey\n"
                         "----------------------------------------------------------------------------\n"
                         "\"THE BEER-WARE LICENSE\" (Revision 1776):\n"
                         "<mike@8bitgeek.net> wrote this file.\n"

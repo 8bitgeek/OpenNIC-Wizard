@@ -1,5 +1,5 @@
 
-## About The OpenNIC Project
+# About The OpenNIC Project
 
 "The OpenNIC Project" is an organization of dedicated volunteers who run an 
 alternative DNS network. OpenNIC is owned and operated by the OpenNIC community. 
@@ -15,14 +15,24 @@ OpenNIC provides resolution to all ICANN domains as well as OpenNIC's own TLDs:
 
 .geek, .free, .bbs, .parody, .oss, .indy, .fur, .ing, .micro, .dyn and .gopher
 
-## OpenNIC Wizard Features
+# OpenNIC Wizard Features
   - OpenNIC Wizard service continually seeks DNS resolvers with best response times
   - No-pain approach to setting up your PC to work with The OpenNIC Project
   - OpenNIC Wizard Task tray applet for observing and optionally tweeking the configuration
   - To start using The OpenNIC Project today, use OpenNIC Wizard. 
   - Simply run the installer and you're instantly using OpenNIC resolve
 
-## T1 Bootstrap File
+# Build
+
+## Linux
+
+```
+git clone https://github.com/8bitgeek/OpenNIC-Wizard.git
+cd OpenNIC-Wizard
+make
+```
+
+# T1 Bootstrap File
 
 The T1 bootstrap file (server/bootstrap.t1) should be kept up to date with the current T1 resolver list
 
@@ -42,7 +52,7 @@ The T1 bootstrap file (server/bootstrap.t1) should be kept up to date with the c
 
 ```
 
-## Screen Captures
+# Screen Captures
 
 
 ![OpenNIC State](www/opennic-wizard1.jpeg)
