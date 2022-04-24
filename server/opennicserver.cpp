@@ -47,6 +47,8 @@
 							"return calculateScore();\n" \
 							"\n"
 
+extern int GlobalShutdown;
+
 QStringList		OpenNICServer::mLog;					/* the log text */
 QString			OpenNICServer::mScoreRules;				/* the score rules javascript text */
 bool			OpenNICServer::mScoreInternal=true;		/* use internal scoring rules? */
@@ -84,7 +86,6 @@ OpenNICServer::OpenNICServer(QObject *parent)
 
 OpenNICServer::~OpenNICServer()
 {
-	mSystem->shutdown();
 	delete mSystem;
 }
 
@@ -678,6 +679,13 @@ void OpenNICServer::delay(int seconds)
   */
 void OpenNICServer::timerEvent(QTimerEvent* e)
 {
+	if ( GlobalShutdown )
+	{
+		mSystem->shutdown();
+		log("** SHUTDOWN **");
+		exit(0);
+	}
+
 	if ( e->timerId() == mFastTimer )
 	{
 		runOnce();											/* don't let the log get out of hand */

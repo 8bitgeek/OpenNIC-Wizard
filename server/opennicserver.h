@@ -62,6 +62,8 @@ class OpenNICServer : public QObject
 		static QString&			scoreRules()	{return mScoreRules;}
 		static bool				scoreInternal()	{return mScoreInternal;}
 
+		OpenNICSystem* 			system() 		{return mSystem;}
+
 	signals:
 		void					quit();
 
