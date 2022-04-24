@@ -111,9 +111,9 @@ opennic;register.ing
 
 # Screen Captures
 
-![OpenNIC State](www/opennic-wizard1.jpeg)
+Task Tray Bubble Status
 
-![OpenNIC Log](www/opennic-wizard2.jpeg)
+![OpenNIC Log](www/opennic-wizard5.png)
 
 Detailed examination of the quality of resolver pool.
 
@@ -121,4 +121,9 @@ Detailed examination of the quality of resolver pool.
 
 ![OpenNIC Log](www/opennic-wizard4.png)
 
-![OpenNIC Log](www/opennic-wizard5.png)
+Windows 7
+
+![OpenNIC State](www/opennic-wizard1.jpeg)
+
+![OpenNIC Log](www/opennic-wizard2.jpeg)
+
