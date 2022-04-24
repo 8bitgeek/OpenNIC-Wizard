@@ -32,7 +32,7 @@ OpenNIC provides resolution to all ICANN domains as well as OpenNIC's own TLDs:
   - No-pain approach to setting up your PC to work with The OpenNIC Project
   - OpenNIC Wizard Task tray applet for observing and optionally tweeking the configuration
   - To start using The OpenNIC Project today, use OpenNIC Wizard. 
-  - Simply run the installer and you're instantly using OpenNIC resolve
+  - Simply run the installer and you're instantly using OpenNIC resolvers.
 
 # Build
 
