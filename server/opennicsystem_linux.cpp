@@ -10,6 +10,7 @@
  * ----------------------------------------------------------------------------
  */
 #include "opennicsystem_linux.h"
+#include "opennicserver.h"
 
 #include <QObject>
 #include <QString>
@@ -21,6 +22,9 @@
 #include <QIODevice>
 #include <QDateTime>
 #include <QNetworkConfigurationManager>
+
+#define RESOLVE_CONF            "/etc/resolv.conf"
+#define RESOLVE_CONF_BACKUP     "/etc/resolv.conf.bak"
 
 #ifdef SIMULATE
 QString sResolvConf;
@@ -57,7 +61,7 @@ int OpenNICSystem_Linux::updateResolver(QHostAddress& resolver,int index,QString
             sResolvConf += "nameserver "+resolver.toString()+"\n";
             output=resolver.toString();
     #else
-        QFile file("/etc/resolv.conf");
+        QFile file(RESOLVE_CONF);
         if ( (index==1) ? file.open(QIODevice::ReadWrite|QIODevice::Truncate) : file.open(QIODevice::ReadWrite|QIODevice::Append) )
         {
             QString line("nameserver "+resolver.toString()+"\n");
@@ -82,7 +86,7 @@ QString OpenNICSystem_Linux::getSystemResolverList()
     #ifdef SIMULATE
         return sResolvConf;
     #else
-        QFile file("/etc/resolv.conf");
+        QFile file(RESOLVE_CONF);
         if ( file.open(QIODevice::ReadOnly) )
         {
             QString text(file.readAll());
@@ -91,6 +95,72 @@ QString OpenNICSystem_Linux::getSystemResolverList()
         }
         return "Could not obtain system resolver list.";
     #endif
+}
+
+/**
+ * @brief Preserve the resolver cache /etc/resolv.conf to /etc/resolv.conf.bak
+ * @return true 
+ * @return false 
+ */
+bool OpenNICSystem_Linux::preserveResolverCache()
+{    
+    bool rc=false;
+    QFile resolv_conf(RESOLVE_CONF);
+    QFile resolv_conf_bak(RESOLVE_CONF_BACKUP);
+
+    if ( resolv_conf_bak.open( QIODevice::ReadWrite|QIODevice::Truncate ) )
+    {
+        if ( resolv_conf.open( QIODevice::ReadOnly ) )
+        {
+            QByteArray cache = resolv_conf.readAll();
+            rc = (resolv_conf_bak.write(cache) == cache.size() ) ? true : false;
+            resolv_conf.close();
+        }
+        resolv_conf_bak.close();
+    }
+    return rc;
+}
+
+/**
+ * @brief Restore the resolver cache /etc/resolv.conf.bak to /etc/resolv.conf
+ * @return true 
+ * @return false 
+ */
+bool OpenNICSystem_Linux::restoreResolverCache()
+{
+    bool rc=false;
+    QFile resolv_conf(RESOLVE_CONF);
+    QFile resolv_conf_bak(RESOLVE_CONF_BACKUP);
+
+    if ( resolv_conf_bak.open( QIODevice::ReadOnly ) )
+    {
+        if ( resolv_conf.open( QIODevice::ReadWrite|QIODevice::Truncate ) )
+        {
+            QByteArray cache = resolv_conf_bak.readAll();
+            rc = (resolv_conf.write(cache) == cache.size() ) ? true : false;
+            resolv_conf.close();
+        }
+        resolv_conf_bak.close();
+    }
+    return rc;
+}
+
+
+void OpenNICSystem_Linux:: startup()
+{
+    if ( preserveResolverCache() )
+        OpenNICServer::log("resolver cache preserved");
+    else
+        OpenNICServer::log("failed too preserved resolver cache");
+
+}
+
+void OpenNICSystem_Linux::shutdown()
+{
+    if ( restoreResolverCache() )
+        OpenNICServer::log("resolver cache restored");
+    else
+        OpenNICServer::log("failed too restore resolver cache");
 }
 
 

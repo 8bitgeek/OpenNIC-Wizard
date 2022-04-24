@@ -74,6 +74,7 @@ OpenNICServer::OpenNICServer(QObject *parent)
 #else 
 	#error System Not Defined
 #endif
+	mSystem->startup();
 	readSettings();
 	initializeServer();
 	mFastTimer = startTimer(1000*DEFAULT_FAST_TIMER);
@@ -83,6 +84,7 @@ OpenNICServer::OpenNICServer(QObject *parent)
 
 OpenNICServer::~OpenNICServer()
 {
+	mSystem->shutdown();
 	delete mSystem;
 }
 
