@@ -36,6 +36,10 @@ OpenNIC provides resolution to all ICANN domains as well as OpenNIC's own TLDs:
 
 # Build
 
+## Dependencies
+
+* Qt5.x
+
 ## Linux
 
 ```
