@@ -28,7 +28,7 @@ OpenNIC provides resolution to all ICANN domains as well as OpenNIC's own [TLD](
 
 
 # OpenNIC Wizard Features
-  - OpenNIC Wizard service continually seeks DNS resolvers with best response times
+  - OpenNIC Wizard service continually seeks DNS resolvers with best performance.
   - No-pain approach to setting up your PC to work with The OpenNIC Project
   - OpenNIC Wizard Task tray applet for observing and optionally tweeking the configuration
   - To start using The OpenNIC Project today, use OpenNIC Wizard. 
