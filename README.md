@@ -64,7 +64,7 @@ make
 
 # T1 Bootstrap File
 
-The T1 [(Tier 1)](https://servers.opennic.org/?tier=1) bootstrap file (server/bootstrap.t1) should be kept up to date with the current T1 resolver list
+The T1 (Tier 1) bootstrap file (server/bootstrap.t1) should be kept up to date with the [current T1 resolver list](https://servers.opennic.org/?tier=1)
 
 The T1 OpenNIC resolvers are the root domain servers for OpenNIC.
 
