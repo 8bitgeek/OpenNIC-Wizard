@@ -34,6 +34,36 @@ OpenNIC provides resolution to all ICANN domains as well as OpenNIC's own [TLD](
   - To start using The OpenNIC Project today, use OpenNIC Wizard. 
   - Simply run the installer and you're instantly using OpenNIC resolvers.
 
+# Method of Operation Overview
+
+The OpenNIC Wizard is divided into ttwo parts, OpenNICServer and OpenNIC
+
+## OpenNICServer
+
+The bootstrap.t1 file is a list of IP addresses which OpenNICServer uses to locate the T1 (root) resolvers. 
+
+Onces the T1 resolvers have been confirmed, they are quried in such a way as to walk  the tree of T2 resolvers and buuild a table of the T2 resolvers.
+
+Once a resolver tree has been constructed, then, periodically a resolver is chosen at random, 
+and is tested for performance, given a random TLD from the bootstrap.domains, file, the resolver success, and round-trip time are both captures, and retained as a record of that resolver's performance.
+
+As resolvers are tested this way, the higher performing resolvers float to the top of the list.
+
+Once therre is sufficient change in the top pwerformers, then the resolver pool currrently being used by the operting system is swappedd out for the N number of top performers. Where N defaults to 3, and is user selectable.
+
+The goal is to keep the operating system up to date with the best performing resolvers from your location.
+
+## OpenNIC
+
+A task-tray applet is provided. It is not required for OpenNIC Wizard to work. It is for Human interraction.
+
+The OpenNICServer and OpenNIC applet communicate over local domain sockets. Hence the server/cliant metaphore.
+
+The OpenNICServer portion must run with elevated privilages in order to manipulate the operating system DNS resolver pool.
+
+The OpenNIC task tray applet runs with user privilage.
+
+
 # Build
 
 ## Dependencies
@@ -67,6 +97,8 @@ make
 The T1 (Tier 1) bootstrap file (server/bootstrap.t1) should be kept up to date with the [current T1 resolver list](https://servers.opennic.org/?tier=1)
 
 The T1 OpenNIC resolvers are the root domain servers for OpenNIC.
+
+Although these servers change very infrequently, they do change from time to time. The bootstrap procedure will not fail if the bootstrap.t1 file is not 100% up to date, so long as there are still a few vilid IP address, only the bootstrap performance will suffer (the start up time).
 
 [server/bootstrap.t1](server/bootstrap.t1)
 
