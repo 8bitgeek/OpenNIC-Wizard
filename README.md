@@ -48,6 +48,19 @@ cd OpenNIC-Wizard
 qmake
 make
 ```
+## Windows
+
+...mumble mumble...
+
+# Install
+
+## Linux
+
+...mumble mumble...
+
+## Windows
+
+...mumble mumble...
 
 # T1 Bootstrap File
 
