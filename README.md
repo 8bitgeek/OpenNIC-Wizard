@@ -53,11 +53,33 @@ The T1 bootstrap file (server/bootstrap.t1) should be kept up to date with the c
 
 ```
 
+# Bootstrap Domains
+
+The T1 bootstrap test data set.
+
+TLDs to use for testing TDL availability and performance.
+
+[server/bootstrap.domains](server/bootstrap.domains)
+
+```
+icann;wikipedia.org
+icann;www.abs.gov.au
+icann;yahoo.com
+icann;google.com
+icann;360.cn
+icann;canada.ca
+icann;8bitgeek.net
+icann;opennicproject.org
+opennic;grep.geek
+opennic;opennic.glue
+opennic;reg.for.free
+opennic;register.bbs
+opennic;register.gopher
+opennic;register.ing
+```
+
 # Screen Captures
 
-
 ![OpenNIC State](www/opennic-wizard1.jpeg)
-  
 
 ![OpenNIC Log](www/opennic-wizard2.jpeg)
-
