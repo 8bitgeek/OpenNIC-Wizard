@@ -8,7 +8,7 @@ Membership is open to all who share an interest in keeping DNS free for all user
 The goal of The OpenNIC Project is to provide you with quick and reliable DNS services and access
 to domains not administered by [ICANN](https://www.icann.org/).
 
-OpenNIC provides resolution to all ICANN domains as well as OpenNIC's own TLDs:
+OpenNIC provides resolution to all ICANN domains as well as OpenNIC's own [TLD](https://en.wikipedia.org/wiki/Top-level_domain)s:
 
 .bbs
 .chan
