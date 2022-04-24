@@ -24,7 +24,7 @@
 #include <QNetworkConfigurationManager>
 
 #define RESOLVE_CONF            "/etc/resolv.conf"
-#define RESOLVE_CONF_BACKUP     "/etc/resolv.conf.bak"
+#define RESOLVE_CONF_BACKUP     "/var/resolv.conf.bak"
 
 #ifdef SIMULATE
 QString sResolvConf;
@@ -151,7 +151,7 @@ void OpenNICSystem_Linux:: startup()
     if ( preserveResolverCache() )
         OpenNICServer::log("resolver cache preserved");
     else
-        OpenNICServer::log("failed too preserved resolver cache");
+        OpenNICServer::log("failed to preserved resolver cache");
 
 }
 
@@ -160,7 +160,7 @@ void OpenNICSystem_Linux::shutdown()
     if ( restoreResolverCache() )
         OpenNICServer::log("resolver cache restored");
     else
-        OpenNICServer::log("failed too restore resolver cache");
+        OpenNICServer::log("failed to restore resolver cache");
 }
 
 
