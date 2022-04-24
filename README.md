@@ -120,3 +120,5 @@ Detailed examination of the quality of resolver pool.
 ![OpenNIC State](www/opennic-wizard3.png)
 
 ![OpenNIC Log](www/opennic-wizard4.png)
+
+![OpenNIC Log](www/opennic-wizard5.png)
