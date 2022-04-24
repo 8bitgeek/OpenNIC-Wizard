@@ -1,19 +1,31 @@
 
 # About The OpenNIC Project
 
-"The OpenNIC Project" is an organization of dedicated volunteers who run an 
-alternative DNS network. OpenNIC is owned and operated by the OpenNIC community. 
+["The OpenNIC Project"](http://www.opennicproject.org) is an organization of dedicated volunteers who run an alternative [DNS](https://en.wikipedia.org/wiki/Domain_Name_System) network. OpenNIC is owned and operated by the OpenNIC community. 
 
 Membership is open to all who share an interest in keeping DNS free for all users. 
 
 The goal of The OpenNIC Project is to provide you with quick and reliable DNS services and access
-to domains not administered by ICANN.
-
-More information about The OpenNIC Project can be found at http://www.opennicproject.org
+to domains not administered by [ICANN](https://www.icann.org/).
 
 OpenNIC provides resolution to all ICANN domains as well as OpenNIC's own TLDs:
 
-.geek, .free, .bbs, .parody, .oss, .indy, .fur, .ing, .micro, .dyn and .gopher
+.bbs
+.chan
+.cyb
+.dyn
+.geek
+.gopher
+.indy
+.libre
+.neo
+.null
+.o
+.oss
+.oz
+.parody
+.pirate
+
 
 # OpenNIC Wizard Features
   - OpenNIC Wizard service continually seeks DNS resolvers with best response times
@@ -35,7 +47,7 @@ make
 
 # T1 Bootstrap File
 
-The T1 (Tier 1) bootstrap file (server/bootstrap.t1) should be kept up to date with the current T1 resolver list
+The T1 [(Tier 1)](https://servers.opennic.org/?tier=1) bootstrap file (server/bootstrap.t1) should be kept up to date with the current T1 resolver list
 
 The T1 OpenNIC resolvers are the root domain servers for OpenNIC.
 
@@ -85,3 +97,9 @@ opennic;register.ing
 ![OpenNIC State](www/opennic-wizard1.jpeg)
 
 ![OpenNIC Log](www/opennic-wizard2.jpeg)
+
+Detailed examination of the quality of resolver pool.
+
+![OpenNIC State](www/opennic-wizard3.png)
+
+![OpenNIC Log](www/opennic-wizard4.png)
