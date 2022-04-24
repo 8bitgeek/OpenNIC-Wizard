@@ -26,6 +26,13 @@
 #include "opennicversion.h"
 #include "opennicresolverpool.h"
 #include "opennicnet.h"
+#if defined(Q_OS_UNIX)
+	#include "opennicsystem_linux.h"
+#elif defined(Q_OS_WIN32)
+	#include "opennicsystem_win.h"
+#else 
+	#error System Not Defined
+#endif
 
 class OpenNICSession;
 class OpenNICServer : public QObject
@@ -107,6 +114,7 @@ class OpenNICServer : public QObject
 		int						mBootstrapTimer;			/** short running HF timer for bootstrap */
 		int						mBootstrapTicks;			/** number of botstrap ticks */
 		bool					mInColdBoot;				/** Still cold booting */
+		OpenNICSystem*			mSystem;					/** System Specific Abstractions */
 };
 
 #endif // OPENNICSERVER_H

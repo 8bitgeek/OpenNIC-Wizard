@@ -17,8 +17,9 @@
 class OpenNICSystem_Linux : public OpenNICSystem
 {
 	public:
+        OpenNICSystem_Linux();
         virtual QString getSystemResolverList();
-        virtual  bool    beginUpdateResolvers(QString& output);
+        virtual bool    beginUpdateResolvers(QString& output);
         virtual int     updateResolver(QHostAddress& dns,int index, QString& output);
         virtual bool    endUpdateResolvers(QString& output);
     private:

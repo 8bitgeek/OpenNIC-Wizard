@@ -26,6 +26,13 @@
 QString sResolvConf;
 #endif
 
+#define inherited OpenNICSystem
+
+OpenNICSystem_Linux::OpenNICSystem_Linux()
+: inherited::OpenNICSystem()
+{
+}
+
 /**
  * @brief OpenNICSystem_Linux::beginUpdateResolvers
  * @param output

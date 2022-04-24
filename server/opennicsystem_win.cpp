@@ -30,6 +30,13 @@
 
 OpenNICDomainNamePool OpenNICSystem::mTestDomains;
 
+#define inherited OpenNICSystem
+
+OpenNICSystem_Win::OpenNICSystem_Win()
+: inherited::OpenNICSystem()
+{
+}
+
 /**
   * @brief file copy
   */

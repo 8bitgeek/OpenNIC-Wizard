@@ -14,9 +14,10 @@
 
 #include <opennicsystem.h>
 
-class OpenNICSystem_Linux
+class OpenNICSystem_Win
 {
     public:
+        OpenNICSystem_Win();
         static QString					getSystemResolverList();
         static bool						beginUpdateResolvers(QString& output);
         static int						updateResolver(QHostAddress& dns,int index, QString& output);

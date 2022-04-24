@@ -10,7 +10,6 @@
  * ----------------------------------------------------------------------------
  */
 #include "opennicserver.h"
-#include "opennicsystem.h"
 #include "opennicresolver.h"
 
 #include <QObject>
@@ -68,6 +67,13 @@ OpenNICServer::OpenNICServer(QObject *parent)
 , mBootstrapTicks(0)
 , mInColdBoot(false)
 {
+#if defined(Q_OS_UNIX)
+	mSystem = new OpenNICSystem_Linux();
+#elif defined(Q_OS_WIN32)
+	mSystem = new OpenNICSystem_Win();
+#else 
+	#error System Not Defined
+#endif
 	readSettings();
 	initializeServer();
 	mFastTimer = startTimer(1000*DEFAULT_FAST_TIMER);
@@ -77,6 +83,7 @@ OpenNICServer::OpenNICServer(QObject *parent)
 
 OpenNICServer::~OpenNICServer()
 {
+	delete mSystem;
 }
 
 int OpenNICServer::refreshPeriod()
