@@ -1,7 +1,7 @@
 
 # About The OpenNIC Project
 
-["The OpenNIC Project"](http://www.opennicproject.org) is an organization of dedicated volunteers who run an alternative [DNS](https://en.wikipedia.org/wiki/Domain_Name_System) network. OpenNIC is owned and operated by the OpenNIC community. 
+["The OpenNIC Project"](http://www.opennicproject.org){:target="_blank"} is an organization of dedicated volunteers who run an alternative [DNS](https://en.wikipedia.org/wiki/Domain_Name_System) network. OpenNIC is owned and operated by the OpenNIC community. 
 
 Membership is open to all who share an interest in keeping DNS free for all users. 
 
