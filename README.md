@@ -36,7 +36,9 @@ OpenNIC provides resolution to all ICANN domains as well as OpenNIC's own [TLD](
 
 # Method of Operation Overview
 
-The OpenNIC Wizard is divided into ttwo parts, OpenNICServer and OpenNIC
+The OpenNIC Wizard is divided into ttwo parts, OpenNICServer and OpenNIC.
+
+In this way, the DNS resolver function and the Graphical User Interface (GUI) component are able to operate independently of one another.
 
 ## OpenNICServer
 
