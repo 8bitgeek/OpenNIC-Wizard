@@ -62,6 +62,14 @@ bool OpenNICSystem::fileCopy(QString from, QString to)
 }
 
 /**
+  * @return true if file exists
+  */
+bool OpenNICSystem::fileExists(QString file)
+{
+	return QFile::exists(file);
+}
+
+/**
   * @brief backup a file
   */
 bool OpenNICSystem::backup(QString filename)
@@ -97,7 +105,7 @@ bool OpenNICSystem::writeStringListToFile(QString filename,QStringList list)
   */
 bool OpenNICSystem::saveBootstrapT1List(QStringList list)
 {
-	return writeStringListToFile(OPENNIC_T1_BOOTSTRAP,list);
+	return writeStringListToFile(bootstrapT1Path(),list);
 }
 
 /**
@@ -105,7 +113,7 @@ bool OpenNICSystem::saveBootstrapT1List(QStringList list)
   */
 bool OpenNICSystem::saveTestDomains(QStringList list)
 {
-	return writeStringListToFile(OPENNIC_DOMAINS_BOOTSTRAP,list);
+	return writeStringListToFile(bootstrapDomainsPath(),list);
 }
 
 /**
@@ -115,7 +123,7 @@ bool OpenNICSystem::saveTestDomains(QStringList list)
 QStringList OpenNICSystem::getBootstrapT1List()
 {
 	QStringList rc;
-	QFile file(OPENNIC_T1_BOOTSTRAP);
+	QFile file(bootstrapT1Path());
 	if ( file.open(QIODevice::ReadOnly) )
 	{
 		while (!file.atEnd()) {
@@ -189,7 +197,7 @@ OpenNICDomainNamePool OpenNICSystem::getTestDomains()
 	if ( mTestDomains.count() == 0 )
 	{
 		QStringList rc;
-		QFile file(OPENNIC_DOMAINS_BOOTSTRAP);
+		QFile file(bootstrapDomainsPath());
 		if ( file.open(QIODevice::ReadOnly) )
 		{
 			while (!file.atEnd())
@@ -251,4 +259,5 @@ QList<QNetworkConfiguration> OpenNICSystem::interfaces()
     rc = manager.allConfigurations();
     return rc;
 }
+
 

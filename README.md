@@ -42,7 +42,7 @@ The OpenNIC Wizard is divided into ttwo parts, OpenNICServer and OpenNIC
 
 The bootstrap.t1 file is a list of IP addresses which OpenNICServer uses to locate the T1 (root) resolvers. 
 
-Onces the T1 resolvers have been confirmed, they are quried in such a way as to walk  the tree of T2 resolvers and buuild a table of the T2 resolvers.
+Onces the T1 resolvers have been confirmed, they are quried in such a way as to walk the tree of [T2](https://servers.opennic.org/?tier=2) resolvers and buuild a table of the T2 resolvers.
 
 Once a resolver tree has been constructed, then, periodically a resolver is chosen at random, 
 and is tested for performance, given a random TLD from the bootstrap.domains, file, the resolver success, and round-trip time are both captures, and retained as a record of that resolver's performance.
@@ -115,6 +115,13 @@ Although these servers change very infrequently, they do change from time to tim
 144.76.103.143
 
 ```
+## Linux bootstrap.t1 location search order
+
+* OPENNIC_T1_BOOTSTRAP environment variable.
+* /usr/local/etc/bootstrap.t1
+* /usr/etc/bootstrap.t1
+* /etc/bootstrap.t1
+* /opt/opennic/bootstrap.t1
 
 # Bootstrap Domains
 
@@ -140,6 +147,13 @@ opennic;register.bbs
 opennic;register.gopher
 opennic;register.ing
 ```
+## Linux bootstrap.domains location search order
+
+* OPENNIC_T1_BOOTSTRAP environment variable.
+* /usr/local/etc/bootstrap.domains
+* /usr/etc/bootstrap.domains
+* /etc/bootstrap.domains
+* /opt/opennic/bootstrap.domains
 
 # Screen Captures
 

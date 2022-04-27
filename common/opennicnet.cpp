@@ -21,7 +21,7 @@ OpenNICNet::OpenNICNet(QTcpSocket* socket, QObject *parent)
 
 OpenNICNet::~OpenNICNet()
 {
-	if ( mSocket->isOpen() && mSocket->isValid() )
+	if ( isLive() )
 	{
 		mSocket->flush();
 		mSocket->close();

@@ -12,6 +12,7 @@
 #include "opennicsystem_linux.h"
 #include "opennicserver.h"
 
+#include <QtGlobal>
 #include <QObject>
 #include <QString>
 #include <QStringList>
@@ -104,21 +105,7 @@ QString OpenNICSystem_Linux::getSystemResolverList()
  */
 bool OpenNICSystem_Linux::preserveResolverCache()
 {    
-    bool rc=false;
-    QFile resolv_conf(RESOLVE_CONF);
-    QFile resolv_conf_bak(RESOLVE_CONF_BACKUP);
-
-    if ( resolv_conf_bak.open( QIODevice::ReadWrite|QIODevice::Truncate ) )
-    {
-        if ( resolv_conf.open( QIODevice::ReadOnly ) )
-        {
-            QByteArray cache = resolv_conf.readAll();
-            rc = (resolv_conf_bak.write(cache) == cache.size() ) ? true : false;
-            resolv_conf.close();
-        }
-        resolv_conf_bak.close();
-    }
-    return rc;
+    return fileCopy(RESOLVE_CONF,RESOLVE_CONF_BACKUP);
 }
 
 /**
@@ -128,21 +115,7 @@ bool OpenNICSystem_Linux::preserveResolverCache()
  */
 bool OpenNICSystem_Linux::restoreResolverCache()
 {
-    bool rc=false;
-    QFile resolv_conf(RESOLVE_CONF);
-    QFile resolv_conf_bak(RESOLVE_CONF_BACKUP);
-
-    if ( resolv_conf_bak.open( QIODevice::ReadOnly ) )
-    {
-        if ( resolv_conf.open( QIODevice::ReadWrite|QIODevice::Truncate ) )
-        {
-            QByteArray cache = resolv_conf_bak.readAll();
-            rc = (resolv_conf.write(cache) == cache.size() ) ? true : false;
-            resolv_conf.close();
-        }
-        resolv_conf_bak.close();
-    }
-    return rc;
+    return fileCopy(RESOLVE_CONF_BACKUP,RESOLVE_CONF);
 }
 
 
@@ -162,6 +135,47 @@ void OpenNICSystem_Linux::shutdown()
     else
         OpenNICServer::log("failed to restore resolver cache");
 }
+
+QString OpenNICSystem_Linux::bootstrapT1Path()
+{
+    if ( fileExists( qEnvironmentVariable("OPENNIC_T1_BOOTSTRAP") ) )
+        return qEnvironmentVariable("OPENNIC_T1_BOOTSTRAP");
+
+    if ( fileExists( QString("/usr/local/etc/") + OPENNIC_T1_BOOTSTRAP ) )
+        return QString("/usr/local/etc/") + OPENNIC_T1_BOOTSTRAP;
+
+    if ( fileExists( QString("/usr/etc/") + OPENNIC_T1_BOOTSTRAP ) )
+        return QString("/usr/etc/") + OPENNIC_T1_BOOTSTRAP;
+
+    if ( fileExists( QString("/etc/") + OPENNIC_T1_BOOTSTRAP ) )
+        return QString("/etc/") + OPENNIC_T1_BOOTSTRAP;
+
+    if ( fileExists( QString("/opt/opennic/") + OPENNIC_T1_BOOTSTRAP ) )
+        return QString("/opt/opennic/") + OPENNIC_T1_BOOTSTRAP;
+
+    return OPENNIC_T1_BOOTSTRAP;
+}
+
+QString OpenNICSystem_Linux::bootstrapDomainsPath()
+{
+    if ( fileExists( qEnvironmentVariable("OPENNIC_DOMAINS_BOOTSTRAP") ) )
+        return qEnvironmentVariable("OPENNIC_DOMAINS_BOOTSTRAP");
+
+    if ( fileExists( QString("/usr/local/etc/") + OPENNIC_DOMAINS_BOOTSTRAP ) )
+        return QString("/usr/local/etc/") + OPENNIC_DOMAINS_BOOTSTRAP;
+
+    if ( fileExists( QString("/usr/etc/") + OPENNIC_DOMAINS_BOOTSTRAP ) )
+        return QString("/usr/etc/") + OPENNIC_DOMAINS_BOOTSTRAP;
+
+    if ( fileExists( QString("/etc/") + OPENNIC_DOMAINS_BOOTSTRAP ) )
+        return QString("/etc/") + OPENNIC_DOMAINS_BOOTSTRAP;
+
+    if ( fileExists( QString("/opt/opennic/") + OPENNIC_DOMAINS_BOOTSTRAP ) )
+        return QString("/opt/opennic/") + OPENNIC_DOMAINS_BOOTSTRAP;
+
+    return OPENNIC_DOMAINS_BOOTSTRAP;
+}
+
 
 
 

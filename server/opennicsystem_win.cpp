@@ -25,8 +25,6 @@
 #include <QIODevice>
 #include <QDateTime>
 
-#define OPENNIC_T1_BOOTSTRAP		"bootstrap.t1"
-#define	OPENNIC_DOMAINS_BOOTSTRAP	"bootstrap.domains"
 
 OpenNICDomainNamePool OpenNICSystem::mTestDomains;
 
@@ -114,7 +112,7 @@ bool OpenNICSystem::saveTestDomains(QStringList list)
 QStringList OpenNICSystem::getBootstrapT1List()
 {
 	QStringList rc;
-	QFile file(OPENNIC_T1_BOOTSTRAP);
+	QFile file(bootstrapT1Path());
 	if ( file.open(QIODevice::ReadOnly) )
 	{
 		while (!file.atEnd()) {
@@ -188,7 +186,7 @@ OpenNICDomainNamePool OpenNICSystem::getTestDomains()
 	if ( mTestDomains.count() == 0 )
 	{
 		QStringList rc;
-		QFile file(OPENNIC_DOMAINS_BOOTSTRAP);
+		QFile file(bootstrapDomainsPath());
 		if ( file.open(QIODevice::ReadOnly) )
 		{
 			while (!file.atEnd())
@@ -237,6 +235,17 @@ OpenNICDomainName OpenNICSystem::randomDomain()
 	OpenNICDomainNamePool domains = getTestDomains();
 	int n = random(0,domains.count()-1);
 	return domains.at(n);
+}
+
+QString OpenNICSystem::bootstrapT1Path()
+{
+    return OPENNIC_T1_BOOTSTRAP;
+}
+
+QString OpenNICSystem::bootstrapDomainsPath()
+{
+    return OPENNIC_DOMAINS_BOOTSTRAP;
+
 }
 
 #if defined(Q_OS_WIN32)

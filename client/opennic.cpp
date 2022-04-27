@@ -43,6 +43,8 @@
 #include <QWidget>
 #include <QProgressBar>
 
+#include <stdio.h>
+
 #define DEFAULT_RESOLVERS					3
 #define DEFAULT_T1_RESOLVERS				3
 #define DEFAULT_T1_RANDOM					true
@@ -73,7 +75,6 @@ OpenNIC::OpenNIC(QWidget *parent)
 	createActions();
 	createTrayIcon();
 	QObject::connect(this,SIGNAL(accepted()),this,SLOT(writeSettings()));
-	mTcpSocket.close();
 	mBalloonStatus = tr("Initializing...");
 	mRefreshTimer = startTimer(DEFAULT_REFRESH);
 	mLocalNet = new OpenNICNet(&mTcpSocket);
@@ -436,7 +437,10 @@ void OpenNIC::dataReady(OpenNICNet* net)
 		i.next();
 		QString key = i.key();
 		QVariant value = i.value();
-		if ( key == OpenNICPacket::tcp_listen_port )					mTcpListenPort			=	value.toInt();
+		if ( key == OpenNICPacket::tcp_listen_port )		
+		{			
+			mTcpListenPort = value.toInt();
+		}
 		else if ( key == OpenNICPacket::resolver_cache )
 		{
 			QStringList serverResolverCache = value.toStringList();
@@ -572,9 +576,13 @@ void OpenNIC::connectToService()
 {
 	if ( !mLocalNet->isLive() )
 	{
-		mTcpSocket.close();
+		fprintf(stderr, "** connectToService ** \n" );
 		QHostAddress localhost(QHostAddress::LocalHost);
 		mTcpSocket.connectToHost(localhost,19803,QIODevice::ReadWrite);
+	}
+	else
+	{
+		fprintf(stderr, "** NO connectToService **\n" );
 	}
 }
 
@@ -614,7 +622,6 @@ void OpenNIC::tcpConnected()
 void OpenNIC::tcpDisconnected()
 {
 	mBalloonStatus=tr("OpenNIC Service closed the connection");
-	mTcpSocket.close();
 }
 
 void OpenNIC::tcpError(QAbstractSocket::SocketError socketError)
@@ -622,7 +629,9 @@ void OpenNIC::tcpError(QAbstractSocket::SocketError socketError)
 	if ( socketError != QAbstractSocket::RemoteHostClosedError )
 	{
 		setDisabledState();
-		mBalloonStatus = tr( "Failed to connect to OpenNIC service. [" ) + QString::number((int)socketError) + "]";
+		mBalloonStatus = tr( "Failed to connect to OpenNIC service. [" ) + 
+								QString::number((int)socketError) + "] " + 
+								mTcpSocket.errorString();
 		mTcpSocket.close();
 		slowRefresh();
 	}
@@ -632,8 +641,25 @@ void OpenNIC::tcpHostFound()
 {
 }
 
-void OpenNIC::tcpStateChanged(QAbstractSocket::SocketState /* socketState */)
+void OpenNIC::tcpStateChanged(QAbstractSocket::SocketState socketState)
 {
+	switch ( socketState )
+	{
+		case QAbstractSocket::UnconnectedState:	fprintf( stderr, "The socket is not connected.\n" ); 
+				mTcpSocket.abort();
+				mTcpSocket.close();
+				break;
+		case QAbstractSocket::HostLookupState:	fprintf( stderr, "The socket is performing a host name lookup.\n" ); break;
+		case QAbstractSocket::ConnectingState:	fprintf( stderr, "The socket has started establishing a connection.\n" ); break;
+		case QAbstractSocket::ConnectedState:	fprintf( stderr, "A connection is established.\n" ); break;
+		case QAbstractSocket::BoundState:		fprintf( stderr, "The socket is bound to an address and port.\n" ); break;
+		case QAbstractSocket::ClosingState:		
+				fprintf( stderr, "The socket is about to close (data may still be waiting to be written).\n" ); 
+				mTcpSocket.abort();
+				mTcpSocket.close();
+				break;
+		case QAbstractSocket::ListeningState:	fprintf( stderr, "For internal use only.\n" ); break;
+	}
 }
 
 

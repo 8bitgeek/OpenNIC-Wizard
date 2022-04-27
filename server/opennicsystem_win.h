@@ -18,10 +18,13 @@ class OpenNICSystem_Win
 {
     public:
         OpenNICSystem_Win();
-        static QString					getSystemResolverList();
-        static bool						beginUpdateResolvers(QString& output);
-        static int						updateResolver(QHostAddress& dns,int index, QString& output);
-        static bool						endUpdateResolvers(QString& output);
+        static QString			getSystemResolverList();
+        static bool				beginUpdateResolvers(QString& output);
+        static int				updateResolver(QHostAddress& dns,int index, QString& output);
+        static bool				endUpdateResolvers(QString& output);
+
+        virtual QString         bootstrapT1Path();
+        virtual QString         bootstrapDomainsPath();
 };
 
 #endif // OPENNICSYSTEM_WIN_H

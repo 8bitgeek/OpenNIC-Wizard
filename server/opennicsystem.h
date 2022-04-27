@@ -42,6 +42,7 @@ class OpenNICSystem
         bool					backup(QString filename);
         bool					writeStringListToFile(QString filename,QStringList list);
         bool					fileCopy(QString from, QString to);
+        bool					fileExists(QString file);
         bool					saveBootstrapT1List(QStringList tiList);
         QStringList				getBootstrapT1List();
         QStringList				getBootstrapT2List();
@@ -55,6 +56,9 @@ class OpenNICSystem
         virtual bool            beginUpdateResolvers(QString& output)=0;
         virtual int             updateResolver(QHostAddress& dns,int index, QString& output)=0;
         virtual bool            endUpdateResolvers(QString& output)=0;
+
+        virtual QString         bootstrapT1Path()=0;
+        virtual QString         bootstrapDomainsPath()=0;
 
     protected:
         QList<QNetworkConfiguration>    interfaces();
