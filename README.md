@@ -91,17 +91,17 @@ System Installation into /usr/local/...
 ```
 sudo ./install.sh
 ```
-Run OpenNICServer upon startup...
+If you wish to run OpenNICServer upon startup...
 ```
 sudo -s
 echo /etc/local/bin/OpenNICServer >> /etc/rc.local
 exit
 ```
-Install desktop Icon
+If you wish to install desktop launcher icon
 ```
 cp client/OpenNIC.desktop ~/Desktop/
 ```
-Install auto-run desktop Icon
+If you wish to install auto-run launcher
 ```
 cp client/OpenNIC.desktop ~/.config/autostart/
 ```
