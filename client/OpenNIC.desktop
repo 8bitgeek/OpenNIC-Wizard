@@ -7,6 +7,6 @@ GenericName=OpenNIC Wizard
 Comment=OpenNIC Wizard is good for the soul.
 Exec=/usr/local/bin/OpenNIC
 Terminal=false
-Icon=sublime-text
+Icon=/usr/local/etc/opennic.png
 Categories=Internet;Accessories;
 StartupNotify=true

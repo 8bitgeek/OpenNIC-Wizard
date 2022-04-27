@@ -82,11 +82,27 @@ make
 
 ...mumble mumble...
 
-# Install
+# Installation
 
 ## Linux
 
-...mumble mumble...
+System Installation into /usr/local/...
+
+```
+sudo ./install.sh
+```
+Run OpenNICServer upon startup...
+```
+sudo echo /etc/local/bin/OpenNICServer >> /etc/rc.local
+```
+Install desktop Icon
+```
+cp client/OpenNIC.desktop ~/Desktop/
+```
+Install auto-run desktop Icon
+```
+cp client/OpenNIC.desktop ~/.config/autostart/
+```
 
 ## Windows
 
