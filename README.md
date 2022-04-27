@@ -167,7 +167,7 @@ opennic;register.ing
 ```
 ## Linux bootstrap.domains location search order
 
-* OPENNIC_T1_BOOTSTRAP environment variable.
+* OPENNIC_DOMAINS_BOOTSTRAP environment variable.
 * /usr/local/etc/bootstrap.domains
 * /usr/etc/bootstrap.domains
 * /etc/bootstrap.domains
