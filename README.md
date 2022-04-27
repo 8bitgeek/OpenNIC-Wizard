@@ -116,7 +116,7 @@ The T1 (Tier 1) bootstrap file (server/bootstrap.t1) should be kept up to date w
 
 The T1 OpenNIC resolvers are the root domain servers for OpenNIC.
 
-Although these servers change very infrequently, they do change from time to time. The bootstrap procedure will not fail if the bootstrap.t1 file is not 100% up to date, so long as there are still a few vilid IP address, only the bootstrap performance will suffer (the start up time).
+Although these servers change very infrequently, they do change from time to time. 
 
 [server/bootstrap.t1](server/bootstrap.t1)
 
