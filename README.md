@@ -93,7 +93,9 @@ sudo ./install.sh
 ```
 Run OpenNICServer upon startup...
 ```
-sudo echo /etc/local/bin/OpenNICServer >> /etc/rc.local
+sudo -s
+echo /etc/local/bin/OpenNICServer >> /etc/rc.local
+exit
 ```
 Install desktop Icon
 ```
