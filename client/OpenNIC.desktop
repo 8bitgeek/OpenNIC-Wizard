@@ -1,0 +1,12 @@
+#!/usr/bin/env xdg-open
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=OpenNIC
+GenericName=OpenNIC Wizard
+Comment=OpenNIC Wizard is good for the soul.
+Exec=/usr/local/bin/OpenNIC
+Terminal=false
+Icon=sublime-text
+Categories=Internet;Accessories;
+StartupNotify=true
