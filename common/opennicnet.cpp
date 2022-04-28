@@ -44,7 +44,7 @@ void OpenNICNet::clear()
   */
 bool OpenNICNet::isLive()
 {
-	return socket()->isOpen() && socket()->isValid();
+	return socket()->state() == QAbstractSocket::ConnectedState;
 }
 
 /**
