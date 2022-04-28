@@ -185,11 +185,11 @@ Detailed examination of the quality of resolver pool.
 
 ![OpenNIC State](www/opennic-wizard3.png)
 
+![OpenNIC Log](www/opennic-wizard6.png)
+
 Journal showing resolver pool status monitoring and updating.
 
 ![OpenNIC Log](www/opennic-wizard4.png)
-
-![OpenNIC Log](www/opennic-wizard6.png)
 
 Windows 7 From 2012
 
