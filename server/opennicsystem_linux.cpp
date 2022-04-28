@@ -38,6 +38,22 @@ OpenNICSystem_Linux::OpenNICSystem_Linux()
 {
 }
 
+void OpenNICSystem_Linux:: startup()
+{
+    if ( preserveResolverCache() )
+        OpenNICServer::log("resolver cache preserved");
+    else
+        OpenNICServer::log("failed to preserved resolver cache");
+}
+
+void OpenNICSystem_Linux::shutdown()
+{
+    if ( restoreResolverCache() )
+        OpenNICServer::log("resolver cache restored");
+    else
+        OpenNICServer::log("failed to restore resolver cache");
+}
+
 /**
  * @brief OpenNICSystem_Linux::beginUpdateResolvers
  * @param output
@@ -118,23 +134,6 @@ bool OpenNICSystem_Linux::restoreResolverCache()
     return fileCopy(RESOLVE_CONF_BACKUP,RESOLVE_CONF);
 }
 
-
-void OpenNICSystem_Linux:: startup()
-{
-    if ( preserveResolverCache() )
-        OpenNICServer::log("resolver cache preserved");
-    else
-        OpenNICServer::log("failed to preserved resolver cache");
-
-}
-
-void OpenNICSystem_Linux::shutdown()
-{
-    if ( restoreResolverCache() )
-        OpenNICServer::log("resolver cache restored");
-    else
-        OpenNICServer::log("failed to restore resolver cache");
-}
 
 QString OpenNICSystem_Linux::bootstrapT1Path()
 {

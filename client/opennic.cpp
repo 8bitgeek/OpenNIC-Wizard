@@ -412,13 +412,18 @@ void OpenNIC::pollAllKeys()
   */
 void OpenNIC::pollPeriodicKeys()
 {
-	if (mLocalNet->isLive() )
+	if ( mLocalNet->isLive() )
 	{
 		QStringList keys;
 		keys << OpenNICPacket::resolver_pool;
 		keys << OpenNICPacket::resolver_cache;
 		keys << OpenNICPacket::system_text;
 		keys << OpenNICPacket::journal_text;
+		
+		fprintf( stderr, "--\n" );
+		for (int i = 0; i < keys.size(); ++i)
+			fprintf( stderr, "%s\n", keys.at(i).toLocal8Bit().constData() );
+		
 		mLocalNet->txPacket().set(OpenNICPacket::poll_keys,keys);
 		mLocalNet->send(true);
 	}

@@ -35,58 +35,37 @@ OpenNICSystem_Win::OpenNICSystem_Win()
 {
 }
 
-/**
-  * @brief file copy
-  */
-bool OpenNICSystem::fileCopy(QString from, QString to)
+void OpenNICSystem_Win::startup()
 {
-	if ( from != to && !from.isEmpty() && !to.isEmpty() )
-	{
-		QFile fFrom(from);
-		QFile fTo(to);
-		if (fFrom.open(QIODevice::ReadOnly))
-		{
-			if(fTo.open(QIODevice::ReadWrite))
-			{
-				fTo.write(fFrom.readAll());
-				fTo.close();
-			}
-			fFrom.close();
-			return true;
-		}
-	}
-	return false;
+    if ( preserveResolverCache() )
+        OpenNICServer::log("resolver cache preserved");
+    else
+        OpenNICServer::log("failed to preserved resolver cache");
 }
 
-/**
-  * @brief backup a file
-  */
-bool OpenNICSystem::backup(QString filename)
+void OpenNICSystem_Win::shutdown()
 {
-	return fileCopy(filename,QDateTime::currentDateTime().toString("yyMMddhhmmss")+filename+".bak");
+    if ( restoreResolverCache() )
+        OpenNICServer::log("resolver cache restored");
+    else
+        OpenNICServer::log("failed to restore resolver cache");
 }
 
-/**
-  * @brief write a string list to a file
-  */
-bool OpenNICSystem::writeStringListToFile(QString filename,QStringList list)
+bool OpenNICSystem_Win::beginUpdateResolvers(QString& output)
 {
-	if (backup(filename))
-	{
-		QFile file(filename);
-		if ( file.open(QIODevice::ReadWrite|QIODevice::Truncate) )
-		{
-			for(int n=0; n < list.count(); n++)
-			{
-                QByteArray line = list.at(n).toLocal8Bit();
-				line += '\n';
-				file.write(line);
-			}
-			file.close();
-			return true;
-		}
-	}
-	return false;
+    output.clear();
+    mInterfaces = interfaces();
+	return true;
+}
+
+int OpenNICSystem_Win::updateResolver(QHostAddress& dns,int index, QString& output)
+{
+
+}
+
+bool OpenNICSystem_Win::endUpdateResolvers(QString& output)
+{
+
 }
 
 /**
@@ -105,138 +84,6 @@ bool OpenNICSystem::saveTestDomains(QStringList list)
 	return writeStringListToFile(OPENNIC_DOMAINS_BOOTSTRAP,list);
 }
 
-/**
-  * @brief Get a default T1 list from the bootstrap file.
-  * @return A string list of IP numbers representing potential T1s.
-  */
-QStringList OpenNICSystem::getBootstrapT1List()
-{
-	QStringList rc;
-	QFile file(bootstrapT1Path());
-	if ( file.open(QIODevice::ReadOnly) )
-	{
-		while (!file.atEnd()) {
-			QByteArray line = file.readLine();
-			QString ip(line);
-			if ( !ip.trimmed().isEmpty() )
-			{
-				rc << ip.trimmed();
-			}
-		}
-		file.close();
-	}
-	if ( !rc.count() )
-	{
-		/** a last ditch effort... */
-		rc << "161.97.219.84";
-		rc << "163.172.168.171";
-		rc << "94.103.153.176";
-		rc << "207.192.71.13";
-		rc << "178.63.116.152";
-		rc << "209.141.36.19";
-		rc << "188.226.146.136";
-		rc << "198.98.51.33";
-		rc << "79.124.7.81";
-		rc << "144.76.103.143";
-	}
-	return rc;
-}
-
-/**
-  * @brief Fetch the raw list of DNS resolvers and return them as strings.
-  */
-QStringList OpenNICSystem::getBootstrapT2List()
-{
-	QStringList outputList;
-	QStringList ips;
-	QEventLoop loop;
-	QString program = "dig";
-	QStringList arguments;
-	QString output;
-	arguments << "dns.opennic.glue" << "+short";
-	QProcess* process = new QProcess();
-	process->start(program, arguments);
-	while (process->waitForFinished(15000))
-	{
-		loop.processEvents();
-	}
-	output = process->readAllStandardOutput();
-	outputList = output.trimmed().split('\n');
-	for(int n=0; n < outputList.count(); n++)
-	{
-		QString ip = outputList.at(n).trimmed();
-		if ( ip.length() )
-		{
-			if (ip.at(0) >= '0' && ip.at(0) <= '9')
-			{
-				ips.append(ip);
-			}
-		}
-	}
-	delete process;
-	return ips;
-}
-
-/**
-  * @brief Get a domains list from the bootstrap file.
-  * @return A string list of domains to test.
-  */
-OpenNICDomainNamePool OpenNICSystem::getTestDomains()
-{
-	if ( mTestDomains.count() == 0 )
-	{
-		QStringList rc;
-		QFile file(bootstrapDomainsPath());
-		if ( file.open(QIODevice::ReadOnly) )
-		{
-			while (!file.atEnd())
-			{
-				QString line = file.readLine();
-				if (!line.trimmed().isEmpty())
-				{
-					OpenNICDomainName domain(line.trimmed());
-					mTestDomains.append(domain);
-				}
-			}
-			file.close();
-		}
-		else
-		{
-			/** a last ditch effort... */
-			rc << "icann;wikipedia.org";
-			rc << "icann;www.abs.gov.au";
-			rc << "icann;yahoo.com";
-			rc << "icann;google.com";
-			rc << "icann;360.cn";
-			rc << "icann;canada.ca";
-			rc << "opennic;dns.opennic.glue";
-			rc << "opennic;grep.geek";
-			rc << "opennic;opennic.glue";
-			rc << "opennic;reg.for.free";
-			rc << "opennic;register.bbs";
-			rc << "opennic;register.fur";
-			rc << "opennic;register.gopher";
-			rc << "opennic;register.ing";
-			for(int n=0; n < rc.count(); n++)
-			{
-				OpenNICDomainName domain(rc[n]);
-				mTestDomains.append(domain);
-			}
-		}
-	}
-	return mTestDomains;
-}
-
-/**
-  * @brief retrieve a random domain
-  */
-OpenNICDomainName OpenNICSystem::randomDomain()
-{
-	OpenNICDomainNamePool domains = getTestDomains();
-	int n = random(0,domains.count()-1);
-	return domains.at(n);
-}
-
 QString OpenNICSystem::bootstrapT1Path()
 {
     return OPENNIC_T1_BOOTSTRAP;
@@ -248,7 +95,6 @@ QString OpenNICSystem::bootstrapDomainsPath()
 
 }
 
-#if defined(Q_OS_WIN32)
 bool OpenNICSystem::beginUpdateResolvers(QString& output)
 {
 	/* on windows nothing to do here */
@@ -314,68 +160,6 @@ QString OpenNICSystem::getSystemResolverList()
 		return "Could not obtain system resolver list.";
 	}
 	return output;
-}
-
-#elif defined(Q_OS_UNIX)
-
-//#define SIMULATE 1
-
-#ifdef SIMULATE
-QString sResolvConf;
-#endif
-
-bool OpenNICSystem::beginUpdateResolvers(QString& /* output */)
-{
-	/* on windows nothing to do here */
-	return true;
-}
-
-/**
-  * @brief Add a dns entry to the system's list of DNS resolvers.
-  * @param resolver The IP address of teh resolver to add to the system
-  * @param index resolver sequence (1..n)
-  */
-int OpenNICSystem::updateResolver(QHostAddress& resolver,int index,QString& output)
-{
-#ifdef SIMULATE
-		if (index == 1) sResolvConf.clear();
-		sResolvConf += "nameserver "+resolver.toString()+"\n";
-		output=resolver.toString();
-#else
-	QFile file("/etc/resolv.conf");
-	if ( (index==1) ? file.open(QIODevice::ReadWrite|QIODevice::Truncate) : file.open(QIODevice::ReadWrite|QIODevice::Append) )
-	{
-		QString line("nameserver "+resolver.toString()+"\n");
-        file.write(line.toLocal8Bit());
-		file.close();
-		output=resolver.toString();
-	}
-	return 0;
-#endif
-}
-
-bool OpenNICSystem::endUpdateResolvers(QString& /* output */)
-{
-	return true;
-}
-
-/**
-  * @brief Get the text which will show the current DNS resolver settings.
-  */
-QString OpenNICSystem::getSystemResolverList()
-{
-#ifdef SIMULATE
-	return sResolvConf;
-#else
-	QFile file("/etc/resolv.conf");
-	if ( file.open(QIODevice::ReadOnly) )
-	{
-		QString text(file.readAll());
-		file.close();
-		return text;
-	}
-	return "Could not obtain system resolver list.";
-#endif
 }
 
 #endif

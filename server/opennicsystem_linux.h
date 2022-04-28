@@ -26,8 +26,8 @@ class OpenNICSystem_Linux : public OpenNICSystem
         virtual int     updateResolver(QHostAddress& dns,int index, QString& output);
         virtual bool    endUpdateResolvers(QString& output);
 
-        virtual QString         bootstrapT1Path();
-        virtual QString         bootstrapDomainsPath();
+        virtual QString bootstrapT1Path();
+        virtual QString bootstrapDomainsPath();
 
     private:
 
