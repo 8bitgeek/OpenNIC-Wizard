@@ -36,13 +36,13 @@ OpenNIC provides resolution to all ICANN domains as well as OpenNIC's own [TLD](
 
 # Method of Operation Overview
 
-The OpenNIC Wizard is divided into ttwo parts, OpenNICServer and OpenNIC.
+The OpenNIC Wizard is divided into ttwo parts, *opennicd* and *opennicui*.
 
 In this way, the DNS resolver function and the Graphical User Interface (GUI) component are able to operate independently of one another.
 
-## OpenNICServer
+## About *opennicd*
 
-The bootstrap.t1 file is a list of IP addresses which OpenNICServer uses to locate the T1 (root) resolvers. 
+The bootstrap.t1 file is a list of IP addresses which *opennicd* uses to locate the T1 (root) resolvers. 
 
 Onces the T1 resolvers have been confirmed, they are quried in such a way as to walk the tree of [T2](https://servers.opennic.org/?tier=2) resolvers and buuild a table of the T2 resolvers.
 
@@ -55,13 +55,13 @@ Once therre is sufficient change in the top pwerformers, then the resolver pool 
 
 The goal is to keep the operating system up to date with the best performing resolvers from your location.
 
-## OpenNIC
+## About *opennicui*
 
 A task-tray applet is provided. It is not required for OpenNIC Wizard to work. It is for Human interraction.
 
-The OpenNICServer and OpenNIC applet communicate over local domain sockets. Hence the server/cliant metaphore.
+The *opennicd* and OpenNIC applet communicate over local domain sockets. Hence the server/cliant metaphore.
 
-The OpenNICServer portion must run with elevated privilages in order to manipulate the operating system DNS resolver pool.
+The *opennicd* portion must run with elevated privilages in order to manipulate the operating system DNS resolver pool.
 
 The OpenNIC task tray applet runs with user privilage.
 
@@ -93,10 +93,10 @@ System Installation into /usr/local/...
 ```
 sudo ./install.sh
 ```
-If you wish to run OpenNICServer upon startup...
+If you wish to run *opennicd* upon startup...
 ```
 sudo -s
-echo /etc/local/bin/OpenNICServer >> /etc/rc.local
+echo /etc/local/bin/*opennicd* >> /etc/rc.local
 exit
 ```
 If you wish to install desktop launcher icon

@@ -6,8 +6,8 @@
 #define MyAppVersion "0.4.rc1"
 #define MyAppPublisher "The OpenNIC Project"
 #define MyAppURL "http://www.opennicproject.org"
-#define MyAppExeName "OpenNIC.exe"
-#define MyAppServiceName "OpenNICServer.exe"
+#define MyAppExeName "opennicui.exe"
+#define MyAppServiceName "opennicd.exe"
 
 ; !!! Inno Include seems to be broken !!
 ; #include "opennic-include.iss"
@@ -57,8 +57,8 @@ Name: "german"; MessagesFile: "compiler:Languages\German.isl"
 Name: "spanish"; MessagesFile: "compiler:Languages\Spanish.isl"
 
 [Files]
-Source: {#MyOpenNICBuild}\client\debug\OpenNIC.exe; DestDir: {app}; Flags: ignoreversion; Permissions: admins-full; MinVersion: 0,5.1.2600;
-Source: {#MyOpenNICBuild}\server\debug\OpenNICServer.exe; DestDir: {app}; Flags: ignoreversion; Permissions: admins-full; MinVersion: 0,5.1.2600;
+Source: {#MyOpenNICBuild}\client\debug\opennicui.exe; DestDir: {app}; Flags: ignoreversion; Permissions: admins-full; MinVersion: 0,5.1.2600;
+Source: {#MyOpenNICBuild}\server\debug\opennicd.exe; DestDir: {app}; Flags: ignoreversion; Permissions: admins-full; MinVersion: 0,5.1.2600;
 Source: {#MyQtLib}\QtCored4.dll; DestDir: "{app}"; Flags: ignoreversion
 Source: {#MyQtLib}\QtGuid4.dll; DestDir: "{app}"; Flags: ignoreversion
 Source: {#MyQtLib}\QtNetworkd4.dll; DestDir: "{app}"; Flags: ignoreversion
@@ -78,7 +78,7 @@ Source: {#MyOpenNICSource}\COPYING; DestDir: "{app}"; Flags: ignoreversion
 Source: {#MyOpenNICSource}\README.md; DestDir: "{app}"; Flags: ignoreversion
 Source: {#MyOpenNICSource}\server\bootstrap.t1; DestDir: {app}; Flags: ignoreversion; 
 Source: {#MyOpenNICSource}\server\bootstrap.domains; DestDir: {app}; Flags: ignoreversion; 
-Source: {#MyOpenNICSource}\server\OpenNICServer.exe.manifest; DestDir: {app}; Flags: ignoreversion; 
+Source: {#MyOpenNICSource}\server\opennicd.exe.manifest; DestDir: {app}; Flags: ignoreversion; 
 
 Source: {#MyMingwBin}\mingwm10.dll; DestDir: "{app}"; Flags: ignoreversion
 Source: {#MyMingwBin}\libgcc_s_dw2-1.dll; DestDir: "{app}"; Flags: ignoreversion
