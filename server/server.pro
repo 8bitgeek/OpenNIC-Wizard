@@ -10,7 +10,7 @@
 
 QT  += core network widgets script
 
-TARGET = OpenNICServer
+TARGET = opennicd
 TEMPLATE = app
 CONFIG += warn_on \
 	thread \
