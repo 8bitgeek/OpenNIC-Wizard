@@ -18,7 +18,7 @@
 	#include <arpa/inet.h>
 #else
     #include <stdint.h>
-	#include <winsock.h>
+	// #include <winsock.h>
 #endif
 
 quint16					OpenNICDnsQuery::mMasterTid=0;
