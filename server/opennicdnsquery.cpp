@@ -14,7 +14,7 @@
 
 #include <QHostAddress>
 
-#elif defined(Q_OS_LINUX)
+#if defined(Q_OS_LINUX)
 	#include <arpa/inet.h>
 #else
     #include <stdint.h>
