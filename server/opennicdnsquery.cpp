@@ -19,6 +19,8 @@
 #else
     #include <stdint.h>
 	// #include <winsock.h>
+	#define ntohs(n) ( (n)<<8) | ((n)>>8) )
+	#define htons(n) ntohs((n))
 #endif
 
 quint16					OpenNICDnsQuery::mMasterTid=0;
