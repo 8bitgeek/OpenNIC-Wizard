@@ -19,7 +19,10 @@
 #else
     #include <stdint.h>
 	// #include <winsock.h>
-	#define ntohs(n) ( ((n)<<8) | ((n)>>8) )
+	static uint16_t ntohs(uint16_t n) 
+	{
+		return ( ((n)<<8) | ((n)>>8) );
+	}
 	#define htons(n) ntohs((n))
 #endif
 
