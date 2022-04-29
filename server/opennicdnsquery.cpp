@@ -14,13 +14,11 @@
 
 #include <QHostAddress>
 
-#if defined(Q_OS_WIN32) || defined(Q_WS_WIN32)
-    #include <stdint.h>
-	#include <winsock.h>
 #elif defined(Q_OS_LINUX)
 	#include <arpa/inet.h>
 #else
-	#error "Platform not defined."
+    #include <stdint.h>
+	#include <winsock.h>
 #endif
 
 quint16					OpenNICDnsQuery::mMasterTid=0;
