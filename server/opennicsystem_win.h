@@ -14,7 +14,7 @@
 
 #include <opennicsystem.h>
 
-class OpenNICSystem_Win
+class OpenNICSystem_Win : public OpenNICSystem
 {
     public:
         OpenNICSystem_Win();

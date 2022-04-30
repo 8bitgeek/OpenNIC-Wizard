@@ -1,10 +1,10 @@
 #!/bin/bash
 cd common
-qmake
+qmake 
 make $1
-cd ../
-cd client
-qmake
+cd  ..
+cd client 
+qmake 
 make $1
 cd ..
 cd server

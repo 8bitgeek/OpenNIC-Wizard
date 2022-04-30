@@ -32,10 +32,14 @@ SOURCES += main.cpp\
 win32::SOURCES += qtservice_win.cpp \
         opennicsystem_win.cpp
 
+win32:HEADERS += opennicsystem_win.h
+
 unix::SOURCES += qtservice_unix.cpp \
         qtunixserversocket.cpp \
         qtunixsocket.cpp \
         opennicsystem_linux.cpp
+
+unix:HEADERS += opennicsystem_linux.h
 
 INCLUDEPATH += ../common
 
@@ -50,13 +54,11 @@ HEADERS  += opennicserver.h \
         opennicdomainname.h \
         opennicdomainnamepool.h \
         opennicdnsquerylistener.h \
-        opennicresolver.h \
-        opennicsystem_linux.h \
-        opennicsystem_win.h
+        opennicresolver.h
 
-RESOURCES += \
-		opennicserver.qrc
+RESOURCES += opennicserver.qrc
 
 unix:LIBS += ../common/libcommon.a
 win32:LIBS += ../common/debug/libcommon.a
-win32:LIBS += C:/MinGW/lib/libwsock32.a
+win32:LIBS += /cygdrive/c/cygwin64/lib/w32api/libwsock32.a
+win32:LIBS += -L/cygdrive/c/Qt/Tools/mingw810_64/x86_64-w64-mingw32/lib/
