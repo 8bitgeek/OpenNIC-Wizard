@@ -24,6 +24,11 @@
 #include <QDateTime>
 #include <QNetworkConfigurationManager>
 
+#include <stdlib.h>
+
+#define ENV_OPENNIC_T1_BOOTSTRAP        "OPENNIC_T1_BOOTSTRAP"
+#define ENV_OPENNIC_DOMAINS_BOOTSTRAP   "OPENNIC_DOMAINS_BOOTSTRAP"
+
 #define RESOLVE_CONF            "/etc/resolv.conf"
 #define RESOLVE_CONF_BACKUP     "/var/resolv.conf.bak"
 
@@ -137,8 +142,11 @@ bool OpenNICSystem_Linux::restoreResolverCache()
 
 QString OpenNICSystem_Linux::bootstrapT1Path()
 {
-    if ( fileExists( qEnvironmentVariable("OPENNIC_T1_BOOTSTRAP") ) )
-        return qEnvironmentVariable("OPENNIC_T1_BOOTSTRAP");
+    if ( getenv(ENV_OPENNIC_T1_BOOTSTRAP) )
+    {
+        if ( fileExists( getenv(ENV_OPENNIC_T1_BOOTSTRAP) ) )
+            return getenv(ENV_OPENNIC_T1_BOOTSTRAP);
+    }
 
     if ( fileExists( QString("/usr/local/etc/") + OPENNIC_T1_BOOTSTRAP ) )
         return QString("/usr/local/etc/") + OPENNIC_T1_BOOTSTRAP;
@@ -157,8 +165,11 @@ QString OpenNICSystem_Linux::bootstrapT1Path()
 
 QString OpenNICSystem_Linux::bootstrapDomainsPath()
 {
-    if ( fileExists( qEnvironmentVariable("OPENNIC_DOMAINS_BOOTSTRAP") ) )
-        return qEnvironmentVariable("OPENNIC_DOMAINS_BOOTSTRAP");
+    if ( getenv(ENV_OPENNIC_DOMAINS_BOOTSTRAP) )
+    {
+        if ( fileExists( getenv(ENV_OPENNIC_DOMAINS_BOOTSTRAP) ) )
+            return getenv(ENV_OPENNIC_DOMAINS_BOOTSTRAP);
+    }
 
     if ( fileExists( QString("/usr/local/etc/") + OPENNIC_DOMAINS_BOOTSTRAP ) )
         return QString("/usr/local/etc/") + OPENNIC_DOMAINS_BOOTSTRAP;

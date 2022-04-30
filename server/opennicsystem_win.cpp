@@ -9,7 +9,8 @@
  * you can buy me a beer in return. ~ Mike Sharkey
  * ----------------------------------------------------------------------------
  */
-#include "opennicsystem.h"
+#include "opennicsystem_win.h"
+#include "opennicserver.h"
 
 #include <QObject>
 #include <QMessageBox>
@@ -24,9 +25,6 @@
 #include <QFile>
 #include <QIODevice>
 #include <QDateTime>
-
-
-OpenNICDomainNamePool OpenNICSystem::mTestDomains;
 
 #define inherited OpenNICSystem
 
@@ -58,55 +56,12 @@ bool OpenNICSystem_Win::beginUpdateResolvers(QString& output)
 	return true;
 }
 
-int OpenNICSystem_Win::updateResolver(QHostAddress& dns,int index, QString& output)
-{
-
-}
-
-bool OpenNICSystem_Win::endUpdateResolvers(QString& output)
-{
-
-}
-
-/**
-  * @brief re-wriet the T1 bootstrap file
-  */
-bool OpenNICSystem::saveBootstrapT1List(QStringList list)
-{
-	return writeStringListToFile(OPENNIC_T1_BOOTSTRAP,list);
-}
-
-/**
-  * @brief re-write the domains file
-  */
-bool OpenNICSystem::saveTestDomains(QStringList list)
-{
-	return writeStringListToFile(OPENNIC_DOMAINS_BOOTSTRAP,list);
-}
-
-QString OpenNICSystem::bootstrapT1Path()
-{
-    return OPENNIC_T1_BOOTSTRAP;
-}
-
-QString OpenNICSystem::bootstrapDomainsPath()
-{
-    return OPENNIC_DOMAINS_BOOTSTRAP;
-
-}
-
-bool OpenNICSystem::beginUpdateResolvers(QString& output)
-{
-	/* on windows nothing to do here */
-	return true;
-}
-
 /**
   * @brief Add a dns entry to the system's list of DNS resolvers.
   * @param resolver The IP address of teh resolver to add to the system
   * @param index resolver sequence (1..n)
   */
-int OpenNICSystem::updateResolver(QHostAddress& resolver,int index,QString& output)
+int OpenNICSystem_Win::updateResolver(QHostAddress& resolver,int index,QString& output)
 {
 	int rc;
 	QEventLoop loop;
@@ -132,15 +87,27 @@ int OpenNICSystem::updateResolver(QHostAddress& resolver,int index,QString& outp
 	return rc;
 }
 
-bool OpenNICSystem::endUpdateResolvers(QString& output)
+bool OpenNICSystem_Win::endUpdateResolvers(QString& output)
 {
-	return true;
+
 }
+
+QString OpenNICSystem_Win::bootstrapT1Path()
+{
+    return OPENNIC_T1_BOOTSTRAP;
+}
+
+QString OpenNICSystem_Win::bootstrapDomainsPath()
+{
+    return OPENNIC_DOMAINS_BOOTSTRAP;
+
+}
+
 
 /**
   * @brief Get the text which will show the current DNS resolver settings.
   */
-QString OpenNICSystem::getSystemResolverList()
+QString OpenNICSystem_Win::getSystemResolverList()
 {
 	QByteArray output;
 	QEventLoop loop;
@@ -162,8 +129,25 @@ QString OpenNICSystem::getSystemResolverList()
 	return output;
 }
 
-#endif
 
+/**
+ * @brief Preserve the resolver cache /etc/resolv.conf to /etc/resolv.conf.bak
+ * @return true 
+ * @return false 
+ */
+bool OpenNICSystem_Win::preserveResolverCache()
+{    
+    return true; // fileCopy(RESOLVE_CONF,RESOLVE_CONF_BACKUP);
+}
 
+/**
+ * @brief Restore the resolver cache /etc/resolv.conf.bak to /etc/resolv.conf
+ * @return true 
+ * @return false 
+ */
+bool OpenNICSystem_Win::restoreResolverCache()
+{
+    return true; // fileCopy(RESOLVE_CONF_BACKUP,RESOLVE_CONF);
+}
 
 
