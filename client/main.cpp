@@ -15,11 +15,12 @@
 #include <QSystemTrayIcon>
 #include <QMessageBox>
 #include <QDateTime>
+#include <QRandomGenerator>
 
 int main(int argc, char *argv[])
 {
 	int rc=0;
-	qsrand(QDateTime::currentDateTime().toTime_t()); /* seed random numbers */
+	QRandomGenerator(QDateTime::currentDateTime().toTime_t()); /* seed random numbers */
 	Q_INIT_RESOURCE(opennic);
     QApplication a(argc, argv);
 	a.setQuitOnLastWindowClosed(false);

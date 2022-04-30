@@ -906,7 +906,7 @@ bool QtServiceBasePrivate::install(const QString &account, const QString &passwo
 
 QString QtServiceBasePrivate::filePath() const
 {
-    wchar_t path[MAX_PATH];
+    wchar_t path[_MAX_PATH];
     ::GetModuleFileNameW( 0, path, sizeof(path) );
     return QString::fromUtf16((unsigned short*)path);
 }

@@ -121,7 +121,7 @@ void OpenNICQueryHistoryDialog::timerEvent(QTimerEvent* e)
 /**
   * @brief close
   */
-void OpenNICQueryHistoryDialog::closeEvent(QCloseEvent* e)
+void OpenNICQueryHistoryDialog::closeEvent(QCloseEvent* /* e */)
 {
 	emit closing(this);
 }
@@ -129,7 +129,7 @@ void OpenNICQueryHistoryDialog::closeEvent(QCloseEvent* e)
 /**
   * @brief close
   */
-void OpenNICQueryHistoryDialog::close(int result)
+void OpenNICQueryHistoryDialog::close(int /* result */)
 {
 	emit closing(this);
 }

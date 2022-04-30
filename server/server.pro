@@ -60,5 +60,5 @@ RESOURCES += opennicserver.qrc
 
 unix:LIBS += ../common/libcommon.a
 win32:LIBS += ../common/debug/libcommon.a
-win32:LIBS += /cygdrive/c/cygwin64/lib/w32api/libwsock32.a
-win32:LIBS += -L/cygdrive/c/Qt/Tools/mingw810_64/x86_64-w64-mingw32/lib/
+#win32:LIBS += /cygdrive/c/cygwin64/lib/w32api/libwsock32.a
+#win32:LIBS += -L/cygdrive/c/Qt/Tools/mingw810_64/x86_64-w64-mingw32/lib/

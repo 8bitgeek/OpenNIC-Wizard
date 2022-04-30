@@ -61,7 +61,7 @@ bool OpenNICSystem_Win::beginUpdateResolvers(QString& output)
   * @param resolver The IP address of teh resolver to add to the system
   * @param index resolver sequence (1..n)
   */
-int OpenNICSystem::updateResolver(QHostAddress& resolver,int index,QString& output)
+int OpenNICSystem_Win::updateResolver(QHostAddress& resolver,int index,QString& output)
 {
 	int rc;
 	QEventLoop loop;
@@ -107,7 +107,7 @@ QString OpenNICSystem_Win::bootstrapDomainsPath()
 /**
   * @brief Get the text which will show the current DNS resolver settings.
   */
-QString OpenNICSystem::getSystemResolverList()
+QString OpenNICSystem_Win::getSystemResolverList()
 {
 	QByteArray output;
 	QEventLoop loop;
@@ -129,5 +129,25 @@ QString OpenNICSystem::getSystemResolverList()
 	return output;
 }
 
+
+/**
+ * @brief Preserve the resolver cache /etc/resolv.conf to /etc/resolv.conf.bak
+ * @return true 
+ * @return false 
+ */
+bool OpenNICSystem_Win::preserveResolverCache()
+{    
+    return true; // fileCopy(RESOLVE_CONF,RESOLVE_CONF_BACKUP);
+}
+
+/**
+ * @brief Restore the resolver cache /etc/resolv.conf.bak to /etc/resolv.conf
+ * @return true 
+ * @return false 
+ */
+bool OpenNICSystem_Win::restoreResolverCache()
+{
+    return true; // fileCopy(RESOLVE_CONF_BACKUP,RESOLVE_CONF);
+}
 
 
