@@ -45,7 +45,7 @@ OpenNICResolverPool& OpenNICResolverPool::copy(OpenNICResolverPool& other)
 }
 
 /**
-  * @brief export to a tring list format
+  * @brief export the resolver pool to a string list format
   */
 QStringList OpenNICResolverPool::toStringList()
 {
@@ -61,7 +61,7 @@ QStringList OpenNICResolverPool::toStringList()
 
 
 /**
-  * @brief export to a tring list format
+  * @brief export the resolver pool to a string list format
   *
   */
 QStringList OpenNICResolverPool::toStringList(QString select)
