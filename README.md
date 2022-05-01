@@ -181,6 +181,10 @@ Task Tray Bubble Status
 
 ![OpenNIC Log](www/opennic-wizard5.png)
 
+Don't like the wizard's resolver scoring rules? Make your own. 
+
+![OpenNIC Scoring Rules](www/opennic-wizard2.jpeg)
+
 Detailed examination of the quality of resolver pool.
 
 ![OpenNIC State](www/opennic-wizard3.png)
@@ -196,6 +200,4 @@ Windows 7 From 2012
 ![OpenNIC State](www/opennic-wizard1.jpeg)
 
 ![OpenNIC Log](www/opennic-wizard2.jpeg)
-
-![OpenNIC Scoring Rules](www/opennic-wizard2.jpeg)
 
