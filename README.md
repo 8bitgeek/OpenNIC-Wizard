@@ -177,13 +177,15 @@ opennic;register.ing
 
 # Screen Captures
 
+![OpenNIC Log](www/opennic-wizard0.png)
+
 Task Tray Bubble Status
 
 ![OpenNIC Log](www/opennic-wizard5.png)
 
 Don't like the wizard's resolver scoring rules? Make your own. 
 
-![OpenNIC Scoring Rules](www/opennic-wizard8.png)
+![OpenNIC Scoring Rules](www/opennic-wizard9.png)
 
 Detailed examination of the quality of resolver pool.
 

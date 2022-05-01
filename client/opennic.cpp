@@ -671,13 +671,13 @@ void OpenNIC::tcpStateChanged(QAbstractSocket::SocketState socketState)
 void OpenNIC::about()
 {
     QMessageBox::about(this,tr( "About OpenNIC Wizard" ), QString("OpenNIC Wizard Version ")+QString(VERSION_STRING)+
-                        "This file is a part of OpenNIC Wizard\n"
+                        "\nThis file is a part of OpenNIC Wizard\n"
                         "Copywrong (c) 2012-2022 Mike Sharkey\n"
                         "----------------------------------------------------------------------------\n"
                         "\"THE BEER-WARE LICENSE\" (Revision 1776):\n"
                         "<mike@8bitgeek.net> wrote this file.\n"
-                        "As long as you retain this notice you can do whatever you want with this\n"
-                        "stuff. If we meet some day, and you think this stuff is worth it,\n"
+                        "As long as you retain this notice you can do whatever you want with this stuff.\n"
+                        "If we meet some day, and you think this stuff is worth it,\n"
                         "you can buy me a beer in return. ~ Mike Sharkey\n"
                         "----------------------------------------------------------------------------\n"
 					   );

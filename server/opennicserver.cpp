@@ -35,17 +35,13 @@
 #define BOOTSTRAP_TICKS							12			/* number of bootstrap ticks */
 
 
-#define DEFAULT_SCORE_RULES	"function calculateScore() {\n" \
-                            "    float score=maxPoolLatency - resolverAverageLatency;\n" \
-                            "    if (resolverKind == \"T1\")	score *= 0.6666;\n" \
-                            "    if (resolverKind == \"T2\")	score *= 1.5;\n" \
-                            "    if (resolverStatus == \"R\")	score *= 0.5;\n" \
-                            "    if (resolverStatus == \"Y\")	score *= 0.75;\n" \
-                            "    return score;\n" \
-							"}\n" \
-							"\n" \
-							"return calculateScore();\n" \
-							"\n"
+#define DEFAULT_SCORE_RULES	"var score = maxPoolLatency - resolverAverageLatency;\n" \
+                            "if (resolverKind == \"T1\")    score *= 0.6666;\n" \
+                            "if (resolverKind == \"T2\")    score *= 1.5;\n" \
+                            "if (resolverStatus == \"R\")   score *= 0.5;\n" \
+                            "if (resolverStatus == \"Y\")   score *= 0.75;\n" \
+							"if (resolvesNIC == true)       score *= 1.75;\n" \
+                            "score;\n"
 
 extern int GlobalShutdown;
 
@@ -345,8 +341,8 @@ QString OpenNICServer::license()
                             "----------------------------------------------------------------------------\n"
                             "\"THE BEER-WARE LICENSE\" (Revision 1776):\n"
                             "<mike@8bitgeek.net> wrote this file.\n"
-                            "As long as you retain this notice you can do whatever you want with this\n"
-                            "stuff. If we meet some day, and you think this stuff is worth it,\n"
+                            "As long as you retain this notice you can do whatever you want with this stuff.\n"
+                            "If we meet some day, and you think this stuff is worth it,\n"
                             "you can buy me a beer in return. ~ Mike Sharkey\n"
                             "----------------------------------------------------------------------------\n"
                         )

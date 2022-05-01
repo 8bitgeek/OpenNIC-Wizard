@@ -254,11 +254,11 @@ double OpenNICResolverPool::scoreResolverInternal(OpenNICResolver* resolver, dou
 		resolverAverageLatency = maxPoolLatency;
 	}
 	double score = (maxPoolLatency - resolverAverageLatency);
-	if (resolver->kind()=="T1")							score /= 1.5;
+	if (resolver->kind()=="T1")							score *= 0.6666;
 	if (resolver->kind()=="T2")							score *= 1.5;
 	if (resolver->resolvesNIC("opennic"))				score *= 1.75;
-	if (resolver->status() == OpenNICResolver::Red)		score /= 2;
-	if (resolver->status() == OpenNICResolver::Yellow)	score /= 1.25;
+	if (resolver->status() == OpenNICResolver::Red)		score *= 0.5;
+	if (resolver->status() == OpenNICResolver::Yellow)	score *= 0.75;
 	/* return the result */
 	return score;
 }
@@ -275,7 +275,9 @@ double OpenNICResolverPool::scoreResolverScript(OpenNICResolver* resolver, doubl
 	mScriptEngine.globalObject().setProperty("resolverAverageLatency",resolver->averageLatency());
 	mScriptEngine.globalObject().setProperty("resolverKind",resolver->kind());
 	mScriptEngine.globalObject().setProperty("resolverStatus",resolver->status());
-	QScriptValue result = mScriptEngine.evaluate(OpenNICServer::scoreRules());
+	mScriptEngine.globalObject().setProperty("resolvesNIC",resolver->resolvesNIC("opennic"));
+	QScriptProgram program(OpenNICServer::scoreRules());
+	QScriptValue result = mScriptEngine.evaluate(program);
 	return result.toNumber();
 }
 
