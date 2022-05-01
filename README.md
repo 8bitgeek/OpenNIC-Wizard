@@ -183,7 +183,7 @@ Task Tray Bubble Status
 
 Don't like the wizard's resolver scoring rules? Make your own. 
 
-![OpenNIC Scoring Rules](www/opennic-wizard2.jpeg)
+![OpenNIC Scoring Rules](www/opennic-wizard7.jpeg)
 
 Detailed examination of the quality of resolver pool.
 
