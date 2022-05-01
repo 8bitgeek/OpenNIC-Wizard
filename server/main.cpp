@@ -31,7 +31,7 @@ class OpenNICService : public QtService<QCoreApplication>
 {
 	public:
 		OpenNICService(int argc, char **argv)
-		: QtService<QCoreApplication>(argc, argv, "OpenNIC")
+		: QtService<QCoreApplication>(argc, argv, "OpenNICWizard")
 		, mServer(NULL)
 		{
 			setServiceDescription("An OpenNIC resolver locator and sevice deamon");
