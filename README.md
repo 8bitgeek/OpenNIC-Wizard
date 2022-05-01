@@ -197,3 +197,5 @@ Windows 7 From 2012
 
 ![OpenNIC Log](www/opennic-wizard2.jpeg)
 
+![OpenNIC Scoring Rules](www/opennic-wizard2.jpeg)
+
