@@ -3,35 +3,26 @@
 
 #define MyAppName "OpenNIC Wizard"
 #define MyAppServiceName "OpenNIC Service"
-#define MyAppVersion "0.4.rc1"
+#define MyAppVersion "0.5.rc3"
 #define MyAppPublisher "The OpenNIC Project"
-#define MyAppURL "http://www.opennicproject.org"
+#define MyAppURL "http://github.com/8bitgeek/OpenNIC-Wizard"
 #define MyAppExeName "opennicui.exe"
 #define MyAppServiceName "opennicd.exe"
 
-; !!! Inno Include seems to be broken !!
-; #include "opennic-include.iss"
-#if 1
-; My Windows 7 64-bit configuration
-#define MyOutputDir       "C:\Users\Mike\Documents\GitHub"
-#define MyOpenNICSource   "C:\Users\Mike\Documents\GitHub\OpenNIC-Wizard"
-#define MyOpenNICBuild    "C:\Users\Mike\Documents\GitHub\OpenNIC-build-desktop_Debug"
-#define MyQtLib           "C:\Qt\4.8.4\bin"
-#define MyMingwBin        "C:\MinGW\bin"
-#else
-; My Windows XP 32-bit configuration
-#define MyOutputDir       "C:\Documents and Settings\Mike\My Documents"
-#define MyOpenNICSource   "C:\Documents and Settings\Mike\My Documents\OpenNIC\trunk"
-#define MyOpenNICBuild    "C:\Documents and Settings\Mike\My Documents\OpenNIC\OpenNIC-build-desktop_Debug"
-#define MyQtLib           "C:\QtSDK\Desktop\Qt\4.7.4\mingw\lib"
-#define MyMingwBin        "C:\QtSDK\mingw\bin"
-#endif
+; My Windows 64-bit configuration
+#define MyOutputDir           "C:\cygwin64\home\mike\"
+#define MyOpenNICSource       "C:\cygwin64\home\mike\github\OpenNIC-Wizard"
+#define MyOpenNICServerBuild  "C:\cygwin64\home\mike\github\OpenNIC-Wizard\server\debug"
+#define MyOpenNICClientBuild  "C:\cygwin64\home\mike\github\OpenNIC-Wizard\client\debug"
+#define MyQtLib               "C:\Qt\5.15.0\mingw81_64\bin"
+#define MyMingwBin            "C:\Qt\5.15.0\mingw81_64\bin"
+#define MyQtPlugins           "C:\Qt\5.15.0\mingw81_64\plugins"
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application.
 ; Do not use the same AppId value in installers for other applications.
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
-AppId={{1D9BA5F4-E722-4670-804D-4BED7B4A26DA}
+AppId={{C2F9E08D-39B2-4475-8CC3-1D08D8FD5FF5}}
 PrivilegesRequired=admin
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
@@ -57,12 +48,15 @@ Name: "german"; MessagesFile: "compiler:Languages\German.isl"
 Name: "spanish"; MessagesFile: "compiler:Languages\Spanish.isl"
 
 [Files]
-Source: {#MyOpenNICBuild}\client\debug\opennicui.exe; DestDir: {app}; Flags: ignoreversion; Permissions: admins-full; MinVersion: 0,5.1.2600;
-Source: {#MyOpenNICBuild}\server\debug\opennicd.exe; DestDir: {app}; Flags: ignoreversion; Permissions: admins-full; MinVersion: 0,5.1.2600;
-Source: {#MyQtLib}\QtCored4.dll; DestDir: "{app}"; Flags: ignoreversion
-Source: {#MyQtLib}\QtGuid4.dll; DestDir: "{app}"; Flags: ignoreversion
-Source: {#MyQtLib}\QtNetworkd4.dll; DestDir: "{app}"; Flags: ignoreversion
-Source: {#MyQtLib}\QtScriptd4.dll; DestDir: "{app}"; Flags: ignoreversion
+Source: {#MyOpenNICClientBuild}\opennicui.exe; DestDir: {app}; Flags: ignoreversion; Permissions: admins-full; MinVersion: 0,5.1.2600;
+Source: {#MyOpenNICServerBuild}\opennicd.exe; DestDir: {app}; Flags: ignoreversion; Permissions: admins-full; MinVersion: 0,5.1.2600;
+Source: {#MyQtLib}\Qt5Core.dll; DestDir: "{app}"; Flags: ignoreversion
+Source: {#MyQtLib}\Qt5Gui.dll; DestDir: "{app}"; Flags: ignoreversion
+Source: {#MyQtLib}\Qt5Widgets.dll; DestDir: "{app}"; Flags: ignoreversion
+Source: {#MyQtLib}\Qt5Network.dll; DestDir: "{app}"; Flags: ignoreversion
+Source: {#MyQtLib}\Qt5Script.dll; DestDir: "{app}"; Flags: ignoreversion
+Source: {#MyQtLib}\Qt5Script.dll; DestDir: "{app}"; Flags: ignoreversion
+Source: {#MyQtPlugins}\platforms\qwindows.dll; DestDir: "{app}"; Flags: ignoreversion
 
 Source: {#MyOpenNICSource}\server\dig\install\bindevt.dll; DestDir: "{app}"; Flags: ignoreversion
 Source: {#MyOpenNICSource}\server\dig\install\dig.exe; DestDir: "{app}"; Flags: ignoreversion
@@ -80,8 +74,9 @@ Source: {#MyOpenNICSource}\server\bootstrap.t1; DestDir: {app}; Flags: ignorever
 Source: {#MyOpenNICSource}\server\bootstrap.domains; DestDir: {app}; Flags: ignoreversion; 
 Source: {#MyOpenNICSource}\server\opennicd.exe.manifest; DestDir: {app}; Flags: ignoreversion; 
 
-Source: {#MyMingwBin}\mingwm10.dll; DestDir: "{app}"; Flags: ignoreversion
-Source: {#MyMingwBin}\libgcc_s_dw2-1.dll; DestDir: "{app}"; Flags: ignoreversion
+Source: {#MyMingwBin}\libgcc_s_seh-1.dll; DestDir: "{app}"; Flags: ignoreversion
+Source: {#MyMingwBin}\libwinpthread-1.dll; DestDir: "{app}"; Flags: ignoreversion
+Source: {#MyMingwBin}\libstdc++-6.dll; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
