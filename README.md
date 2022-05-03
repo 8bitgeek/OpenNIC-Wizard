@@ -70,7 +70,7 @@ The OpenNIC task tray applet runs with user privilage.
 
 ## Dependencies
 
-* Qt5.x
+* Qt5.x Development
 
 ## Linux
 
@@ -81,6 +81,25 @@ qmake
 make
 ```
 ## Windows
+
+* Install [Qt5](https://www.qt.io/download-open-source) w/mingw compiler support.
+* Install [cygwin](https://www.cygwin.com/)
+
+...do some stuff...
+
+
+```
+cat win-bash_profile >> ~/.bash_profile
+```
+
+...do some stuff...
+
+
+```
+qmake
+make
+./win-prepare.sh
+```
 
 ...mumble mumble...
 
