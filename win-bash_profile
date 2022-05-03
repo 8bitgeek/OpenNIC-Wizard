@@ -188,5 +188,6 @@
 
 PATH=/cygdrive/c/Qt/5.15.0/mingw81_64/bin:$PATH 
 PATH=/cygdrive/c/Qt/Tools/mingw810_64/bin:$PATH
+PATH=/cygdrive/c/Program\ Files\ \(x86\)/Inno\ Setup\ 6:$PATH
 
 export PATH

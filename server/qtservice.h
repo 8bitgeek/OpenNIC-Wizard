@@ -41,6 +41,8 @@
 #ifndef QTSERVICE_H
 #define QTSERVICE_H
 
+#define QTSERVICE_DEBUG 1
+
 #include <QCoreApplication>
 
 #if defined(Q_OS_WIN)

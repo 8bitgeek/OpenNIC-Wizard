@@ -31,11 +31,11 @@ AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
-DefaultDirName={pf}\OpenNIC
+DefaultDirName={commonpf}\OpenNIC
 DefaultGroupName=OpenNIC
 LicenseFile={#MyOpenNICSource}\COPYING
 OutputDir={#MyOutputDir}
-OutputBaseFilename=OpenNIC Wizard {#MyAppVersion}
+OutputBaseFilename=opennicwiz-{#MyAppVersion}
 WizardImageFile={#MyOpenNICSource}\installer.bmp
 SetupIconFile={#MyOpenNICSource}\client\images\opennic.ico
 Compression=lzma
@@ -56,7 +56,7 @@ Source: {#MyQtLib}\Qt5Widgets.dll; DestDir: "{app}"; Flags: ignoreversion
 Source: {#MyQtLib}\Qt5Network.dll; DestDir: "{app}"; Flags: ignoreversion
 Source: {#MyQtLib}\Qt5Script.dll; DestDir: "{app}"; Flags: ignoreversion
 Source: {#MyQtLib}\Qt5Script.dll; DestDir: "{app}"; Flags: ignoreversion
-Source: {#MyQtPlugins}\platforms\qwindows.dll; DestDir: "{app}"; Flags: ignoreversion
+Source: {#MyQtPlugins}\platforms\qwindows.dll; DestDir: "{app}\platforms"; Flags: ignoreversion
 
 Source: {#MyOpenNICSource}\server\dig\install\bindevt.dll; DestDir: "{app}"; Flags: ignoreversion
 Source: {#MyOpenNICSource}\server\dig\install\dig.exe; DestDir: "{app}"; Flags: ignoreversion
@@ -86,7 +86,7 @@ Name: "{commonstartup}\OpenNIC Wizard"; Filename: "{app}\{#MyAppExeName}"
 [Run]
 Filename: "{app}\{#MyAppServiceName}"; Parameters: "-install"; WorkingDir: "{app}"; Flags:  runascurrentuser; Description: "{cm:LaunchProgram,{#StringChange(MyAppServiceName, "&", "&&")}}"; StatusMsg: "Installing OpenNIC Service...";
 Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"; Flags: nowait runasoriginaluser; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, "&", "&&")}}"; StatusMsg: "Starting OpenNIC Task Tray Applet...";
-FileName: "{sys}\sc.exe"; Parameters: "config OpenNIC start= auto"; Flags: runascurrentuser; StatusMsg: "Configuring OpenNIC Service...";
+FileName: "{sys}\sc.exe"; Parameters: "config OpenNIC start=auto"; Flags: runascurrentuser; StatusMsg: "Configuring OpenNIC Service...";
 Filename: "{sys}\sc.exe"; Parameters: "start OpenNIC"; Flags: runascurrentuser; StatusMsg: "Starting OpenNIC Service...";
 Filename: "http://grep.geek"; Description: "Open http://grep.geek in a web browser"; Flags: shellexec postinstall runasoriginaluser
 
@@ -95,14 +95,13 @@ Filename: "{app}\{#MyAppServiceName}"; WorkingDir: "{app}"; Parameters: "-termin
 Filename: "{app}\{#MyAppServiceName}"; WorkingDir: "{app}"; Parameters: "-uninstall";
 Filename: "{sys}\sc.exe"; Parameters: "stop OpenNIC";
 Filename: "{sys}\sc.exe"; Parameters: "delete OpenNIC";
-Filename: "{sys}\sc.exe"; Parameters: "delete OpenNIC";
 
 [Code]
 function InitializeSetup(): Boolean;
 begin
   Log('InitializeSetup() called');
   Result := True;
-  if not IsAdminLoggedOn then
+  if not IsAdminInstallMode then
   begin
     MsgBox('This installer must be run as administrator',mbCriticalError,MB_OK);
     Result := False;
