@@ -26,6 +26,17 @@ OpenNIC provides resolution to all ICANN domains as well as OpenNIC's own [TLD](
 .parody
 .pirate
 
+# OpenNIC Wizard Rationale
+
+The OpenNIC DNS pool consists of a diverse collection of servers around the globe. Individual resolvers are largely run by individuals, and may experience some down time on occasion or may go permanently dark without warning.
+
+On the other hand new resolvers may appear which are closer to you.
+
+As you can see, the nature of the OpenNIC resolver pool means that there is a dynamic nature to it. 
+
+Entering DNS resolvers by hand can be a neusance when one of your resolvers go off-line, and on the other hand you may not be aware that a better performing resolver comes online closer to you.
+
+The intent driving OpenNIC Wizard is to empower your PC with the ability to continually test the quality of the OpenNIC resolver pool and select those which are performing the best for you at your current location.
 
 # OpenNIC Wizard Features
   - OpenNIC Wizard service continually seeks DNS resolvers with best performance.
