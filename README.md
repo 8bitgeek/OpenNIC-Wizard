@@ -82,9 +82,10 @@ make
 ```
 ## Windows
 
-* Install [Qt5](https://www.qt.io/download-open-source) w/mingw compiler support.
+* Install [Qt5 Development](https://download.qt.io/official_releases/qt/5.12/5.12.12/qt-opensource-windows-x86-5.12.12.exe) w/mingw compiler support.
 * Install [cygwin](https://www.cygwin.com/)
 * Install [Inno Setup](https://jrsoftware.org/isdl.php)
+* Install [Qt5]
 
 ...do some stuff...
 
