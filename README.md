@@ -84,6 +84,7 @@ make
 
 * Install [Qt5](https://www.qt.io/download-open-source) w/mingw compiler support.
 * Install [cygwin](https://www.cygwin.com/)
+* Install [Inno Setup](https://jrsoftware.org/isdl.php)
 
 ...do some stuff...
 

@@ -89,7 +89,7 @@ int OpenNICSystem_Win::updateResolver(QHostAddress& resolver,int index,QString& 
 
 bool OpenNICSystem_Win::endUpdateResolvers(QString& output)
 {
-
+	return true;
 }
 
 QString OpenNICSystem_Win::bootstrapT1Path()
