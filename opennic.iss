@@ -3,7 +3,7 @@
 
 #define MyAppName "OpenNIC Wizard"
 #define MyAppServiceName "OpenNIC Service"
-#define MyAppVersion "0.5.rc3"
+#define MyAppVersion "0.6.alpha1"
 #define MyAppPublisher "The OpenNIC Project"
 #define MyAppURL "http://github.com/8bitgeek/OpenNIC-Wizard"
 #define MyAppExeName "opennicui.exe"
@@ -86,15 +86,15 @@ Name: "{commonstartup}\OpenNIC Wizard"; Filename: "{app}\{#MyAppExeName}"
 [Run]
 Filename: "{app}\{#MyAppServiceName}"; Parameters: "-install"; WorkingDir: "{app}"; Flags:  runascurrentuser; Description: "{cm:LaunchProgram,{#StringChange(MyAppServiceName, "&", "&&")}}"; StatusMsg: "Installing OpenNIC Service...";
 Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"; Flags: nowait runasoriginaluser; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, "&", "&&")}}"; StatusMsg: "Starting OpenNIC Task Tray Applet...";
-FileName: "{sys}\sc.exe"; Parameters: "config OpenNIC start=auto"; Flags: runascurrentuser; StatusMsg: "Configuring OpenNIC Service...";
-Filename: "{sys}\sc.exe"; Parameters: "start OpenNIC"; Flags: runascurrentuser; StatusMsg: "Starting OpenNIC Service...";
+FileName: "{sys}\sc.exe"; Parameters: "config OpenNICWizard start= auto"; Flags: runascurrentuser; StatusMsg: "Configuring OpenNIC Service...";
+Filename: "{sys}\sc.exe"; Parameters: "start OpenNICWizard"; Flags: runascurrentuser; StatusMsg: "Starting OpenNIC Service...";
 Filename: "http://grep.geek"; Description: "Open http://grep.geek in a web browser"; Flags: shellexec postinstall runasoriginaluser
 
 [UninstallRun]
 Filename: "{app}\{#MyAppServiceName}"; WorkingDir: "{app}"; Parameters: "-terminate";
 Filename: "{app}\{#MyAppServiceName}"; WorkingDir: "{app}"; Parameters: "-uninstall";
-Filename: "{sys}\sc.exe"; Parameters: "stop OpenNIC";
-Filename: "{sys}\sc.exe"; Parameters: "delete OpenNIC";
+Filename: "{sys}\sc.exe"; Parameters: "stop OpenNICWizard";
+Filename: "{sys}\sc.exe"; Parameters: "delete OpenNICWizard";
 
 [Code]
 function InitializeSetup(): Boolean;

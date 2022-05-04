@@ -12,6 +12,6 @@
 #ifndef OPENNICVERSION_H
 #define OPENNICVERSION_H
 
-#define	VERSION_STRING	"0.5.rc3"
+#define	VERSION_STRING	"0.6.alpha1"
 
 #endif // OPENNICVERSION_H
