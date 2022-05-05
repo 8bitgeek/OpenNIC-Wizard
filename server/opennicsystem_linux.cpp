@@ -22,7 +22,7 @@
 #include <QFile>
 #include <QIODevice>
 #include <QDateTime>
-#include <QNetworkConfigurationManager>
+#include <QNetworkInterface>
 
 #include <stdlib.h>
 
@@ -38,8 +38,8 @@ QString sResolvConf;
 
 #define inherited OpenNICSystem
 
-OpenNICSystem_Linux::OpenNICSystem_Linux()
-: inherited::OpenNICSystem()
+OpenNICSystem_Linux::OpenNICSystem_Linux(bool enabled,QString networkInterface)
+: inherited::OpenNICSystem(enabled,networkInterface)
 {
 }
 
@@ -67,7 +67,6 @@ void OpenNICSystem_Linux::shutdown()
 bool OpenNICSystem_Linux::beginUpdateResolvers(QString& output)
 {
     output.clear();
-    mInterfaces = interfaces();
 	return true;
 }
 

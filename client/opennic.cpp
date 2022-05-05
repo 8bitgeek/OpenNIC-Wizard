@@ -93,6 +93,10 @@ OpenNIC::OpenNIC(QWidget *parent)
 	QObject::connect(ui->resolverPoolTable,SIGNAL(cellClicked(int,int)),this,SLOT(cellClicked(int,int)));
 	QObject::connect(ui->resolverPoolTable,SIGNAL(cellDoubleClicked(int,int)),this,SLOT(cellDoubleClicked(int,int)));
 	QObject::connect(ui->scoreRuleEditor,SIGNAL(textChanged()),this,SLOT(scoreRuleEditorTextChanged()));
+
+	QObject::connect(ui->openNICEnabled,SIGNAL(stateChanged(int)),this,SLOT(enabledChanged(int)));
+	QObject::connect(ui->networkInterface,SIGNAL(currentTextChanged(const QString&)),this,SLOT(interfaceChanged(const QString&)));
+
 	setDisabledState();
 }
 
@@ -104,6 +108,16 @@ OpenNIC::~OpenNIC()
 		delete mHistoryDialogs.at(n);
 	}
 	mHistoryDialogs.clear();
+}
+
+void OpenNIC::enabledChanged(int state)
+{
+	update();
+}
+
+void OpenNIC::interfaceChanged(const QString& interface)
+{
+	update();
 }
 
 void OpenNIC::slowRefresh()
@@ -195,7 +209,6 @@ void OpenNIC::createActions()
 
 	mActionQuit = new QAction(tr("&Quit"), this);
 	QObject::connect(mActionQuit,SIGNAL(triggered()),this,SLOT(maybeQuit()));
-
 }
 
 /**
@@ -232,7 +245,7 @@ void OpenNIC::tabChanged(int tab)
 		QAbstractButton* button = buttons.at(n);
 		if (buttonBox->buttonRole(button) == QDialogButtonBox::ApplyRole || buttonBox->buttonRole(button) == QDialogButtonBox::AcceptRole)
 		{
-			if ( tab == 1 || tab == 5 )
+			if ( tab == 1 || tab == 2 || tab == 5 )
 			{
 				button->setEnabled(true);
 			}
@@ -402,6 +415,9 @@ void OpenNIC::pollAllKeys()
 		keys << OpenNICPacket::journal_text;
 		keys << OpenNICPacket::score_rules;
 		keys << OpenNICPacket::score_internal;
+		keys << OpenNICPacket::interface_list;
+		keys << OpenNICPacket::interface;
+		keys << OpenNICPacket::opennic_enabled;
 		mLocalNet->txPacket().set(OpenNICPacket::poll_keys,keys);
 		mLocalNet->send(true);
 	}
@@ -419,10 +435,13 @@ void OpenNIC::pollPeriodicKeys()
 		keys << OpenNICPacket::resolver_cache;
 		keys << OpenNICPacket::system_text;
 		keys << OpenNICPacket::journal_text;
+		keys << OpenNICPacket::interface_list;
+		keys << OpenNICPacket::interface;
+		keys << OpenNICPacket::opennic_enabled;
 		
-		fprintf( stderr, "--\n" );
-		for (int i = 0; i < keys.size(); ++i)
-			fprintf( stderr, "%s\n", keys.at(i).toLocal8Bit().constData() );
+		// fprintf( stderr, "--\n" );
+		// for (int i = 0; i < keys.size(); ++i)
+		// 	fprintf( stderr, "%s\n", keys.at(i).toLocal8Bit().constData() );
 		
 		mLocalNet->txPacket().set(OpenNICPacket::poll_keys,keys);
 		mLocalNet->send(true);
@@ -495,8 +514,14 @@ void OpenNIC::dataReady(OpenNICNet* net)
 				ui->domainList->setPlainText(newText);
 			}
 		}
-		else if ( key == OpenNICPacket::resolver_pool )				updateResolverPool(value.toStringList());
-		else if ( key == OpenNICPacket::system_text )				ui->systemText->setPlainText(value.toString());
+		else if ( key == OpenNICPacket::resolver_pool )
+		{
+			updateResolverPool(value.toStringList());
+		}
+		else if ( key == OpenNICPacket::system_text )				
+		{
+			ui->systemText->setPlainText(value.toString());
+		}
 		else if ( key == OpenNICPacket::journal_text )
 		{
 			QStringList journalText = value.toStringList();
@@ -523,6 +548,28 @@ void OpenNIC::dataReady(OpenNICNet* net)
 		{
 			ui->useBuiltInScoreRule->setChecked(value.toBool());
 		}
+		else if ( key == OpenNICPacket::interface_list )
+		{
+			/** 
+			 * block signals while we do this so we don't get a 
+			 * settings feedback loop going with the server 
+			 */
+			bool oldState = ui->networkInterface->blockSignals(true);
+			QString currentText = ui->networkInterface->currentText();
+			ui->networkInterface->clear();
+			ui->networkInterface->addItems(value.toStringList());
+			if ( !currentText.isEmpty() )
+				ui->networkInterface->setCurrentText(currentText);
+			ui->networkInterface->blockSignals(oldState);
+		}
+		else if ( key == OpenNICPacket::interface )
+		{
+			ui->networkInterface->setCurrentText(value.toString());
+		}
+		else if ( key == OpenNICPacket::opennic_enabled )
+		{
+			ui->openNICEnabled->setChecked(value.toBool());
+		}
 	}
 }
 
@@ -535,6 +582,12 @@ void OpenNIC::update()
 	mLocalNet->txPacket().set(OpenNICPacket::resolver_cache_size,	ui->resolverCount->value());
 	mLocalNet->txPacket().set(OpenNICPacket::score_rules,			ui->scoreRuleEditor->toPlainText());
 	mLocalNet->txPacket().set(OpenNICPacket::score_internal,		ui->useBuiltInScoreRule->isChecked());
+	if ( !ui->networkInterface->currentText().isEmpty() )
+	{
+		fprintf( stderr, "<interface: '%s' %d\n", ui->networkInterface->currentText().toLocal8Bit().constData(), ui->openNICEnabled->isChecked() );
+		mLocalNet->txPacket().set(OpenNICPacket::interface,	ui->networkInterface->currentText());
+	}
+	mLocalNet->txPacket().set(OpenNICPacket::opennic_enabled,		ui->openNICEnabled->isChecked());
 	mLocalNet->send(true);
 }
 

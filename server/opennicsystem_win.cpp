@@ -25,11 +25,12 @@
 #include <QFile>
 #include <QIODevice>
 #include <QDateTime>
+#include <QNetworkInterface>
 
 #define inherited OpenNICSystem
 
-OpenNICSystem_Win::OpenNICSystem_Win()
-: inherited::OpenNICSystem()
+OpenNICSystem_Win::OpenNICSystem_Win(bool enabled,QString networkInterface)
+: inherited::OpenNICSystem(enabled,networkInterface)
 {
 }
 
@@ -52,7 +53,6 @@ void OpenNICSystem_Win::shutdown()
 bool OpenNICSystem_Win::beginUpdateResolvers(QString& output)
 {
     output.clear();
-    mInterfaces = interfaces();
 	return true;
 }
 

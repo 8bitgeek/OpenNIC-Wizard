@@ -91,6 +91,9 @@ class OpenNIC : public QDialog
 		void					iconActivated(QSystemTrayIcon::ActivationReason reason);
 		void					showBalloonMessage(QString title, QString body);
 
+		void					enabledChanged(int state);
+		void 					interfaceChanged(const QString& interface);
+
 	private:
 		QAction*				mActionSettings;
 		QAction*				mActionAbout;

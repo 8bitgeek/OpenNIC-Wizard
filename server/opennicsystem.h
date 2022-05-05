@@ -20,7 +20,7 @@
 #include <QTimerEvent>
 #include <QHostAddress>
 #include <QNetworkConfiguration>
-#include <QNetworkConfigurationManager>
+#include <QNetworkInterface>
 #include <QList>
 
 #include "opennicdomainname.h"
@@ -33,7 +33,7 @@ class OpenNICSystem
 {
 	public:
 
-        OpenNICSystem();
+        OpenNICSystem(bool enabled,QString networkInterface);
         virtual ~OpenNICSystem();
 
         static OpenNICSystem*   instance() {return mInstance;}
@@ -49,7 +49,12 @@ class OpenNICSystem
         bool					saveTestDomains(QStringList domains);
         OpenNICDomainNamePool   getTestDomains();
         OpenNICDomainName		randomDomain();
-
+        QStringList             interfaceNames();
+        QString                 defaultInterfaceName();
+        QString                 interfaceName();
+        void                    setInterfaceName(QString interfaceName);
+        bool                    enabled();
+        void                    setEnabled(bool enabled);
         virtual void            startup()=0;
         virtual void            shutdown()=0;
         virtual QString         getSystemResolverList()=0;
@@ -60,10 +65,13 @@ class OpenNICSystem
         virtual QString         bootstrapT1Path()=0;
         virtual QString         bootstrapDomainsPath()=0;
 
+        
     protected:
-        QList<QNetworkConfiguration>    interfaces();
+        QList<QNetworkInterface>    interfaces();
 
     private:
+        bool                    mEnabled;
+        QString                 mInterfaceName;
         static OpenNICSystem*   mInstance;
         OpenNICDomainNamePool   mTestDomains;
 };

@@ -18,23 +18,22 @@ class OpenNICSystem_Linux : public OpenNICSystem
 {
 	public:
     
-        OpenNICSystem_Linux();
-        virtual void    startup();
-        virtual void    shutdown();
-        virtual QString getSystemResolverList();
-        virtual bool    beginUpdateResolvers(QString& output);
-        virtual int     updateResolver(QHostAddress& dns,int index, QString& output);
-        virtual bool    endUpdateResolvers(QString& output);
+        OpenNICSystem_Linux(bool enabled,QString networkInterface);
 
-        virtual QString bootstrapT1Path();
-        virtual QString bootstrapDomainsPath();
+        virtual void        startup();
+        virtual void        shutdown();
+        virtual QString     getSystemResolverList();
+        virtual bool        beginUpdateResolvers(QString& output);
+        virtual int         updateResolver(QHostAddress& dns,int index, QString& output);
+        virtual bool        endUpdateResolvers(QString& output);
+
+        virtual QString     bootstrapT1Path();
+        virtual QString     bootstrapDomainsPath();
 
     private:
 
         bool            preserveResolverCache();
         bool            restoreResolverCache();
-    
-        QList<QNetworkConfiguration> mInterfaces;
 };
 
 #endif // OPENNICSYSTEM_LINUX_H

@@ -30,6 +30,9 @@ const QString OpenNICPacket::score_rules			= "score_rules";			/* score rules */
 const QString OpenNICPacket::score_internal			= "score_internal";			/* score internal */
 const QString OpenNICPacket::update_dns				= "update_dns";				/* force update dns now */
 const QString OpenNICPacket::poll_keys				= "poll_keys";				/* poll for key/values */
+const QString OpenNICPacket::interface_list			= "interface_list";			/* interface list */
+const QString OpenNICPacket::interface				= "interface";				/* interface */
+const QString OpenNICPacket::opennic_enabled		= "opennic_enabled";		/* OpenNIC resolvers enabled or not */
 
 
 OpenNICPacket::OpenNICPacket(QObject *parent)

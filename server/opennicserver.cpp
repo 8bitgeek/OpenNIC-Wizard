@@ -65,15 +65,15 @@ OpenNICServer::OpenNICServer(QObject *parent)
 , mBootstrapTicks(0)
 , mInColdBoot(false)
 {
+	readSettings();
 #if defined(Q_OS_UNIX)
-	mSystem = new OpenNICSystem_Linux();
+	mSystem = new OpenNICSystem_Linux(mEnabled,mNetworkInterface);
 #elif defined(Q_OS_WIN32)
-	mSystem = new OpenNICSystem_Win();
+	mSystem = new OpenNICSystem_Win(mEnabled,mNetworkInterface);
 #else 
 	#error System Not Defined
 #endif
 	mSystem->startup();
-	readSettings();
 	initializeServer();
 	mFastTimer = startTimer(1000*DEFAULT_FAST_TIMER);
 	mBootstrapTimer = startTimer(BOOTSTRAP_TIMER);
@@ -166,11 +166,18 @@ void OpenNICServer::readSettings()
 {
 	QSettings settings(QSettings::IniFormat, QSettings::SystemScope, "OpenNIC", "OpenNICService");
 	log(tr("<< ")+settings.fileName());
-	mTcpListenPort			= settings.value(	"tcp_listen_port",			DEFAULT_TCP_LISTEN_PORT).toInt();
-	setRefreshPeriod(		settings.value(		"refresh_timer_period",		DEFAULT_REFRESH_TIMER_PERIOD).toInt());
-	setResolverCacheSize(	settings.value(		"resolver_cache_size",		DEFAULT_RESOLVER_CACHE_SIZE).toInt());
-	mScoreRules				= settings.value(	"score_rules",				DEFAULT_SCORE_RULES).toString();
-	mScoreInternal			= settings.value(	"score_internal",			true).toBool();
+	mTcpListenPort				= settings.value(	"tcp_listen_port",			DEFAULT_TCP_LISTEN_PORT).toInt();
+	setRefreshPeriod(			settings.value(		"refresh_timer_period",		DEFAULT_REFRESH_TIMER_PERIOD).toInt());
+	setResolverCacheSize(		settings.value(		"resolver_cache_size",		DEFAULT_RESOLVER_CACHE_SIZE).toInt());
+	mScoreRules					= settings.value(	"score_rules",				DEFAULT_SCORE_RULES).toString();
+	mScoreInternal				= settings.value(	"score_internal",			true).toBool();
+	mEnabled = 					settings.value( 	"enabled",					true ).toBool();
+	mNetworkInterface = 		settings.value( 	"network_interface", 		"" ).toString();
+	if ( mSystem )
+	{
+		mSystem->setEnabled( mEnabled );
+		mSystem->setInterfaceName( mNetworkInterface );
+	}
 }
 
 /**
@@ -184,7 +191,9 @@ void OpenNICServer::writeSettings()
 	settings.setValue("refresh_timer_period",		refreshPeriod());
 	settings.setValue("resolver_cache_size",		resolverCacheSize());
 	settings.setValue("score_rules",				mScoreRules);
-	settings.setValue(("score_internal"),			mScoreInternal);
+	settings.setValue("score_internal",				mScoreInternal);
+	settings.setValue("enabled",					mSystem->enabled());
+	settings.setValue("network_interface",			mSystem->interfaceName());
 }
 
 /**
@@ -221,6 +230,9 @@ void OpenNICServer::pollKeyValue(QString& key, QVariant& value, bool& valid)
 	else if (key == OpenNICPacket::async_message)			value = mAsyncMessage;
 	else if (key == OpenNICPacket::score_rules)				value = mScoreRules;
 	else if (key == OpenNICPacket::score_internal)			value = mScoreInternal;
+	else if (key == OpenNICPacket::opennic_enabled)			value = mSystem->enabled();
+	else if (key == OpenNICPacket::interface_list)			value = mSystem->interfaceNames();
+	else if (key == OpenNICPacket::interface)				value = mSystem->interfaceName();
 	else valid = false;
 }
 
@@ -294,9 +306,16 @@ void OpenNICServer::dataReady(OpenNICNet* net)
 				net->txPacket().set(OpenNICPacket::resolver_history,mResolverPool.toStringList(address));
 				net->send(true);
 			}
-
+			else if (key == OpenNICPacket::interface)
+			{
+				log(tr("interface '")+value.toString()+"'");
+				mSystem->setInterfaceName(value.toString());
+			}
+			else if (key == OpenNICPacket::opennic_enabled)
+			{
+				mSystem->setEnabled(value.toBool());
+			}
 		}
-
 	}
 	writeSettings();
 	if (!mAsyncMessage.isEmpty())
