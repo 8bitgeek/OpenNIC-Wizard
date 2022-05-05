@@ -69,11 +69,11 @@ int OpenNICSystem_Win::updateResolver(QHostAddress& resolver,int index,QString& 
 	QStringList arguments;
 	if ( ++index == 1 ) /* on windows(tm) index starts at 1 */
 	{
-		arguments << "interface" << "ip" << "set" << "dns" << "Local Area Connection" << "static" << resolver.toString();
+		arguments << "interface" << "ip" << "set" << "dns" << interfaceName << "static" << resolver.toString();
 	}
 	else
 	{
-		arguments << "interface" << "ip" << "add" << "dns" << "Local Area Connection" << resolver.toString() << "index="+QString::number(index);
+		arguments << "interface" << "ip" << "add" << "dns" << interfaceName() << resolver.toString() << "index="+QString::number(index);
 	}
 	QProcess* process = new QProcess();
 	process->start(program, arguments);
@@ -113,7 +113,7 @@ QString OpenNICSystem_Win::getSystemResolverList()
 	QEventLoop loop;
 	QString program = "netsh";
 	QStringList arguments;
-	arguments << "interface" << "ip" << "show" << "config" << "Local Area Connection";
+	arguments << "interface" << "ip" << "show" << "config" << interfaceName();
 	QProcess* process = new QProcess();
 	process->start(program, arguments);
 	while (process->waitForFinished(10000))
@@ -126,7 +126,29 @@ QString OpenNICSystem_Win::getSystemResolverList()
 	{
 		return "Could not obtain system resolver list.";
 	}
-	return output;
+
+	QString dnsList = QString(output);
+
+	OpenNICServer::log(QString("1> ")+dnsList);
+
+	QString outputStr;
+	int x = dnsList.indexOf("DNS Servers:");
+	if ( x >= 0 )
+	{
+		dnsList = dnsList.right(dnsList.length()-(x+QString("DNS Servers:").length()));
+		for(int n=0; n < dnsList.length();n++)
+		{
+			QChar ch = dnsList[n];
+			if ( ch == ' ' || ch == '.' || char >= '00' || ch <= '9' )
+				outputStr += ch;
+		}
+		outputStr = outputStr.trimmed();
+	}
+
+	OpenNICServer::log(QString("2> ")+dnsList);
+	OpenNICServer::log(QString("3> ")+outputStr);
+
+	return outputStr;
 }
 
 

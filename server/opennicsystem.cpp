@@ -87,7 +87,7 @@ QString OpenNICSystem::defaultInterfaceName()
 	return "";
 }
 
-QString OpenNICSystem:: interfaceName()
+QString OpenNICSystem::interfaceName()
 {
 	return mInterfaceName;
 }
