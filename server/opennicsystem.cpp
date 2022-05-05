@@ -89,6 +89,8 @@ QString OpenNICSystem::defaultInterfaceName()
 
 QString OpenNICSystem::interfaceName()
 {
+	if ( mInterfaceName.isEmpty() )
+		mInterfaceName = "Local Area Connection"; // ?? defaultInterfaceName() 
 	return mInterfaceName;
 }
 

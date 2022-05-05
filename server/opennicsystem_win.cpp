@@ -69,7 +69,7 @@ int OpenNICSystem_Win::updateResolver(QHostAddress& resolver,int index,QString& 
 	QStringList arguments;
 	if ( ++index == 1 ) /* on windows(tm) index starts at 1 */
 	{
-		arguments << "interface" << "ip" << "set" << "dns" << interfaceName << "static" << resolver.toString();
+		arguments << "interface" << "ip" << "set" << "dns" << interfaceName() << "static" << resolver.toString();
 	}
 	else
 	{
@@ -126,11 +126,7 @@ QString OpenNICSystem_Win::getSystemResolverList()
 	{
 		return "Could not obtain system resolver list.";
 	}
-
 	QString dnsList = QString(output);
-
-	OpenNICServer::log(QString("1> ")+dnsList);
-
 	QString outputStr;
 	int x = dnsList.indexOf("DNS Servers:");
 	if ( x >= 0 )
@@ -139,15 +135,13 @@ QString OpenNICSystem_Win::getSystemResolverList()
 		for(int n=0; n < dnsList.length();n++)
 		{
 			QChar ch = dnsList[n];
-			if ( ch == ' ' || ch == '.' || char >= '00' || ch <= '9' )
+			if ( ch == ' ' || ch == '.' || (ch >= '0' && ch <= '9') )
 				outputStr += ch;
 		}
-		outputStr = outputStr.trimmed();
+		outputStr = outputStr.simplified();
+		QStringList resolvers = outputStr.split(' ');
+		outputStr = resolvers.join('\n');
 	}
-
-	OpenNICServer::log(QString("2> ")+dnsList);
-	OpenNICServer::log(QString("3> ")+outputStr);
-
 	return outputStr;
 }
 
