@@ -23,19 +23,78 @@
 #include <QFile>
 #include <QIODevice>
 #include <QDateTime>
-#include <QNetworkConfigurationManager>
+#include <QNetworkInterface>
 
 OpenNICSystem* OpenNICSystem::mInstance=NULL;
 
-OpenNICSystem::OpenNICSystem()
+OpenNICSystem::OpenNICSystem(bool enabled,QString networkInterface)
+: mEnabled(enabled)
 {
     while(mInstance); /* FIXME - singleton trap */
     mInstance = this;
+	if ( networkInterface.length() ==  0)
+	{
+		mInterfaceName = defaultInterfaceName();
+	}
 }
 
 OpenNICSystem::~OpenNICSystem()
 {
     mInstance=NULL;
+}
+
+bool OpenNICSystem::enabled()
+{
+	return mEnabled;
+}
+
+void OpenNICSystem::setEnabled(bool enabled)
+{
+	/* Are we changing state? */
+	if (mEnabled!=enabled)
+	{
+		
+	}
+	mEnabled=enabled;
+}
+
+/**
+ * @brief OpenNICSystem_Linux::interfaces
+ * @return List of interfaces.
+ */
+QList<QNetworkInterface> OpenNICSystem::interfaces()
+{
+    return QNetworkInterface::allInterfaces();
+}
+
+QStringList OpenNICSystem::interfaceNames()
+{
+	QStringList rc;
+    QList<QNetworkInterface> interfaceList = interfaces();
+    for(int n=0; n < interfaceList.count(); n++)
+    {
+        QNetworkInterface iface = interfaceList[n];
+        rc << interfaceList[n].humanReadableName();
+    }
+	return rc;
+}
+
+QString OpenNICSystem::defaultInterfaceName()
+{
+	QStringList names = interfaceNames();
+	if ( names.count() )
+		return names[0];
+	return "";
+}
+
+QString OpenNICSystem:: interfaceName()
+{
+	return mInterfaceName;
+}
+
+void OpenNICSystem::setInterfaceName(QString interfaceName)
+{
+	mInterfaceName=interfaceName;
 }
 
 /**
@@ -246,18 +305,6 @@ OpenNICDomainName OpenNICSystem::randomDomain()
 	OpenNICDomainNamePool domains = getTestDomains();
 	int n = random(0,domains.count()-1);
 	return domains.at(n);
-}
-
-/**
- * @brief OpenNICSystem_Linux::interfaces
- * @return List of interfaces.
- */
-QList<QNetworkConfiguration> OpenNICSystem::interfaces()
-{
-    QList<QNetworkConfiguration> rc;
-    QNetworkConfigurationManager manager;
-    rc = manager.allConfigurations();
-    return rc;
 }
 
 

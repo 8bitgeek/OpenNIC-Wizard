@@ -105,6 +105,7 @@ class OpenNICServer : public QObject
 		int						mRefreshTimerPeriod;		/** the refresh timer period in minutes */
 		int						mResolverCacheSize;			/** the number of resolvers to keep in the cache (and apply to the O/S) */
 		bool					mEnabled;					/** service status */
+		QString 				mNetworkInterface;			/** network interface */
 		int						mRefreshTimer;
 		int						mFastTimer;
 		int						mSecondTimer;				/** counts seconds */

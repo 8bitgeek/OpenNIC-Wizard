@@ -17,23 +17,22 @@
 class OpenNICSystem_Win : public OpenNICSystem
 {
     public:
-        OpenNICSystem_Win();
-        virtual void    startup();
-        virtual void    shutdown();
-        virtual QString getSystemResolverList();
-        virtual bool    beginUpdateResolvers(QString& output);
-        virtual int     updateResolver(QHostAddress& dns,int index, QString& output);
-        virtual bool    endUpdateResolvers(QString& output);
+        OpenNICSystem_Win(bool enabled,QString networkInterface);
+        
+        virtual void        startup();
+        virtual void        shutdown();
+        virtual QString     getSystemResolverList();
+        virtual bool        beginUpdateResolvers(QString& output);
+        virtual int         updateResolver(QHostAddress& dns,int index, QString& output);
+        virtual bool        endUpdateResolvers(QString& output);
 
-        virtual QString bootstrapT1Path();
-        virtual QString bootstrapDomainsPath();
+        virtual QString     bootstrapT1Path();
+        virtual QString     bootstrapDomainsPath();
 
     private:
 
         bool            preserveResolverCache();
         bool            restoreResolverCache();
-
-        QList<QNetworkConfiguration> mInterfaces;
 };
 
 #endif // OPENNICSYSTEM_WIN_H
