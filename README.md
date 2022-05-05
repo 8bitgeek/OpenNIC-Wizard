@@ -36,7 +36,7 @@ As you can see, the nature of the OpenNIC resolver pool means that there is a dy
 
 Entering DNS resolvers by hand can be a neusance when one of your resolvers go off-line, and on the other hand you may not be aware that a better performing resolver comes online closer to you.
 
-The intent driving OpenNIC Wizard is to empower your PC with the ability to continually test the quality of the OpenNIC resolver pool and select those which are performing the best for you at your current location.
+The intent which drives the OpenNIC Wizard project, is provide an means for your PC to continually test the quality of the OpenNIC resolver pool and select only those which are performing the best for you at your current location. The resolver selection process should be completely transparent to the end user.
 
 # OpenNIC Wizard Features
   - OpenNIC Wizard service continually seeks DNS resolvers with best performance.
