@@ -3,7 +3,7 @@
 
 #define MyAppName "OpenNIC Wizard"
 #define MyAppServiceName "OpenNIC Service"
-#define MyAppVersion "0.6.alpha2"
+#define MyAppVersion "0.6.alpha3"
 #define MyAppPublisher "The OpenNIC Project"
 #define MyAppURL "http://github.com/8bitgeek/OpenNIC-Wizard"
 #define MyAppExeName "opennicui.exe"
@@ -57,6 +57,10 @@ Source: {#MyQtLib}\Qt5Network.dll; DestDir: "{app}"; Flags: ignoreversion
 Source: {#MyQtLib}\Qt5Script.dll; DestDir: "{app}"; Flags: ignoreversion
 Source: {#MyQtLib}\Qt5Script.dll; DestDir: "{app}"; Flags: ignoreversion
 Source: {#MyQtPlugins}\platforms\qwindows.dll; DestDir: "{app}\platforms"; Flags: ignoreversion
+Source: {#MyQtPlugins}\platforms\qdirect2d.dll; DestDir: "{app}\platforms"; Flags: ignoreversion
+Source: {#MyQtPlugins}\platforms\qminimal.dll; DestDir: "{app}\platforms"; Flags: ignoreversion
+Source: {#MyQtPlugins}\platforms\qoffscreen.dll; DestDir: "{app}\platforms"; Flags: ignoreversion
+Source: {#MyQtPlugins}\platforms\qwebgl.dll; DestDir: "{app}\platforms"; Flags: ignoreversion
 
 Source: {#MyOpenNICSource}\server\dig\install\bindevt.dll; DestDir: "{app}"; Flags: ignoreversion
 Source: {#MyOpenNICSource}\server\dig\install\dig.exe; DestDir: "{app}"; Flags: ignoreversion
