@@ -29,6 +29,9 @@
 
 #define inherited OpenNICSystem
 
+#define RESOLVE_CONF            "/etc/resolv.conf"
+#define RESOLVE_CONF_BACKUP     "/var/resolv.conf.bak"
+
 OpenNICSystem_Win::OpenNICSystem_Win(bool enabled,QString networkInterface)
 : inherited::OpenNICSystem(enabled,networkInterface)
 {
@@ -67,7 +70,10 @@ int OpenNICSystem_Win::updateResolver(QHostAddress& resolver,int index,QString& 
 	QEventLoop loop;
 	QString program = "netsh";
 	QStringList arguments;
-	if ( ++index == 1 ) /* on windows(tm) index starts at 1 */
+	/* 
+	 * MS Windows(tm) index starts at 1 
+	 */
+	if ( ++index == 1 ) 
 	{
 		arguments << "interface" << "ip" << "set" << "dns" << interfaceName() << "static" << resolver.toString();
 	}
@@ -139,23 +145,61 @@ QStringList OpenNICSystem_Win::getSystemResolverList()
 }
 
 /**
- * @brief Preserve the resolver cache /etc/resolv.conf to /etc/resolv.conf.bak
+ * @brief Preserve the resolver cache ./resolv.conf to ./resolv.conf.bak
+ *        and repopulate ./resolv.conf
  * @return true 
  * @return false 
  */
 bool OpenNICSystem_Win::preserveResolverCache()
-{    
-    return true; // fileCopy(RESOLVE_CONF,RESOLVE_CONF_BACKUP);
+{   
+	QSringList resolvers = getSystemResolverList();
+	if ( resolvers.count() )
+	{
+		QFile file;
+		fileCopy(RESOLVE_CONF,RESOLVE_CONF_BACKUP);
+		file = QFile(RESOLVE_CONF);
+		if(file.open(QIODevice::ReadWrite))
+		{
+			QString buffer = resolvers.join('\n');
+			file.write(buffer);
+			file.close();
+		}
+		else
+		{
+			return false;
+		}
+	}
+	return true;
 }
 
 /**
- * @brief Restore the resolver cache /etc/resolv.conf.bak to /etc/resolv.conf
+ * @brief Restore the resolver cache ./resolv.conf.bak to ./resolv.conf
  * @return true 
  * @return false 
  */
 bool OpenNICSystem_Win::restoreResolverCache()
 {
-    return true; // fileCopy(RESOLVE_CONF_BACKUP,RESOLVE_CONF);
+	QFile file(RESOLVE_CONF);
+	if (file.open(QIODevice::ReadOnly))
+	{
+		int index=0;
+		while(!file.eof())
+		{
+			QString buffer = file.readLine().simplified().trimmed();
+			if ( !buffer.isEmpty() )
+			{
+				QString output;
+				QHostAddress address(buffer);
+				updateResolver(address,index++,output)
+			}
+		}
+		file.close();
+	}
+	else
+	{
+		return false;
+	}
+    return true; 
 }
 
 

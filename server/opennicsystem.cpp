@@ -50,12 +50,21 @@ bool OpenNICSystem::enabled()
 
 void OpenNICSystem::setEnabled(bool enabled)
 {
-	/* Are we changing state? */
 	if (mEnabled!=enabled)
 	{
-		
+		/* 
+		* Only emit startuo/shutdown upon state change.
+		*/
+		mEnabled=enabled;
+		if( this->enabled() )
+		{
+			startup();
+		}
+		else
+		{
+			shutdown();
+		}
 	}
-	mEnabled=enabled;
 }
 
 /**
