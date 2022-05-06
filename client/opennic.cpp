@@ -520,7 +520,7 @@ void OpenNIC::dataReady(OpenNICNet* net)
 		}
 		else if ( key == OpenNICPacket::system_text )				
 		{
-			ui->systemText->setPlainText(value.toString());
+			ui->systemText->setPlainText(value.toStringList().join('\n'));
 		}
 		else if ( key == OpenNICPacket::journal_text )
 		{

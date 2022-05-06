@@ -102,7 +102,7 @@ bool OpenNICSystem_Linux::endUpdateResolvers(QString& /* output */)
 /**
   * @brief Get the text which will show the current DNS resolver settings.
   */
-QString OpenNICSystem_Linux::getSystemResolverList()
+QStringList OpenNICSystem_Linux::getSystemResolverList()
 {
     #ifdef SIMULATE
         return sResolvConf;
@@ -112,9 +112,11 @@ QString OpenNICSystem_Linux::getSystemResolverList()
         {
             QString text(file.readAll());
             file.close();
-            return text;
+            return parseIPV4Strings(text);
         }
-        return "Could not obtain system resolver list.";
+        QStringList result;
+        result << "Could not obtain system resolver list.";
+        return result;
     #endif
 }
 

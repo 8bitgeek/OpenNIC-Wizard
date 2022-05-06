@@ -57,7 +57,7 @@ class OpenNICSystem
         void                    setEnabled(bool enabled);
         virtual void            startup()=0;
         virtual void            shutdown()=0;
-        virtual QString         getSystemResolverList()=0;
+        virtual QStringList     getSystemResolverList()=0;
         virtual bool            beginUpdateResolvers(QString& output)=0;
         virtual int             updateResolver(QHostAddress& dns,int index, QString& output)=0;
         virtual bool            endUpdateResolvers(QString& output)=0;
@@ -68,6 +68,7 @@ class OpenNICSystem
         
     protected:
         QList<QNetworkInterface>    interfaces();
+        QStringList             parseIPV4Strings(QString input);
 
     private:
         bool                    mEnabled;

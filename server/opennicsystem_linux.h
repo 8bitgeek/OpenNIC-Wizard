@@ -22,7 +22,7 @@ class OpenNICSystem_Linux : public OpenNICSystem
 
         virtual void        startup();
         virtual void        shutdown();
-        virtual QString     getSystemResolverList();
+        virtual QStringList getSystemResolverList();
         virtual bool        beginUpdateResolvers(QString& output);
         virtual int         updateResolver(QHostAddress& dns,int index, QString& output);
         virtual bool        endUpdateResolvers(QString& output);

@@ -309,4 +309,20 @@ OpenNICDomainName OpenNICSystem::randomDomain()
 	return domains.at(n);
 }
 
-
+/**
+ * @brief Given some input text, parse out the IPV4 adddresses.
+ * 
+ * @param input String containing noise and IPV4 address text.
+ * @return QStringList of IPV4 addresses
+ */
+QStringList OpenNICSystem::parseIPV4Strings(QString input)
+{
+	QString temp;
+	for(int n=0; n < input.length();n++)
+	{
+		QChar ch = input[n];
+		if ( ch == '\n' || ch == '\t' || ch == ' ' || ch == '.' || (ch >= '0' && ch <= '9') )
+			temp += ch;
+	}
+	return temp.simplified().split(' ');
+}

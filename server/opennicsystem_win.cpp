@@ -107,9 +107,11 @@ QString OpenNICSystem_Win::bootstrapDomainsPath()
 /**
   * @brief Get the text which will show the current DNS resolver settings.
   */
-QString OpenNICSystem_Win::getSystemResolverList()
+QStringList OpenNICSystem_Win::getSystemResolverList()
 {
-	QByteArray output;
+	int x;
+	QString temp;
+	QByteArray stdoutText;
 	QEventLoop loop;
 	QString program = "netsh";
 	QStringList arguments;
@@ -120,31 +122,21 @@ QString OpenNICSystem_Win::getSystemResolverList()
 	{
 		loop.processEvents();
 	}
-	output = process->readAllStandardOutput();
+	stdoutText = process->readAllStandardstdoutText();
 	delete process;
-	if (output.trimmed().isEmpty())
+	if (stdoutText.trimmed().isEmpty())
 	{
-		return "Could not obtain system resolver list.";
+		QStringList result;
+		result << QString("Could not obtain system resolver list.");
+		return result;
 	}
-	QString dnsList = QString(output);
-	QString outputStr;
-	int x = dnsList.indexOf("DNS Servers:");
-	if ( x >= 0 )
-	{
-		dnsList = dnsList.right(dnsList.length()-(x+QString("DNS Servers:").length()));
-		for(int n=0; n < dnsList.length();n++)
-		{
-			QChar ch = dnsList[n];
-			if ( ch == ' ' || ch == '.' || (ch >= '0' && ch <= '9') )
-				outputStr += ch;
-		}
-		outputStr = outputStr.simplified();
-		QStringList resolvers = outputStr.split(' ');
-		outputStr = resolvers.join('\n');
-	}
-	return outputStr;
+	/** 
+	 * strip out noise and return ipv4 numbers list. 
+	 */
+	temp = QString(stdoutText);
+	x = temp.indexOf("DNS Servers:");
+	return parseIPV4Strings(temp.right(temp.length()-(x+QString("DNS Servers:").length())));
 }
-
 
 /**
  * @brief Preserve the resolver cache /etc/resolv.conf to /etc/resolv.conf.bak
