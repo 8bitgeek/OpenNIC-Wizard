@@ -640,7 +640,6 @@ void OpenNIC::connectToService()
 	}
 }
 
-
 /**
   * @brief Make the applet look enabled (active/connected).
   */

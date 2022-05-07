@@ -187,8 +187,10 @@ QString OpenNICSystem_Linux::bootstrapDomainsPath()
     return OPENNIC_DOMAINS_BOOTSTRAP;
 }
 
-
-
-
-
-
+QString OpenNICSystem_Linux::defaultInterfaceName()
+{
+    QString interfaceName = inherited::defaultInterfaceName();
+    if ( interfaceName.isEmpty() )
+        interfaceName = "eth0";
+    return interfaceName;
+}

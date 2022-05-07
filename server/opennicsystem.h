@@ -50,7 +50,7 @@ class OpenNICSystem
         OpenNICDomainNamePool   getTestDomains();
         OpenNICDomainName		randomDomain();
         QStringList             interfaceNames();
-        QString                 defaultInterfaceName();
+        virtual QString         defaultInterfaceName();
         QString                 interfaceName();
         void                    setInterfaceName(QString interfaceName);
         bool                    enabled();

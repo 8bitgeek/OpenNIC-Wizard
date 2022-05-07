@@ -203,4 +203,10 @@ bool OpenNICSystem_Win::restoreResolverCache()
     return true; 
 }
 
-
+QString OpenNICSystem_Win::defaultInterfaceName()
+{
+    QString interfaceName = inherited::defaultInterfaceName();
+    if ( interfaceName.isEmpty() )
+        interfaceName = "Local Area Connection";
+    return interfaceName;
+}

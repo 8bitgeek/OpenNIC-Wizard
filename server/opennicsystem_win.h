@@ -25,7 +25,7 @@ class OpenNICSystem_Win : public OpenNICSystem
         virtual bool        beginUpdateResolvers(QString& output);
         virtual int         updateResolver(QHostAddress& dns,int index, QString& output);
         virtual bool        endUpdateResolvers(QString& output);
-
+        virtual QString     defaultInterfaceName();
         virtual QString     bootstrapT1Path();
         virtual QString     bootstrapDomainsPath();
 
