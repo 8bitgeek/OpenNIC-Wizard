@@ -56,12 +56,14 @@ void OpenNICSystem::setEnabled(bool enabled)
 		* Only emit startuo/shutdown upon state change.
 		*/
 		mEnabled=enabled;
-		if( this->enabled() )
+		if( mEnaabled )
 		{
+			OpenNICServer::log(tr("** ENABLEDD -> STARTUP **"));
 			startup();
 		}
 		else
 		{
+			OpenNICServer::log(tr("** DISABLED -> SHUTDOWN **"));
 			shutdown();
 		}
 	}
