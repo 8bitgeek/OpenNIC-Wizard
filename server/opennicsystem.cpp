@@ -30,7 +30,7 @@ OpenNICSystem* OpenNICSystem::mInstance=NULL;
 OpenNICSystem::OpenNICSystem(bool enabled,QString networkInterface)
 : mEnabled(enabled)
 {
-    while(mInstance); /* FIXME - singleton trap */
+    while(mInstance); /* singleton trap */
     mInstance = this;
 	if ( networkInterface.length() ==  0)
 	{

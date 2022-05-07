@@ -149,6 +149,10 @@ cp client/OpenNIC.desktop ~/.config/autostart/
 
 Download and run the latest Microsoft[Windows 64-bit Installer](https://github.com/8bitgeek/OpenNIC-Wizard/releases/tag/0.6.alpha3)
 
+If you're having trouble with OpenNic Wizard on MS Windows(tm), check that the correct network interface is selected:
+
+![OpenNIC Interface Selector](https://raw.githubusercontent.com/8bitgeek/OpenNIC-Wizard/master/www/opennic-wizard-interfaces.png)
+
 # T1 Bootstrap File
 
 The T1 (Tier 1) bootstrap file (server/bootstrap.t1) should be kept up to date with the [current T1 resolver list](https://servers.opennic.org/?tier=1)

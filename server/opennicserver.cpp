@@ -302,7 +302,6 @@ void OpenNICServer::dataReady(OpenNICNet* net)
 			else if (key == OpenNICPacket::resolver_history)
 			{
 				QString address = value.toString();
-				//log(tr("reply history '")+address+"'");
 				net->txPacket().set(OpenNICPacket::resolver_history,mResolverPool.toStringList(address));
 				net->send(true);
 			}
@@ -313,7 +312,9 @@ void OpenNICServer::dataReady(OpenNICNet* net)
 			}
 			else if (key == OpenNICPacket::opennic_enabled)
 			{
+				log(tr("enabled '")+value.toString()+"'");
 				mSystem->setEnabled(value.toBool());
+				mAsyncMessage = mSystem->enabled() ? tr("OpenNIC Enabled") : tr("OpenNIC Disabled");
 			}
 		}
 	}
