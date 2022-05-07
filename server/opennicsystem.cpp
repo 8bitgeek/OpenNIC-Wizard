@@ -335,7 +335,6 @@ QStringList OpenNICSystem::parseIPV4Strings(QString input)
 	for( int y=0; y < lines.count(); y++)
 	{
 		QString line = lines[y].simplified().trimmed();
-		OpenNICServer::log(line);
 		if ( (!line.isEmpty()) && line[0] != '#' && line[0] != ';' && line.indexOf('.')>0 )
 		{
 			for( int x=0; x < line.length(); x++ )
@@ -347,7 +346,6 @@ QStringList OpenNICSystem::parseIPV4Strings(QString input)
 				}
 			}
 			temp = temp.trimmed();
-			OpenNICServer::log(temp);
 			result << temp;
 			temp.clear();
 		}

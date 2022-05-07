@@ -186,7 +186,7 @@ void OpenNICServer::readSettings()
 void OpenNICServer::writeSettings()
 {
 	QSettings settings(QSettings::IniFormat, QSettings::SystemScope, "OpenNIC", "OpenNICService");
-	log(tr(">> ")+settings.fileName());
+	// log(tr(">> ")+settings.fileName());
 	settings.setValue("tcp_listen_port",			mTcpListenPort);
 	settings.setValue("refresh_timer_period",		refreshPeriod());
 	settings.setValue("resolver_cache_size",		resolverCacheSize());
@@ -229,7 +229,6 @@ void OpenNICServer::newConnection()
   */
 void OpenNICServer::pollKeyValue(QString& key, QVariant& value, bool& valid)
 {
-	log(tr("cache '")+mResolverCache.toStringList().join('\n')+"'");
 	valid = true;
 	if (key == OpenNICPacket::tcp_listen_port)				value = mTcpListenPort;
 	else if (key == OpenNICPacket::refresh_timer_period)	value = refreshPeriod();
