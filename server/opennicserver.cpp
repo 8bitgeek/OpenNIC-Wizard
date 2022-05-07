@@ -229,6 +229,7 @@ void OpenNICServer::newConnection()
   */
 void OpenNICServer::pollKeyValue(QString& key, QVariant& value, bool& valid)
 {
+	log(tr("cache '")+mResolverCache.toStringList().join('\n')+"'");
 	valid = true;
 	if (key == OpenNICPacket::tcp_listen_port)				value = mTcpListenPort;
 	else if (key == OpenNICPacket::refresh_timer_period)	value = refreshPeriod();
@@ -319,12 +320,10 @@ void OpenNICServer::dataReady(OpenNICNet* net)
 			}
 			else if (key == OpenNICPacket::interface)
 			{
-				log(tr("interface '")+value.toString()+"'");
 				mSystem->setInterfaceName(value.toString());
 			}
 			else if (key == OpenNICPacket::opennic_enabled)
 			{
-				log(tr("enabled '")+value.toString()+"'");
 				mSystem->setEnabled(value.toBool());
 				mAsyncMessage = mSystem->enabled() ? tr("OpenNIC Enabled") : tr("OpenNIC Disabled");
 			}
@@ -576,7 +575,7 @@ bool OpenNICServer::replaceActiveResolvers(OpenNICResolverPool& proposed)
 		for(int index=0; index < proposed.count(); index++)
 		{
 			OpenNICResolver* resolver = proposed.at(index);
-            if ( (applied=OpenNICSystem::instance()->updateResolver(resolver->hostAddress())) == 0 )
+            if ( (applied=OpenNICSystem::instance()->updateResolver(resolver->hostAddress())) )
 			{
 				log(" > "+resolver->toString());
 				mResolverCache.append(resolver);
