@@ -326,12 +326,25 @@ OpenNICDomainName OpenNICSystem::randomDomain()
  */
 QStringList OpenNICSystem::parseIPV4Strings(QString input)
 {
+	QStringList result;
 	QString temp;
-	for(int n=0; n < input.length();n++)
+	QStringList lines = input.split('\n');
+	for( int y=0; y < lines.count(); y++)
 	{
-		QChar ch = input[n];
-		if ( ch == '\n' || ch == '\t' || ch == ' ' || ch == '.' || (ch >= '0' && ch <= '9') )
-			temp += ch;
+		QString line = lines[y].simplified().trimmed();
+		if ( !line.isEmpty() && line[0] != '#' && line[0] != ';' && line.indexOf('.')>0 )
+		{
+			for( int x=0; x < line.length(); x++ )
+			{
+				QChar ch = line[x];
+				if ( ch == '\n' || ch == '\t' || ch == ' ' || ch == '.' || (ch >= '0' && ch <= '9') )
+				{
+					temp += ch;
+				}
+			}
+			result << temp;
+			temp.clear();
+		}
 	}
-	return temp.simplified().split(' ');
+	return result;
 }

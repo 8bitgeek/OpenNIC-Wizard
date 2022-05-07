@@ -634,13 +634,9 @@ void OpenNIC::connectToService()
 {
 	if ( !mLocalNet->isLive() )
 	{
-		fprintf(stderr, "** connectToService ** \n" );
-		QHostAddress localhost(QHostAddress::LocalHost);
+		fprintf(stderr, "** connecting to 127.0.0.1:19803 **\n" );
+		QHostAddress localhost("127.0.0.1");
 		mTcpSocket.connectToHost(localhost,19803,QIODevice::ReadWrite);
-	}
-	else
-	{
-		fprintf(stderr, "** NO connectToService **\n" );
 	}
 }
 

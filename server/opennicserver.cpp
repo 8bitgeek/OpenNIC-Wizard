@@ -333,9 +333,9 @@ int OpenNICServer::initializeServer()
 {
 	if (!mServer.isListening() )
 	{
-		QHostAddress localhost(QHostAddress::LocalHost);
+		QHostAddress localhost("127.0.0.1");
 		mServer.setMaxPendingConnections(10);
-		if ( mServer.listen(localhost,/* mTcpListenPort */ DEFAULT_TCP_LISTEN_PORT) )
+		if ( mServer.listen(localhost, DEFAULT_TCP_LISTEN_PORT) )
 		{
 			QObject::connect(&mServer,SIGNAL(newConnection()),this,SLOT(newConnection()));
 			log(tr("listening on port ")+QString::number(mTcpListenPort));
@@ -355,15 +355,14 @@ QString OpenNICServer::copyright()
 
 QString OpenNICServer::license()
 {
-    return QString( 	tr( "OpenNIC Wizard\n"
-                            "Copywrong (c) 2012-2022 Mike Sharkey\n"
-                            "----------------------------------------------------------------------------\n"
-                            "\"THE BEER-WARE LICENSE\" (Revision 1776):\n"
-                            "<mike@8bitgeek.net> wrote this file.\n"
-                            "As long as you retain this notice you can do whatever you want with this stuff.\n"
-                            "If we meet some day, and you think this stuff is worth it,\n"
-                            "you can buy me a beer in return. ~ Mike Sharkey\n"
-                            "----------------------------------------------------------------------------\n"
+    return QString( 
+						tr( "----------------------------------------------------------------------------\n"
+							"\"THE BEER-WARE LICENSE\" (Revision 1776):\n"
+							"<mike@8bitgeek.net> wrote this file.\n"
+							"As long as you retain this notice you can do whatever you want with this stuff.\n"
+							"If we meet some day, and you think this stuff is worth it,\n"
+							"you can buy me a beer in return. ~ Mike Sharkey\n"
+							"----------------------------------------------------------------------------\n"
                         )
                    );
 }
@@ -379,7 +378,7 @@ void OpenNICServer::purgeDeadSesssions()
 		OpenNICNet* net = mSessions[n];
 		if ( !net->isLive() )
 		{
-			log("** CLIENT SESSION DISPOSED **");
+			log(tr("** CLIENT SESSION DISPOSED **"));
 			mSessions.takeAt(n);
 			delete net;
 		}
@@ -394,7 +393,7 @@ void OpenNICServer::coldBoot()
 	if ( !mInColdBoot )
 	{
 		mInColdBoot=true;
-		log("** COLD BOOT **");
+		log(tr("** COLD BOOT **"));
 		log(copyright());
 		log(license());
 		readSettings();
@@ -407,7 +406,7 @@ void OpenNICServer::coldBoot()
 			}
 			else
 			{
-				log("** COLD BOOT FAILED - RETRY IN 5 SECONDS **");
+				log(tr("** COLD BOOT FAILED - RETRY IN 5 SECONDS **"));
 				delay(5);
 			}
 		}
@@ -422,43 +421,52 @@ void OpenNICServer::coldBoot()
 int OpenNICServer::bootstrapResolvers()
 {
 	mResolversInitialized=false;
-	/** get the bootstrap resolvers... */
+	
+	/** Get the bootstrap resolvers... */
     QStringList bootstrapList = OpenNICSystem::instance()->getBootstrapT1List();
 	OpenNICResolverPool proposed;
 	mResolverPool.clear();
 	mResolverPool.fromIPList(bootstrapList,"T1");
 	mResolverPool.randomize();
 	log(tr("Found ")+QString::number(mResolverPool.count())+tr(" T1 resolvers"));
+	
 	if (mResolverPool.count() < resolverCacheSize())
 	{
 		log(tr("** Warning: T1 bootstrap resolver count is less than resolver cache size"));
 	}
+	
 	for(int n=0; n < ((resolverCacheSize() <= mResolverPool.count()) ? resolverCacheSize() : mResolverPool.count()); n++)
 	{
 		OpenNICResolver* resolver = mResolverPool.at(n);
 		proposed.append(resolver);
 	}
+	
 	/** Apply the T1 bootstrap resolvers */
 	log(tr("Randomizing T1 list"));
 	proposed.randomize();
 	log(tr("Applying (")+QString::number(proposed.count())+tr(") resolvers from the T1 list"));
 	replaceActiveResolvers(proposed);
-	/** get the T2 resolvers */
+	
+	/** Get the T2 resolvers */
 	log(tr("Fetching T2 resolvers"));
     bootstrapList.clear();
-    for(int tries=0; bootstrapList.isEmpty() && tries < 5; tries++)
+	for(int tries=0; bootstrapList.isEmpty() && tries < 5; tries++)
     {
         bootstrapList = OpenNICSystem::instance()->getBootstrapT2List();
     }
+
+	/** Start with a randomized list */
 	mResolverPool.fromIPList(bootstrapList,"T2");
 	log(tr("Randomizing T2 Resolvers"));
 	mResolverPool.randomize();
 	proposed.clear();
+	
 	for(int n=0; n < ((resolverCacheSize() <= mResolverPool.count()) ? resolverCacheSize() : mResolverPool.count()); n++)
 	{
 		OpenNICResolver* resolver = mResolverPool.at(n);
 		proposed.append(resolver);
 	}
+	
 	if (proposed.count())
 	{
 		log(tr("Applying (")+QString::number(proposed.count())+tr(") resolvers from the T1 list"));
@@ -468,7 +476,16 @@ int OpenNICServer::bootstrapResolvers()
 	{
 		log(tr("** Critical: no T2 resolvers found **"));
 	}
-	log("mResolversInitialized="+QString(mResolversInitialized?"TRUE":"FALSE"));
+
+	if ( mResolversInitialized )
+	{
+		log(tr("** RESOLVERS INITIALIZED **"));
+	}
+	else 
+	{
+		log(tr("** RESOLVERS NOT INITIALIZED **"));
+	}
+
 	return mResolversInitialized ? proposed.count() : 0;
 }
 
