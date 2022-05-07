@@ -52,9 +52,7 @@ QStringList OpenNICResolverPool::toStringList()
 	QStringList rc;
 	for(int n=0; n < mResolvers.count(); n++)
 	{
-		OpenNICResolver* resolver = mResolvers[n];
-		QString itemString = resolver->toString();
-		rc.append(itemString);
+		rc << mResolvers[n]->toString();
 	}
 	return rc;
 }
