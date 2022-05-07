@@ -323,8 +323,9 @@ void OpenNICServer::dataReady(OpenNICNet* net)
 			}
 			else if (key == OpenNICPacket::opennic_enabled)
 			{
+				if ( value.toBool() != mSystem->enabled() )
+					mAsyncMessage = mSystem->enabled() ? tr("OpenNIC Disabled") :  tr("OpenNIC Enabled");
 				mSystem->setEnabled(value.toBool());
-				mAsyncMessage = mSystem->enabled() ? tr("OpenNIC Enabled") : tr("OpenNIC Disabled");
 			}
 		}
 	}
@@ -713,6 +714,9 @@ void OpenNICServer::delay(int seconds)
   */
 void OpenNICServer::timerEvent(QTimerEvent* e)
 {
+	/* are we anabled? */
+	bool enabled = mSystem?mSystem->enabled():true;			
+
 	if ( GlobalShutdown )
 	{
 		mSystem->shutdown();
@@ -722,24 +726,37 @@ void OpenNICServer::timerEvent(QTimerEvent* e)
 
 	if ( e->timerId() == mFastTimer )
 	{
-		runOnce();											/* don't let the log get out of hand */
+		if ( enabled )
+		{
+			runOnce();								/* don't let the log get out of hand */
+		}
+		else
+		{
+			readSettings();							/* even disabled, we want to keep settings current */
+		}
 	}
-	else if ( e->timerId() == mBootstrapTimer )				/* higher frequency bootstrap timer to assist in stabalizing */
+	else if ( e->timerId() == mBootstrapTimer )		/* higher frequency bootstrap timer to assist in stabalizing */
 	{
-		refreshResolvers(true);
-		if(mBootstrapTicks ++ > BOOTSTRAP_TICKS)			/* kill off this timer after a little bit... */
+		if ( enabled )
+		{
+			refreshResolvers(true);
+		}
+		if(mBootstrapTicks ++ > BOOTSTRAP_TICKS)	/* kill off this timer after a little bit... */
 		{
 			killTimer(mBootstrapTimer);
 			mBootstrapTimer=(-1);
 		}
 	}
-	else if ( e->timerId() == mRefreshTimer )				/* get here once in a while, a slow timer... */
+	else if ( e->timerId() == mRefreshTimer )		/* get here once in a while, a slow timer... */
 	{
-		refreshResolvers(true);								/* force a resolver cache refresh */
+		if ( enabled )
+		{
+			refreshResolvers(true);					/* force a resolver cache refresh */
+		}
 	}
 	else if ( e->timerId() == mSecondTimer )
 	{
-		++mSeconds;
+		++mSeconds;									/* keep track of elapsed time */
 	}
 	else
 	{

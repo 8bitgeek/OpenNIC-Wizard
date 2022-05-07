@@ -87,7 +87,7 @@ bool OpenNICSystem_Win::updateResolver(QHostAddress& resolver)
 	}
 	else
 	{
-		arguments << "interface" << "ip" << "add" << "dns" << interfaceName() << resolver.toString() << "index="+QString::number(index);
+		arguments << "interface" << "ip" << "add" << "dns" << interfaceName() << resolver.toString() << "index="+QString::number(mResolverIndex);
 	}
 	QProcess* process = new QProcess();
 	process->start(program, arguments);
@@ -104,7 +104,7 @@ bool OpenNICSystem_Win::updateResolver(QHostAddress& resolver)
 	return rc;
 }
 
-bool OpenNICSystem_Win::endUpdateResolvers(QString& output)
+bool OpenNICSystem_Win::endUpdateResolvers()
 {
 	return true;
 }
@@ -193,16 +193,17 @@ bool OpenNICSystem_Win::restoreResolverCache()
 	QFile file(RESOLVE_CONF);
 	if (file.open(QIODevice::ReadOnly))
 	{
-		int index=0;
+		beginUpdateResolvers();
 		while(!file.atEnd())
 		{
 			QString buffer = file.readLine().simplified().trimmed();
 			if ( !buffer.isEmpty() )
 			{
 				QHostAddress address(buffer);
-				updateResolver(address,index++);
+				updateResolver(address);
 			}
 		}
+		endUpdateResolvers();
 		file.close();
 	}
 	else
