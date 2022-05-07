@@ -204,7 +204,7 @@ void OpenNICServer::writeSettings()
 			case QSettings::FormatError: reason="A format error occurred (e.g. loading a malformed INI file)"; break;
 			default: reason="Unknown failure"; break;
 		}
-		log(tr("** SETTINGS ")+settings.filename()+QString(" -")+reason);
+		log(tr("** SETTINGS ")+settings.fileName()+QString(" -")+reason);
 	}
 }
 

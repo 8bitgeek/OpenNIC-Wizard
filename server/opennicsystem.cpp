@@ -10,6 +10,7 @@
  * ----------------------------------------------------------------------------
  */
 #include "opennicsystem.h"
+#include "opennicserver.h"
 #include <QObject>
 #include <QMessageBox>
 #include <QProcess>
@@ -56,14 +57,14 @@ void OpenNICSystem::setEnabled(bool enabled)
 		* Only emit startuo/shutdown upon state change.
 		*/
 		mEnabled=enabled;
-		if( mEnaabled )
+		if( mEnabled )
 		{
-			OpenNICServer::log(tr("** ENABLEDD -> STARTUP **"));
+			OpenNICServer::log("** ENABLEDD -> STARTUP **");
 			startup();
 		}
 		else
 		{
-			OpenNICServer::log(tr("** DISABLED -> SHUTDOWN **"));
+			OpenNICServer::log("** DISABLED -> SHUTDOWN **");
 			shutdown();
 		}
 	}
