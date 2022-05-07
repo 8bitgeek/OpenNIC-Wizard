@@ -1,7 +1,7 @@
 
 # Latest Microsoft Windows Installer
 
-Download and run the latest [MS Windows 64-bit Installer](https://github.com/8bitgeek/OpenNIC-Wizard/releases/tag/0.6.alpha2)
+Download and run the latest [MS Windows 64-bit Installer](https://github.com/8bitgeek/OpenNIC-Wizard/releases/tag/0.6.alpha3)
 
 
 # About The OpenNIC Project
@@ -147,7 +147,7 @@ cp client/OpenNIC.desktop ~/.config/autostart/
 
 ## Windows
 
-Download and run the latest Microsoft[Windows 64-bit Installer](https://github.com/8bitgeek/OpenNIC-Wizard/releases/tag/0.6.alpha2)
+Download and run the latest Microsoft[Windows 64-bit Installer](https://github.com/8bitgeek/OpenNIC-Wizard/releases/tag/0.6.alpha3)
 
 # T1 Bootstrap File
 
