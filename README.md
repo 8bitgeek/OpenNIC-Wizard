@@ -1,7 +1,7 @@
 
 # Latest Microsoft Windows Installer
 
-Download and run the latest [MS Windows 64-bit Installer](https://github.com/8bitgeek/OpenNIC-Wizard/releases/tag/0.6.alpha3)
+Download and run the latest [MS Windows 64-bit Installer](https://github.com/8bitgeek/OpenNIC-Wizard/releases/tag/0.6.alpha6)
 
 
 # About The OpenNIC Project
@@ -147,7 +147,7 @@ cp client/OpenNIC.desktop ~/.config/autostart/
 
 ## Windows
 
-Download and run the latest Microsoft[Windows 64-bit Installer](https://github.com/8bitgeek/OpenNIC-Wizard/releases/tag/0.6.alpha3)
+Download and run the latest Microsoft[Windows 64-bit Installer](https://github.com/8bitgeek/OpenNIC-Wizard/releases/tag/0.6.alpha6)
 
 If you're having trouble with OpenNic Wizard on MS Windows(tm), check that the correct network interface is selected:
 
