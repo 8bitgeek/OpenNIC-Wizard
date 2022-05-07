@@ -10,6 +10,7 @@
  * ----------------------------------------------------------------------------
  */
 #include "opennicsystem.h"
+#include "opennicserver.h"
 #include <QObject>
 #include <QMessageBox>
 #include <QProcess>
@@ -56,14 +57,14 @@ void OpenNICSystem::setEnabled(bool enabled)
 		* Only emit startuo/shutdown upon state change.
 		*/
 		mEnabled=enabled;
-		if( mEnaabled )
+		if( mEnabled )
 		{
-			OpenNICServer::log(tr("** ENABLEDD -> STARTUP **"));
+			OpenNICServer::log("** ENABLEDD -> STARTUP **");
 			startup();
 		}
 		else
 		{
-			OpenNICServer::log(tr("** DISABLED -> SHUTDOWN **"));
+			OpenNICServer::log("** DISABLED -> SHUTDOWN **");
 			shutdown();
 		}
 	}
@@ -334,7 +335,8 @@ QStringList OpenNICSystem::parseIPV4Strings(QString input)
 	for( int y=0; y < lines.count(); y++)
 	{
 		QString line = lines[y].simplified().trimmed();
-		if ( !line.isEmpty() && line[0] != '#' && line[0] != ';' && line.indexOf('.')>0 )
+		OpenNICServer::log(line);
+		if ( (!line.isEmpty()) && line[0] != '#' && line[0] != ';' && line.indexOf('.')>0 )
 		{
 			for( int x=0; x < line.length(); x++ )
 			{
@@ -344,6 +346,8 @@ QStringList OpenNICSystem::parseIPV4Strings(QString input)
 					temp += ch;
 				}
 			}
+			temp = temp.trimmed();
+			OpenNICServer::log(temp);
 			result << temp;
 			temp.clear();
 		}

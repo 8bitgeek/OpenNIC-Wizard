@@ -23,9 +23,9 @@ class OpenNICSystem_Linux : public OpenNICSystem
         virtual void        startup();
         virtual void        shutdown();
         virtual QStringList getSystemResolverList();
-        virtual bool        beginUpdateResolvers(QString& output);
-        virtual int         updateResolver(QHostAddress& dns,int index, QString& output);
-        virtual bool        endUpdateResolvers(QString& output);
+        virtual bool        beginUpdateResolvers();
+        virtual bool        updateResolver(QHostAddress& dns);
+        virtual bool        endUpdateResolvers();
         virtual QString     defaultInterfaceName();
         virtual QString     bootstrapT1Path();
         virtual QString     bootstrapDomainsPath();
@@ -34,6 +34,8 @@ class OpenNICSystem_Linux : public OpenNICSystem
 
         bool            preserveResolverCache();
         bool            restoreResolverCache();
+
+        QStringList     mResolvers;
 };
 
 #endif // OPENNICSYSTEM_LINUX_H

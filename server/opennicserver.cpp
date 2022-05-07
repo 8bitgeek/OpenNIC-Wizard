@@ -204,7 +204,7 @@ void OpenNICServer::writeSettings()
 			case QSettings::FormatError: reason="A format error occurred (e.g. loading a malformed INI file)"; break;
 			default: reason="Unknown failure"; break;
 		}
-		log(tr("** SETTINGS ")+settings.filename()+QString(" -")+reason);
+		log(tr("** SETTINGS ")+settings.fileName()+QString(" -")+reason);
 	}
 }
 
@@ -567,41 +567,30 @@ bool OpenNICServer::shouldReplaceWithProposed(OpenNICResolverPool& proposed)
   */
 bool OpenNICServer::replaceActiveResolvers(OpenNICResolverPool& proposed)
 {
-	QString output;
-	bool applied=true;
+	bool applied=false;
 	mResolverCache.clear();
 	proposed.sort();
 	log("Begin applying updated resolver cache of ("+QString::number(proposed.count())+") items...");
-    if ( OpenNICSystem::instance()->beginUpdateResolvers(output) )
+    if ( (applied=OpenNICSystem::instance()->beginUpdateResolvers()) )
 	{
-		for(int n=0; n < proposed.count(); n++)
+		for(int index=0; index < proposed.count(); index++)
 		{
-			int exitCode;
-			OpenNICResolver* resolver = proposed.at(n);
-            if ( (exitCode=OpenNICSystem::instance()->updateResolver(resolver->hostAddress(),n,output)) == 0 )
+			OpenNICResolver* resolver = proposed.at(index);
+            if ( (applied=OpenNICSystem::instance()->updateResolver(resolver->hostAddress())) == 0 )
 			{
 				log(" > "+resolver->toString());
 				mResolverCache.append(resolver);
 			}
-			else
-			{
-				log(tr("** exit code: ")+QString::number(exitCode));
-				log(tr("** Operating syetem said: ")+output);
-				applied=false;
-			}
+			log(tr("** EXIT ")+(applied?tr("OK"):tr("FAIL")));
 		}
-        if ( !OpenNICSystem::instance()->endUpdateResolvers(output) )
+        if ( !(applied=OpenNICSystem::instance()->endUpdateResolvers()) )
 		{
 			log("** Operating system failed to commit resolver cache changes **");
-			log(tr("** Operating syetem said: ")+output);
-			applied=false;
 		}
 	}
 	else
 	{
 		log(tr("** Operating system refused to begin comitting changes **"));
-		log(tr("** Operating syetem said: ")+output);
-		applied=false;
 	}
 	if (applied)
 	{
@@ -620,15 +609,15 @@ int OpenNICServer::updateDNS(int resolverCount)
 	if ( !mUpdatingDNS )
 	{
 		mUpdatingDNS=true;
-		log("** UPDATE DNS **");
+		log(tr("** UPDATE DNS **"));
 		if (mResolverPool.count()>0)
 		{
 			OpenNICResolverPool proposed;
-			log("Scoring resolver pool.");
+			log(tr("Scoring resolver pool."));
 			mResolverPool.score();
-			log("Sorting resolver pool.");
+			log(tr("Sorting resolver pool."));
 			mResolverPool.sort();
-			log("Proposing ("+QString::number(resolverCount)+") candidates.");
+			log(tr("Proposing (")+QString::number(resolverCount)+tr(") candidates."));
 			for(int n=0; n < mResolverPool.count() && n < resolverCount; n++)
 			{
 				OpenNICResolver* resolver = mResolverPool.at(n);
