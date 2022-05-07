@@ -3,7 +3,7 @@
 
 #define MyAppName "OpenNIC Wizard"
 #define MyAppServiceName "OpenNIC Service"
-#define MyAppVersion "0.6.alpha3"
+#define MyAppVersion "0.6.alpha4"
 #define MyAppPublisher "The OpenNIC Project"
 #define MyAppURL "http://github.com/8bitgeek/OpenNIC-Wizard"
 #define MyAppExeName "opennicui.exe"
