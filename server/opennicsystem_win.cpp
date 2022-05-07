@@ -26,11 +26,12 @@
 #include <QIODevice>
 #include <QDateTime>
 #include <QNetworkInterface>
+#include <QTextStream>
 
 #define inherited OpenNICSystem
 
-#define RESOLVE_CONF            "/etc/resolv.conf"
-#define RESOLVE_CONF_BACKUP     "/var/resolv.conf.bak"
+#define RESOLVE_CONF            "resolv.conf"
+#define RESOLVE_CONF_BACKUP     "resolv.conf.bak"
 
 OpenNICSystem_Win::OpenNICSystem_Win(bool enabled,QString networkInterface)
 : inherited::OpenNICSystem(enabled,networkInterface)
@@ -128,7 +129,7 @@ QStringList OpenNICSystem_Win::getSystemResolverList()
 	{
 		loop.processEvents();
 	}
-	stdoutText = process->readAllStandardstdoutText();
+	stdoutText = process->readAllStandardOutput();
 	delete process;
 	if (stdoutText.trimmed().isEmpty())
 	{
@@ -152,16 +153,16 @@ QStringList OpenNICSystem_Win::getSystemResolverList()
  */
 bool OpenNICSystem_Win::preserveResolverCache()
 {   
-	QSringList resolvers = getSystemResolverList();
+	QStringList resolvers = getSystemResolverList();
 	if ( resolvers.count() )
 	{
-		QFile file;
 		fileCopy(RESOLVE_CONF,RESOLVE_CONF_BACKUP);
-		file = QFile(RESOLVE_CONF);
-		if(file.open(QIODevice::ReadWrite))
+		QFile file(RESOLVE_CONF);
+		if(file.open(QIODevice::WriteOnly | QIODevice::Text))
 		{
 			QString buffer = resolvers.join('\n');
-			file.write(buffer);
+			QTextStream out(&file);
+    		out << buffer;
 			file.close();
 		}
 		else
@@ -183,14 +184,14 @@ bool OpenNICSystem_Win::restoreResolverCache()
 	if (file.open(QIODevice::ReadOnly))
 	{
 		int index=0;
-		while(!file.eof())
+		while(!file.atEnd())
 		{
 			QString buffer = file.readLine().simplified().trimmed();
 			if ( !buffer.isEmpty() )
 			{
 				QString output;
 				QHostAddress address(buffer);
-				updateResolver(address,index++,output)
+				updateResolver(address,index++,output);
 			}
 		}
 		file.close();
