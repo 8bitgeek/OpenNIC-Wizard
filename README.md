@@ -1,4 +1,9 @@
 
+# Latest Microsoft Windows Installer
+
+Download and run the latest [MS Windows 64-bit Installer](https://github.com/8bitgeek/OpenNIC-Wizard/releases/tag/0.6.alpha2)
+
+
 # About The OpenNIC Project
 
 ["The OpenNIC Project"](http://www.opennicproject.org) is an organization of dedicated volunteers who run an alternative [DNS](https://en.wikipedia.org/wiki/Domain_Name_System) network. OpenNIC is owned and operated by the OpenNIC community. 
@@ -142,7 +147,7 @@ cp client/OpenNIC.desktop ~/.config/autostart/
 
 ## Windows
 
-Download and run the latest [Windows 64-bit Installer](https://github.com/8bitgeek/OpenNIC-Wizard/releases/tag/0.6.alpha2)
+Download and run the latest Microsoft[Windows 64-bit Installer](https://github.com/8bitgeek/OpenNIC-Wizard/releases/tag/0.6.alpha2)
 
 # T1 Bootstrap File
 
