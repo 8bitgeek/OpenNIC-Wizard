@@ -142,7 +142,7 @@ cp client/OpenNIC.desktop ~/.config/autostart/
 
 ## Windows
 
-...mumble mumble...
+Download and run the latest [Windows 64-bit Installer](https://github.com/8bitgeek/OpenNIC-Wizard/releases/tag/0.6.alpha2)
 
 # T1 Bootstrap File
 
