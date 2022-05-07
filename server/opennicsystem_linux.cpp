@@ -64,38 +64,43 @@ void OpenNICSystem_Linux::shutdown()
  * @param output
  * @return
  */
-bool OpenNICSystem_Linux::beginUpdateResolvers(QString& output)
+bool OpenNICSystem_Linux::beginUpdateResolvers()
 {
-    output.clear();
+    mResolvers.clear();
 	return true;
 }
 
 /**
   * @brief Add a dns entry to the system's list of DNS resolvers.
   * @param resolver The IP address of teh resolver to add to the system
-  * @param index resolver sequence (1..n)
   */
-int OpenNICSystem_Linux::updateResolver(QHostAddress& resolver,int index,QString& output)
+bool OpenNICSystem_Linux::updateResolver(QHostAddress& resolver)
 {
-    #ifdef SIMULATE
-            if (index == 1) sResolvConf.clear();
-            sResolvConf += "nameserver "+resolver.toString()+"\n";
-            output=resolver.toString();
-    #else
-        QFile file(RESOLVE_CONF);
-        if ( (index==1) ? file.open(QIODevice::ReadWrite|QIODevice::Truncate) : file.open(QIODevice::ReadWrite|QIODevice::Append) )
-        {
-            QString line("nameserver "+resolver.toString()+"\n");
-            file.write(line.toLocal8Bit());
-            file.close();
-            output=resolver.toString();
-        }
-        return 0;
-    #endif
+    mResolvers << resolver.toString();
+    return true;
 }
 
-bool OpenNICSystem_Linux::endUpdateResolvers(QString& /* output */)
+bool OpenNICSystem_Linux::endUpdateResolvers()
 {
+    if ( mResolvers.count() )
+    {
+        QFile file(RESOLVE_CONF);
+        if ( file.open(QIODevice::ReadWrite|QIODevice::Truncate) )
+        {
+            QString output;
+            for(int y=0; y < mResolvers.count(); y++)
+            {
+                mResolvers[y] = "nameserver " + mResolvers[y];
+            }
+            output=mResolvers.join('\n') + "\n";
+            file.write(output.toLocal8Bit());
+            file.close();
+        }
+        else 
+        {
+            return false;
+        }
+    }
 	return true;
 }
 
@@ -104,20 +109,16 @@ bool OpenNICSystem_Linux::endUpdateResolvers(QString& /* output */)
   */
 QStringList OpenNICSystem_Linux::getSystemResolverList()
 {
-    #ifdef SIMULATE
-        return sResolvConf;
-    #else
-        QFile file(RESOLVE_CONF);
-        if ( file.open(QIODevice::ReadOnly) )
-        {
-            QString text(file.readAll());
-            file.close();
-            return parseIPV4Strings(text);
-        }
-        QStringList result;
-        result << "Could not obtain system resolver list.";
-        return result;
-    #endif
+    QFile file(RESOLVE_CONF);
+    if ( file.open(QIODevice::ReadOnly) )
+    {
+        QString text(file.readAll());
+        file.close();
+        return parseIPV4Strings(text);
+    }
+    QStringList result;
+    result << "Could not obtain system resolver list.";
+    return result;
 }
 
 /**

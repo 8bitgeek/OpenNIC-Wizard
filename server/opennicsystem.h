@@ -58,9 +58,9 @@ class OpenNICSystem
         virtual void            startup()=0;
         virtual void            shutdown()=0;
         virtual QStringList     getSystemResolverList()=0;
-        virtual bool            beginUpdateResolvers(QString& output)=0;
-        virtual int             updateResolver(QHostAddress& dns,int index, QString& output)=0;
-        virtual bool            endUpdateResolvers(QString& output)=0;
+        virtual bool            beginUpdateResolvers()=0;
+        virtual bool            updateResolver(QHostAddress& dns)=0;
+        virtual bool            endUpdateResolvers()=0;
 
         virtual QString         bootstrapT1Path()=0;
         virtual QString         bootstrapDomainsPath()=0;

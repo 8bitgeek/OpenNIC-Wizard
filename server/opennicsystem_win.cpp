@@ -33,8 +33,11 @@
 #define RESOLVE_CONF            "resolv.conf"
 #define RESOLVE_CONF_BACKUP     "resolv.conf.bak"
 
+#define WAIT_PROCESS_TIMEOUT	10000
+
 OpenNICSystem_Win::OpenNICSystem_Win(bool enabled,QString networkInterface)
 : inherited::OpenNICSystem(enabled,networkInterface)
+, mResolverIndex(0)
 {
 }
 
@@ -54,27 +57,31 @@ void OpenNICSystem_Win::shutdown()
         OpenNICServer::log("failed to restore resolver cache");
 }
 
-bool OpenNICSystem_Win::beginUpdateResolvers(QString& output)
+/**
+ * @brief Prepare to update resolvers one by one. 
+ * @return true on success
+ */
+bool OpenNICSystem_Win::beginUpdateResolvers()
 {
-    output.clear();
+	mResolverIndex=0;
 	return true;
 }
 
 /**
   * @brief Add a dns entry to the system's list of DNS resolvers.
   * @param resolver The IP address of teh resolver to add to the system
-  * @param index resolver sequence (1..n)
+  * @return true on success
   */
-int OpenNICSystem_Win::updateResolver(QHostAddress& resolver,int index,QString& output)
+bool OpenNICSystem_Win::updateResolver(QHostAddress& resolver)
 {
-	int rc;
+	bool rc;
 	QEventLoop loop;
 	QString program = "netsh";
 	QStringList arguments;
 	/* 
 	 * MS Windows(tm) index starts at 1 
 	 */
-	if ( ++index == 1 ) 
+	if ( ++mResolverIndex == 1 ) 
 	{
 		arguments << "interface" << "ip" << "set" << "dns" << interfaceName() << "static" << resolver.toString();
 	}
@@ -84,12 +91,15 @@ int OpenNICSystem_Win::updateResolver(QHostAddress& resolver,int index,QString& 
 	}
 	QProcess* process = new QProcess();
 	process->start(program, arguments);
-	while (process->waitForFinished(10000))
+	while (process->waitForFinished(WAIT_PROCESS_TIMEOUT))
 	{
 		loop.processEvents();
 	}
-	output = process->readAllStandardOutput().trimmed() + "\n";
-	rc = process->exitCode();
+	rc = (process->exitCode() == 0);
+	if ( !rc )
+	{
+		OpenNICServer::log(process->readAllStandardOutput().trimmed());
+	}
 	delete process;
 	return rc;
 }
@@ -125,7 +135,7 @@ QStringList OpenNICSystem_Win::getSystemResolverList()
 	arguments << "interface" << "ip" << "show" << "config" << interfaceName();
 	QProcess* process = new QProcess();
 	process->start(program, arguments);
-	while (process->waitForFinished(10000))
+	while (process->waitForFinished(WAIT_PROCESS_TIMEOUT))
 	{
 		loop.processEvents();
 	}
@@ -189,9 +199,8 @@ bool OpenNICSystem_Win::restoreResolverCache()
 			QString buffer = file.readLine().simplified().trimmed();
 			if ( !buffer.isEmpty() )
 			{
-				QString output;
 				QHostAddress address(buffer);
-				updateResolver(address,index++,output);
+				updateResolver(address,index++);
 			}
 		}
 		file.close();
