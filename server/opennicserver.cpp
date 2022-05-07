@@ -194,6 +194,18 @@ void OpenNICServer::writeSettings()
 	settings.setValue("score_internal",				mScoreInternal);
 	settings.setValue("enabled",					mSystem->enabled());
 	settings.setValue("network_interface",			mSystem->interfaceName());
+	settings.sync();
+	if ( settings.status() != QSettings::NoError )
+	{
+		QString reason;
+		switch( settings.status() )
+		{
+			case QSettings::AccessError: reason="An access error occurred (e.g. trying to write to a read-only file)"; break;
+			case QSettings::FormatError: reason="A format error occurred (e.g. loading a malformed INI file)"; break;
+			default: reason="Unknown failure"; break;
+		}
+		log(tr("** SETTINGS ")+settings.filename()+QString(" -")+reason);
+	}
 }
 
 /**
