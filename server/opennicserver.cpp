@@ -31,8 +31,8 @@
 #define DEFAULT_CLIENT_TIMEOUT					3			/* seconds */
 #define DEFAULT_TCP_LISTEN_PORT				    19803		/* localhost port for communication with GUI */
 #define MAX_LOG_LINES							100			/* max lines to keep in log cache */
-#define BOOTSTRAP_TIMER							(15*1000)	/* boostrap timer interva */
-#define BOOTSTRAP_TICKS							12			/* number of bootstrap ticks */
+#define BOOTSTRAP_TIMER							(5*1000)	/* boostrap timer interva */
+#define BOOTSTRAP_TICKS							24			/* number of bootstrap ticks */
 
 
 #define DEFAULT_SCORE_RULES	"var score = maxPoolLatency - resolverAverageLatency;\n" \
