@@ -44,8 +44,8 @@ clean_working_dir()
 
 copy_one_file()
 {
-    $SRC=$1
-    $DST=$2
+    SRC=$1
+    DST=$2
     echo "$SRC .. $DST"
     cp $SRC $DST
 }
