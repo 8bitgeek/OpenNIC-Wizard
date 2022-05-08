@@ -68,6 +68,23 @@ make_deb_package()
     copy_to_working_dir
 }
 
+clean_project()
+{
+    echo "clean_project"
+    qmake 
+    make clean > /dev/null
+    make distclean > /dev/null
+}
+
+compile_project()
+{
+    echo "compile_project"
+    qmake
+    make > /dev/null
+}
+
+clean_project
+compile_project
 make_working_dir
-make_dep_package
+make_deb_package
 clean_working_dir

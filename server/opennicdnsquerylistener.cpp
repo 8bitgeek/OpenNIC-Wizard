@@ -135,12 +135,12 @@ void OpenNICDnsQueryListener::clear()
 	mMaxQueryDepth=MAX_QUERY_DEPTH;
 }
 
-void OpenNICDnsQueryListener::starting(OpenNICDnsQuery* query)
+void OpenNICDnsQueryListener::starting(OpenNICDnsQuery* /* query */)
 {
 	//OpenNICServer::log("starting "+query->resolver().toString()+" : "+query->name().toString());
 }
 
-void OpenNICDnsQueryListener::finished(OpenNICDnsQuery* query)
+void OpenNICDnsQueryListener::finished(OpenNICDnsQuery* /* query */)
 {
 	//OpenNICServer::log("finished "+query->resolver().toString()+" : "+query->name().toString());
 }

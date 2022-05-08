@@ -110,12 +110,12 @@ OpenNIC::~OpenNIC()
 	mHistoryDialogs.clear();
 }
 
-void OpenNIC::enabledChanged(int state)
+void OpenNIC::enabledChanged(int /* state */)
 {
 	update();
 }
 
-void OpenNIC::interfaceChanged(const QString& interface)
+void OpenNIC::interfaceChanged(const QString& /* interface */)
 {
 	update();
 }
