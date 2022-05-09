@@ -159,8 +159,8 @@ QString OpenNICSystem_Linux::bootstrapT1Path()
     if ( fileExists( QString("/etc/") + OPENNIC_T1_BOOTSTRAP ) )
         return QString("/etc/") + OPENNIC_T1_BOOTSTRAP;
 
-    if ( fileExists( QString("/opt/opennic/") + OPENNIC_T1_BOOTSTRAP ) )
-        return QString("/opt/opennic/") + OPENNIC_T1_BOOTSTRAP;
+    if ( fileExists( QString("/opt/opennicwiz/") + OPENNIC_T1_BOOTSTRAP ) )
+        return QString("/opt/opennicwiz/") + OPENNIC_T1_BOOTSTRAP;
 
     return OPENNIC_T1_BOOTSTRAP;
 }
@@ -182,8 +182,8 @@ QString OpenNICSystem_Linux::bootstrapDomainsPath()
     if ( fileExists( QString("/etc/") + OPENNIC_DOMAINS_BOOTSTRAP ) )
         return QString("/etc/") + OPENNIC_DOMAINS_BOOTSTRAP;
 
-    if ( fileExists( QString("/opt/opennic/") + OPENNIC_DOMAINS_BOOTSTRAP ) )
-        return QString("/opt/opennic/") + OPENNIC_DOMAINS_BOOTSTRAP;
+    if ( fileExists( QString("/opt/opennicwiz/") + OPENNIC_DOMAINS_BOOTSTRAP ) )
+        return QString("/opt/opennicwiz/") + OPENNIC_DOMAINS_BOOTSTRAP;
 
     return OPENNIC_DOMAINS_BOOTSTRAP;
 }
