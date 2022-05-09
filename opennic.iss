@@ -6,8 +6,8 @@
 #define MyAppVersion "0.6.beta1"
 #define MyAppPublisher "The OpenNIC Project"
 #define MyAppURL "http://github.com/8bitgeek/OpenNIC-Wizard"
-#define MyAppExeName "opennicui.exe"
-#define MyAppServiceName "opennicd.exe"
+#define MyAppExeName "opennicwizui.exe"
+#define MyAppServiceName "opennicwizd.exe"
 
 ; My Windows 64-bit configuration
 #define MyOutputDir           "C:\cygwin64\home\mike\"
@@ -48,8 +48,8 @@ Name: "german"; MessagesFile: "compiler:Languages\German.isl"
 Name: "spanish"; MessagesFile: "compiler:Languages\Spanish.isl"
 
 [Files]
-Source: {#MyOpenNICClientBuild}\opennicui.exe; DestDir: {app}; Flags: ignoreversion; Permissions: admins-full; MinVersion: 0,5.1.2600;
-Source: {#MyOpenNICServerBuild}\opennicd.exe; DestDir: {app}; Flags: ignoreversion; Permissions: admins-full; MinVersion: 0,5.1.2600;
+Source: {#MyOpenNICClientBuild}\opennicwizui.exe; DestDir: {app}; Flags: ignoreversion; Permissions: admins-full; MinVersion: 0,5.1.2600;
+Source: {#MyOpenNICServerBuild}\opennicwizd.exe; DestDir: {app}; Flags: ignoreversion; Permissions: admins-full; MinVersion: 0,5.1.2600;
 Source: {#MyQtLib}\Qt5Core.dll; DestDir: "{app}"; Flags: ignoreversion
 Source: {#MyQtLib}\Qt5Gui.dll; DestDir: "{app}"; Flags: ignoreversion
 Source: {#MyQtLib}\Qt5Widgets.dll; DestDir: "{app}"; Flags: ignoreversion
@@ -76,7 +76,7 @@ Source: {#MyOpenNICSource}\COPYING; DestDir: "{app}"; Flags: ignoreversion
 Source: {#MyOpenNICSource}\README.md; DestDir: "{app}"; Flags: ignoreversion
 Source: {#MyOpenNICSource}\server\bootstrap.t1; DestDir: {app}; Flags: ignoreversion; 
 Source: {#MyOpenNICSource}\server\bootstrap.domains; DestDir: {app}; Flags: ignoreversion; 
-Source: {#MyOpenNICSource}\server\opennicd.exe.manifest; DestDir: {app}; Flags: ignoreversion; 
+Source: {#MyOpenNICSource}\server\opennicwizd.exe.manifest; DestDir: {app}; Flags: ignoreversion; 
 
 Source: {#MyMingwBin}\libgcc_s_seh-1.dll; DestDir: "{app}"; Flags: ignoreversion
 Source: {#MyMingwBin}\libwinpthread-1.dll; DestDir: "{app}"; Flags: ignoreversion
