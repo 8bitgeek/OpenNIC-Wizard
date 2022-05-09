@@ -1,0 +1,96 @@
+#!/bin/sh
+
+# Debian Linux system service run script (init file) for Synchronet
+#
+# This file normally goes in your /etc/init.d directory
+#
+# $Id: opennicwiz.debian,v 1.4 2011/10/17 09:00:36 opennicwiz Exp $
+
+### BEGIN INIT INFO
+# Provides:          opennicwiz
+# Required-Start:    $local_fs $remote_fs $network $syslog
+# Required-Stop:     $local_fs $remote_fs $network $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Start/stop OpenNIC Wizard services
+# X-Interactive:     false
+### END INIT INFO
+
+########################################
+# OpenNIC Wizard Debian startup script #
+########################################
+# by Karloch <karloch@hispamsx.org> 8 Dec 2005
+
+# You can edit these vars to meet your system configuration
+
+PATH=/bin:/sbin:/usr/bin:/usr/bin:/opt/opennicwiz/bin
+DAEMON=/opt/opennicwiz/bin/opennicwizd
+
+# Command Line options (e.g. daemonize)
+OPTIONS=""
+
+export SHELL=/bin/bash
+# Uncomment if you want core files created with an unlimited size:
+#ulimit -c unlimited
+
+# DO NOT edit anything below this line unless you know what you doing
+
+test -x $DAEMON || exit 0
+
+case "$1" in
+  start)
+      echo -n "Starting OpenNIC Wizard services... "
+      if start-stop-daemon --quiet --stop --signal 0 --exec $DAEMON
+      then
+          echo "[already running]"
+      else
+          start-stop-daemon --quiet --start --exec $DAEMON -- $OPTIONS
+      fi
+      ;;
+  stop)
+      echo -n "Stopping OpenNIC Wizard services... "
+      if start-stop-daemon --quiet --stop --signal 0 --exec $DAEMON
+      then
+          if start-stop-daemon --quiet --stop --exec $DAEMON --retry 300
+	  then
+	  	echo "[OK]"
+	  else
+		echo "[timeout]"
+	  fi
+      else
+          echo "[not running]"
+      fi
+      ;;
+  restart|force-reload)
+      $0 stop
+      $0 start
+      ;;
+  status)
+      echo -n "OpenNIC Wizard services status: "
+      if start-stop-daemon --quiet --stop --signal 0 --exec $DAEMON
+      then
+          echo "[running]"
+	  echo -n "PID(s): "
+	  pidof opennicwizd
+      else
+          echo "[not running]"
+      fi
+      ;;
+  recycle)
+      echo -n "Putting recycle server mark on Synchronet: "
+      if start-stop-daemon --quiet --stop --signal 0 --exec $DAEMON
+      then
+          touch $SBBSCTRL/recycle
+	  echo "[OK]"
+      else
+          echo "[FAILED]"
+	  echo -n "Synchronet server doesn't seem to be running"
+      fi
+      ;;
+  *)
+      echo "Usage: /etc/init.d/opennicwiz {start|stop|restart|force-reload|status|recycle}"
+      exit 1
+
+esac
+
+exit 0

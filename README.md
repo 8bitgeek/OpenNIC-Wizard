@@ -52,13 +52,13 @@ The intent which drives the OpenNIC Wizard project, is provide an means for your
 
 # Method of Operation Overview
 
-The OpenNIC Wizard is divided into ttwo parts, *opennicd* and *opennicui*.
+The OpenNIC Wizard is divided into ttwo parts, *opennicwizd* and *opennicwizui*.
 
 In this way, the DNS resolver function and the Graphical User Interface (GUI) component are able to operate independently of one another.
 
-## About *opennicd*
+## About *opennicwizd*
 
-The bootstrap.t1 file is a list of IP addresses which *opennicd* uses to locate the T1 (root) resolvers. 
+The bootstrap.t1 file is a list of IP addresses which *opennicwizd* uses to locate the T1 (root) resolvers. 
 
 Onces the T1 resolvers have been confirmed, they are quried in such a way as to walk the tree of [T2](https://servers.opennic.org/?tier=2) resolvers and buuild a table of the T2 resolvers.
 
@@ -71,16 +71,15 @@ Once therre is sufficient change in the top pwerformers, then the resolver pool 
 
 The goal is to keep the operating system up to date with the best performing resolvers from your location.
 
-## About *opennicui*
+## About *opennicwizui*
 
 A task-tray applet is provided. It is not required for OpenNIC Wizard to work. It is for Human interraction.
 
-The *opennicd* and OpenNIC applet communicate over local domain sockets. Hence the server/cliant metaphore.
+The *opennicwizd* and OpenNIC applet communicate over local domain sockets. Hence the server/cliant metaphore.
 
-The *opennicd* portion must run with elevated privilages in order to manipulate the operating system DNS resolver pool.
+The *opennicwizd* portion must run with elevated privilages in order to manipulate the operating system DNS resolver pool.
 
 The OpenNIC task tray applet runs with user privilage.
-
 
 # Build
 
@@ -130,10 +129,10 @@ System Installation into /usr/local/...
 ```
 sudo ./install.sh
 ```
-If you wish to run *opennicd* upon startup...
+If you wish to run *opennicwizd* upon startup...
 ```
 sudo -s
-echo /etc/local/bin/opennicd >> /etc/rc.local
+echo /etc/local/bin/opennicwizd >> /etc/rc.local
 exit
 ```
 If you wish to install desktop launcher icon
