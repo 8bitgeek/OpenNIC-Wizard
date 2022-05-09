@@ -23,24 +23,43 @@ Description: Provides an means to continually test the quality of and update an 
 <</CTRL>>
 <<FILES>>
 1
-/home/mike/development/github/OpenNIC-Wizard/server/opennicwizd* -> opennicd -> /opt/opennicwiz/bin
-/home/mike/development/github/OpenNIC-Wizard/client/opennicwizui* -> opennicui -> /opt/opennicwiz/bin
-/home/mike/development/github/OpenNIC-Wizard/server/bootstrap.t1 -> bootstrap.t1 -> /opt/opennicwiz/etc
-/home/mike/development/github/OpenNIC-Wizard/server/bootstrap.domains -> bootstrap.domains -> /opt/opennicwiz/etc
 /home/mike/development/github/OpenNIC-Wizard/client/images/opennic.png -> opennic.png -> /opt/opennicwiz/lib
+/home/mike/development/github/OpenNIC-Wizard/etc/bootstrap.domains -> bootstrap.domains -> /opt/opennicwiz/etc
+/home/mike/development/github/OpenNIC-Wizard/etc/bootstrap.t1 -> bootstrap.t1 -> /opt/opennicwiz/etc
+/home/mike/development/github/OpenNIC-Wizard/etc/opennicwiz* -> opennicwiz -> /etc/init.d
+/home/mike/development/github/OpenNIC-Wizard/client/opennicwizui* -> opennicwizui -> /opt/opennicwiz/bin
+/home/mike/development/github/OpenNIC-Wizard/server/opennicwizd* -> opennicwizd -> /opt/opennicwiz/bin
+/home/mike/development/github/OpenNIC-Wizard/client/OpenNIC.desktop* -> OpenNIC.desktop -> /opt/opennicwiz/lib/
 <</FILES>>
 <<SCRIPTS>>
 <<PREINST>>
 0
 <</PREINST>>
 <<POSTINST>>
-0
+1
+#!/usr/bin/bash -e
+
+ln -fs "/opt/opennicwiz/bin/opennicwizd" "/usr/bin/opennicwizd"
+ln -fs "/opt/opennicwiz/bin/opennicwizui" "/usr/bin/opennicwizui"
+
+chmod a+rx /etc/init.d/opennicwiz
+/etc/init.d/opennicwiz start > /dev/null
+
+
 <</POSTINST>>
 <<PRERM>>
-0
+1
+#!/usr/bin/bash -e
+
+/etc/init.d/opennicwiz stop
+
+
 <</PRERM>>
 <<POSTRM>>
-0
+1
+rm -f "/usr/bin/opennicwizd"
+rm -f "/usr/bin/opennicwizui"
+
 <</POSTRM>>
 <</SCRIPTS>>
 <<CHANGELOG>>
@@ -48,10 +67,30 @@ Description: Provides an means to continually test the quality of and update an 
 
 <</CHANGELOG>>
 <<COPYRIGHT>>
+OpenNIC Wizard 0.6.beta1
+This file is a part of OpenNIC Wizard
+Copywrong (c) 2012-2022 Mike Sharkey
+----------------------------------------------------------------------------
+"THE BEER-WARE LICENSE" (Revision 1776):
+<mike@8bitgeek.net> wrote this file.
+As long as you retain this notice you can do whatever you want with this
+stuff. If we meet some day, and you think this stuff is worth it,
+you can buy me a beer in return. ~ Mike Sharkey
+----------------------------------------------------------------------------
 
 <</COPYRIGHT>>
 <<MENU>>
-0
+1
+Name=OpenNIC Wizard
+Version=1.0
+Exec=/opt/opennicwiz/bin/opennicwizui
+Comment=OpenNIC Wizard is good for the soul
+Icon=/opt/opennicwiz/lib/opennic.png
+Type=Application
+Terminal=false
+StartupNotify=true
+Encoding=UTF-8
+Categories=Network;
 <</MENU>>
 <<BUILD>>
 1

@@ -74,8 +74,8 @@ Source: {#MyOpenNICSource}\server\dig\install\liblwres.dll; DestDir: "{app}"; Fl
 Source: {#MyOpenNICSource}\unins000.exe.manifest; DestDir: "{app}"; Flags: ignoreversion
 Source: {#MyOpenNICSource}\COPYING; DestDir: "{app}"; Flags: ignoreversion
 Source: {#MyOpenNICSource}\README.md; DestDir: "{app}"; Flags: ignoreversion
-Source: {#MyOpenNICSource}\server\bootstrap.t1; DestDir: {app}; Flags: ignoreversion; 
-Source: {#MyOpenNICSource}\server\bootstrap.domains; DestDir: {app}; Flags: ignoreversion; 
+Source: {#MyOpenNICSource}\etc\bootstrap.t1; DestDir: {app}; Flags: ignoreversion; 
+Source: {#MyOpenNICSource}\etc\bootstrap.domains; DestDir: {app}; Flags: ignoreversion; 
 Source: {#MyOpenNICSource}\server\opennicwizd.exe.manifest; DestDir: {app}; Flags: ignoreversion; 
 
 Source: {#MyMingwBin}\libgcc_s_seh-1.dll; DestDir: "{app}"; Flags: ignoreversion

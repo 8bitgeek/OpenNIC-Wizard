@@ -133,7 +133,7 @@ void OpenNICServer::log(QString msg)
 {
 	QString str = QDateTime::currentDateTime().toString("yyMMddhhmmss")+"|"+msg;
 	mLog << str;
-    fprintf(stderr,"%s\n",str.toLocal8Bit().data());
+    printf("%s\n",str.toLocal8Bit().data());
 	while(mLog.count() > MAX_LOG_LINES)
 	{
 		mLog.takeAt(0);
