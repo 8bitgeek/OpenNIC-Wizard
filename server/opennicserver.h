@@ -91,7 +91,7 @@ class OpenNICServer : public QObject
 		void					purgeDeadSesssions();
 		int						initializeServer();
 		int						updateDNS(int resolver_count);
-		void					delay(int seconds);
+		void					delay(quint64 seconds);
 		virtual void			timerEvent(QTimerEvent* e);
 
 	private:

@@ -56,9 +56,9 @@ OpenNICServer::OpenNICServer(QObject *parent)
 , mRefreshTimerPeriod(0)
 , mResolverCacheSize(0)
 , mEnabled(true)
-, mSeconds(0)
 , mRefreshTimer(-1)
 , mFastTimer(-1)
+, mSeconds(0)
 , mResolversInitialized(false)
 , mTcpListenPort(DEFAULT_TCP_LISTEN_PORT)
 , mUpdatingDNS(false)
@@ -699,11 +699,11 @@ void OpenNICServer::runOnce()
 /**
  * @brief Delay for some seconds
  */
-void OpenNICServer::delay(int seconds)
+void OpenNICServer::delay(quint64 seconds)
 {
 	QEventLoop loop;
 	mSeconds=0L;
-	while(seconds>mSeconds)
+	while( seconds > mSeconds )
 	{
 		loop.processEvents();
 	}

@@ -1,0 +1,61 @@
+[DEBREATE-0.7.13]
+<<CTRL>>
+Package: opennicwiz
+Version: 0.6.beta1
+Maintainer: Mike Sharkey <mike@8bitgeek.net>
+Section: net
+Source: https://github.com/8bitgeek/OpenNIC-Wizard.git
+Homepage: https://github.com/8bitgeek/OpenNIC-Wizard
+Architecture: amd64
+Priority: optional
+Depends: libqt5core5a (>=5.12.8), libqt5gui5 (>=5.12.8), libqt5network5 (>=5.12.8), libqt5script5 (>=5.12.8)
+Description: Provides an means to continually test the quality of and update an OpenNIC resolver pool
+ The OpenNIC DNS pool consists of a diverse collection of servers around the globe. Individual resolvers are largely run by individuals, and may experience some down time on occasion or may go permanently dark without warning.
+ .
+ On the other hand new resolvers may appear which are closer to you.
+ .
+ As you can see, the nature of the OpenNIC resolver pool means that there is a dynamic nature to it.
+ .
+ Entering DNS resolvers by hand can be a neusance when one of your resolvers go off-line, and on the other hand you may not be aware that a better performing resolver comes online closer to you.
+ .
+ The intent which drives the OpenNIC Wizard project, is provide an means for your PC to continually test the quality of the OpenNIC resolver pool and select only those which are performing the best for you at your current location. The resolver selection process should be completely transparent to the end user.
+
+<</CTRL>>
+<<FILES>>
+1
+/home/mike/development/github/OpenNIC-Wizard/server/opennicwizd* -> opennicd -> /opt/opennicwiz/bin
+/home/mike/development/github/OpenNIC-Wizard/client/opennicwizui* -> opennicui -> /opt/opennicwiz/bin
+/home/mike/development/github/OpenNIC-Wizard/server/bootstrap.t1 -> bootstrap.t1 -> /opt/opennicwiz/etc
+/home/mike/development/github/OpenNIC-Wizard/server/bootstrap.domains -> bootstrap.domains -> /opt/opennicwiz/etc
+/home/mike/development/github/OpenNIC-Wizard/client/images/opennic.png -> opennic.png -> /opt/opennicwiz/lib
+<</FILES>>
+<<SCRIPTS>>
+<<PREINST>>
+0
+<</PREINST>>
+<<POSTINST>>
+0
+<</POSTINST>>
+<<PRERM>>
+0
+<</PRERM>>
+<<POSTRM>>
+0
+<</POSTRM>>
+<</SCRIPTS>>
+<<CHANGELOG>>
+<<DEST>>DEFAULT<</DEST>>
+
+<</CHANGELOG>>
+<<COPYRIGHT>>
+
+<</COPYRIGHT>>
+<<MENU>>
+0
+<</MENU>>
+<<BUILD>>
+1
+1
+1
+strip
+<</BUILD>>

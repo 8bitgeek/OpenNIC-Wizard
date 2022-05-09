@@ -10,7 +10,7 @@
 
 QT       += core gui network widgets
 
-TARGET = opennicui
+TARGET = opennicwizui
 TEMPLATE = app
 CONFIG += warn_on \
 	thread \
