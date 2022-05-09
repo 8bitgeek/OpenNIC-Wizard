@@ -133,7 +133,7 @@ sudo ./install.sh
 If you wish to run *opennicd* upon startup...
 ```
 sudo -s
-echo /etc/local/bin/*opennicd* >> /etc/rc.local
+echo /etc/local/bin/opennicd >> /etc/rc.local
 exit
 ```
 If you wish to install desktop launcher icon
