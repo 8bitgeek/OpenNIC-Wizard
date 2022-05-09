@@ -10,10 +10,10 @@
 #define MyAppServiceName "opennicwizd.exe"
 
 ; My Windows 64-bit configuration
-#define MyOutputDir           "C:\cygwin64\home\mike\"
-#define MyOpenNICSource       "C:\cygwin64\home\mike\github\OpenNIC-Wizard"
-#define MyOpenNICServerBuild  "C:\cygwin64\home\mike\github\OpenNIC-Wizard\server\debug"
-#define MyOpenNICClientBuild  "C:\cygwin64\home\mike\github\OpenNIC-Wizard\client\debug"
+#define MyOutputDir           "C:\cygwin64\home\mike.sharkey\"
+#define MyOpenNICSource       "C:\cygwin64\home\mike.sharkey\development\github\OpenNIC-Wizard"
+#define MyOpenNICServerBuild  "C:\cygwin64\home\mike.sharkey\development\github\OpenNIC-Wizard\server\debug"
+#define MyOpenNICClientBuild  "C:\cygwin64\home\mike.sharkey\development\github\OpenNIC-Wizard\client\debug"
 #define MyQtLib               "C:\Qt\5.15.0\mingw81_64\bin"
 #define MyMingwBin            "C:\Qt\5.15.0\mingw81_64\bin"
 #define MyQtPlugins           "C:\Qt\5.15.0\mingw81_64\plugins"
