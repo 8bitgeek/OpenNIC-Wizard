@@ -11,6 +11,6 @@ cp $QTBIN/libwinpthread-1.dll $SERVER/
 cp $QTBIN/libstdc++-6.dll $SERVER/
 
 cd $SERVER/
-gdb opennicd.exe 
+gdb opennicwizd.exe 
 
 
