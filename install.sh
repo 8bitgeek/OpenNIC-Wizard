@@ -11,6 +11,6 @@ cp client/opennicwizui $DEST_BIN/
 
 cp client/images/opennic.png $DEST_LIB/
 
-cp server/bootstrap.domains $DEST_ETC/
-cp server/bootstrap.t1 $DEST_ETC/
+cp etc/bootstrap.domains $DEST_ETC/
+cp etc/bootstrap.t1 $DEST_ETC/
 
